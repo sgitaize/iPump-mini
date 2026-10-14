@@ -312,25 +312,44 @@ final class PumpLink: NSObject, ObservableObject {
 
     /// After iOS relaunched the app in the background, the pump may still be connected
     /// with the old SAKE session. Continue with the saved cipher instead of losing data.
+    /// IMPORTANT: the app never initiates a connection to the pump itself. The pump is the
+    /// central of the bonded link; a connection started by the iPhone is a second, unencrypted
+    /// link on which the pump neither encrypts nor starts SAKE, and it keeps the pump from
+    /// reconnecting properly (lab notebook 2026-10-15). We only attach to the pump's link.
+    private static let linkFixVersion = 1
+
     private func resumeSavedSession() {
         guard crypt == nil, sake == nil else { return }
-        guard let saved = SessionStore.load() else {
+        let savedID = UserDefaults.standard.string(forKey: "pumpID").flatMap(UUID.init(uuidString:))
+        let known = pump ?? savedID.flatMap { centralManager.retrievePeripherals(withIdentifiers: [$0]).first }
+
+        // One-time cleanup after the build that issued own connection requests: drop a
+        // pending/own connection and ask the pump for a fresh handshake on its own link.
+        if UserDefaults.standard.integer(forKey: "linkFixVersion") < Self.linkFixVersion {
+            UserDefaults.standard.set(Self.linkFixVersion, forKey: "linkFixVersion")
+            if let known { centralManager.cancelPeripheralConnection(known) }
+            pump = nil
+            SessionStore.clear()
+            log.add("Eigene Verbindungsanfrage zur Pumpe verworfen, warte auf Neuverbindung durch die Pumpe", .warning)
             requestNewHandshakeIfLinked()
             return
         }
-        guard let idString = UserDefaults.standard.string(forKey: "pumpID"), let id = UUID(uuidString: idString) else { return }
-        let peripheral = pump ?? centralManager.retrievePeripherals(withIdentifiers: [id]).first
-        guard let peripheral else { return }
+        // A pending connection request from an earlier run: cancel it.
+        if let known, known.state == .connecting {
+            centralManager.cancelPeripheralConnection(known)
+            log.add("Hängende Verbindungsanfrage abgebrochen")
+        }
+        guard let saved = SessionStore.load(), let peripheral = known, peripheral.state == .connected else {
+            SessionStore.clear()
+            requestNewHandshakeIfLinked()
+            return
+        }
         crypt = saved
         pump = peripheral
         peripheral.delegate = self
-        log.add("Setze gespeicherte Sitzung fort (Pumpe \(peripheral.state == .connected ? "verbunden" : "nicht verbunden"))")
+        log.add("Setze gespeicherte Sitzung fort (Pumpe verbunden)")
         phase = .connecting
-        if peripheral.state == .connected {
-            startDiscovery(peripheral)
-        } else {
-            centralManager.connect(peripheral)
-        }
+        startDiscovery(peripheral)
     }
 
     /// The pump is linked (restored by iOS) but we have no session, e.g. after an app update.
@@ -346,8 +365,13 @@ final class PumpLink: NSObject, ObservableObject {
             isPaired = true
         }
         waitingSince = Date()
-        guard let pump, pump.state == .connected || peripheralManager.state == .poweredOn else { return }
+        if phase != .connected { phase = .waitingForPump }
         didRequestHandshake = true
+        guard sakePort != nil else {
+            // Services are registered fresh anyway (first setup after launch).
+            log.add("Keine gespeicherte Sitzung, warte auf Handshake der Pumpe")
+            return
+        }
         log.add("Keine gespeicherte Sitzung, fordere neuen Handshake an (GATT-Dienste neu registrieren)")
         sakePort = nil
         UserDefaults.standard.set(0, forKey: "gattVersion")
@@ -913,6 +937,16 @@ extension PumpLink: CBPeripheralManagerDelegate {
         }
     }
 
+    nonisolated func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
+        MainActor.assumeIsolated {
+            if let error {
+                log.add("Advertising fehlgeschlagen: \(error.localizedDescription)", .error)
+            } else {
+                log.add(pairingMode ? "Advertising: Kopplung (FE82, Mobile \(advertisedName))" : "Advertising: Wiederverbindung (FE81)")
+            }
+        }
+    }
+
     nonisolated func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManager) {
         MainActor.assumeIsolated { flushOutbox() }
     }
@@ -964,8 +998,8 @@ extension PumpLink: CBCentralManagerDelegate {
             log.add("Pumpe getrennt\(error.map { ": \($0.localizedDescription)" } ?? "")", .warning)
             resetClientState()
             if case .blocked = phase { pump = nil; return }
-            // Pending connect: completes as soon as the pump links up again (no timeout).
-            central.connect(peripheral)
+            // No reconnect from our side: the pump reconnects to us (see linkFixVersion).
+            pump = nil
             phase = .waitingForPump
             updateAdvertising()
         }
