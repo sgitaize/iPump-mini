@@ -16,6 +16,7 @@ struct ContentView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     StatusBanner(showPairing: $showPairing)
+                    MuteBanner()
                     SensorTypeCard()
                     GlucoseHeader()
                     GlucoseChart(insulinSelection: $insulinSelection)
@@ -288,6 +289,12 @@ struct GlucoseChart: View {
             AxisMarks(position: .trailing, values: Array(stride(from: 50, through: yMax, by: 50)))
         }
         .chartXScale(domain: from...Date())
+        .chartXAxis {
+            AxisMarks(values: .stride(by: .hour, count: hours <= 6 ? 1 : hours <= 12 ? 2 : 4)) { _ in
+                AxisGridLine()
+                AxisValueLabel(format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
+            }
+        }
         .chartPlotStyle { $0.clipped() }
         .chartOverlay { proxy in
             GeometryReader { geo in
@@ -505,6 +512,25 @@ struct SensorTypeCard: View {
             }
             .padding()
             .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        }
+    }
+}
+
+/// Shows a global alarm mute with a way to lift it.
+struct MuteBanner: View {
+    @ObservedObject private var engine = AlarmEngine.shared
+
+    var body: some View {
+        if let until = engine.mutedUntil, until > Date() {
+            HStack {
+                Image(systemName: "bell.slash")
+                Text("Alarme stumm bis \(until.formatted(date: .omitted, time: .shortened))")
+                Spacer()
+                Button("Aufheben") { engine.muteAll(minutes: nil) }
+            }
+            .font(.subheadline)
+            .padding(12)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
         }
     }
 }

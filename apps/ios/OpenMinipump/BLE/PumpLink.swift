@@ -560,6 +560,23 @@ final class PumpLink: NSObject, ObservableObject {
         }
     }
 
+    /// Queues a history read right away (e.g. a pump alert changed), unless one is running.
+    private func requestHistoryNow() {
+        guard serialVerified else { return }
+        let isHistory: (Operation) -> Bool = {
+            switch $0 {
+            case .historyLast, .historyRange: true
+            default: false
+            }
+        }
+        if let current, isHistory(current) { return }
+        if operations.contains(where: isHistory) { return }
+        lastHistorySync = Date()
+        historyBuffer = []
+        operations.append(.historyLast)
+        if current == nil { nextOperation() }
+    }
+
     /// Bump to re-read the pump history once (e.g. after improving the classification).
     private static let historyVersion = 2
 
@@ -605,6 +622,11 @@ final class PumpLink: NSObject, ObservableObject {
         let sgv = events.compactMap { e -> GlucoseReading? in
             guard case .sensorGlucose(let mgdl?) = e.event else { return nil }
             return GlucoseReading(date: e.date, mgdl: mgdl, trendMgdlPerMin: nil, sessionOffsetMinutes: nil)
+        }
+        for e in events {
+            if case .annunciation(let id, let type, let status) = e.event {
+                AlarmEngine.shared.pumpAlarm(id: id, type: type, status: status, date: e.date)
+            }
         }
         let newTreatments = store.addTreatments(treatments)
         let newReadings = store.merge(sgv)
@@ -767,7 +789,14 @@ final class PumpLink: NSObject, ObservableObject {
             handleStatusReader(plain)
 
         case PumpUUID.iddStatusChanged.uppercased():
-            log.add("Pumpe meldet Statusänderung")
+            let flags = StatusChangedFlags(plain)
+            if flags?.contains(.annunciation) == true {
+                // A pump alert changed: read the history right away instead of in ≤5 min.
+                log.add("Pumpe meldet geänderte Alarme")
+                requestHistoryNow()
+            } else {
+                log.add("Pumpe meldet Statusänderung")
+            }
 
         case PumpUUID.iddStatus.uppercased():
             if let s = try? PumpStatus(plain) {

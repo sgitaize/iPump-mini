@@ -7,7 +7,6 @@ struct SettingsView: View {
     @EnvironmentObject private var link: PumpLink
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var uploader: NightscoutUploader
-    @State private var watchdog = Watchdog.enabled
     @AppStorage(SensorType.key) private var sensorType = ""
     @State private var testResult: String?
     @State private var testing = false
@@ -96,10 +95,9 @@ struct SettingsView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
 
-                Section("Benachrichtigungen", isExpanded: $openNotify) {
-                    Toggle("Erinnern, wenn keine Daten kommen", isOn: $watchdog)
-                        .onChange(of: watchdog) { _, on in Watchdog.enabled = on }
-                    Text("Kommen 20 Minuten lang keine Pumpendaten (z. B. weil die App weggewischt wurde), erscheint eine Mitteilung zum erneuten Öffnen.")
+                Section("Alarme", isExpanded: $openNotify) {
+                    NavigationLink("Alarme & Benachrichtigungen") { AlarmSettingsView() }
+                    Text("Glukose-Alarme (dringend niedrig, niedrig, hoch, schnelle Änderungen), Meldungen der Pumpe, „Keine Daten“, Stummschalten.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
 
