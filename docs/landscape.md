@@ -50,9 +50,9 @@ Das Rollenmodell hat harte Folgen für CoreBluetooth:
 |---|---|---|---|
 | 1 | Advertising `0xFE82` + Name „Mobile …“ | `CBPeripheralManager` kann Service-UUID und LocalName senden, **aber nur im Vordergrund**. Für die Erstkopplung reicht das. | niedrig |
 | 2 | Eigener GATT-Server (SAKE-Port, DIS unter `0x0900`) | möglich. GAP/GATT (`0x1800/0x1801`) verwaltet iOS selbst, deshalb ist die GAP-Device-Name-Characteristic der iPhone-Name. Ob die Pumpe das akzeptiert, ist offen. | mittel |
-| 3 | **GATT-Client auf derselben Verbindung** (Pumpen-Services IDS/CGMS lesen) | Die Pumpe ist Central. Wir müssen ihre Services über die Verbindung lesen, die sie selbst aufgebaut hat. Weg über `CBCentralManager.retrieveConnectedPeripherals(withServices:)`. | **hoch, muss früh verifiziert werden** |
-| 4 | MTU 23 während der Discovery | Unter Linux muss BlueZ gepatcht werden. iOS handelt die MTU selbst aus, wir haben keinen Einfluss. | **hoch** |
-| 5 | **Reconnect im Hintergrund** (`0xFE81`, ≤ 150 ms, RPA) | iOS verwendet RPA, das passt. Im Hintergrund verschiebt iOS Service-UUIDs aber in den proprietären „Overflow“-Bereich und sendet seltener Advertising. **Die Pumpe sieht `0xFE81` dann vermutlich nicht.** | **sehr hoch** |
+| 3 | **GATT-Client auf derselben Verbindung** (Pumpen-Services IDS/CGMS lesen) | **Bestätigt (Mitschnitt 1):** MiniMed Mobile macht genau das unter iOS. Offen ist nur noch die genaue API, vermutlich `retrieveConnectedPeripherals(withServices:)`. | niedrig |
+| 4 | MTU 23 während der Discovery | **Bestätigt unproblematisch:** Die Pumpe fragt unter iOS selbst MTU 184 an, kein Abbruch. | niedrig |
+| 5 | **Reconnect im Hintergrund** (`0xFE81`, ≤ 150 ms, RPA) | **Update 2026-10-14 (Mitschnitt 2):** Die Pumpe verbindet sich auch ohne `FE81` und erkennt das gebondete iPhone per IRK an dessen normalem Apple-Advertising. Die Verbindung bleibt im Hintergrund dauerhaft bestehen. | **niedrig** (entschärft) |
 | 6 | Dauerbetrieb im Hintergrund | `bluetooth-peripheral` und `bluetooth-central` als Background Modes, State Restoration | mittel |
 
 **Existenzbeweis:** Die offizielle **MiniMed Mobile gibt es für iOS**, und sie läuft mit öffentlichen CoreBluetooth-APIs. Punkte 2–6 sind also grundsätzlich lösbar. *Wie* Medtronic es macht, insbesondere den Reconnect im Hintergrund, sehen wir am besten per **PacketLogger-Mitschnitt der offiziellen iOS-App** (Phase 3). Das ist erlaubt und braucht keinen Jailbreak.

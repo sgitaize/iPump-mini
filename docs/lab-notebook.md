@@ -31,3 +31,22 @@ Format: Datum · Was getestet · Ergebnis · Mitschnitt-Datei (in `captures/`, g
 ### Offene Fragen für Mitschnitt 2
 - Bleibt das Advertising mit `FE81` und 30 ms erhalten, wenn die App im Hintergrund ist bzw. das iPhone gesperrt ist?
 - Wie oft verbindet sich die Pumpe? Wie lange dauert eine Sitzung?
+
+## 2026-10-14 · Mitschnitt 2: Reconnect-Verhalten der offiziellen App (iOS)
+- **Mitschnitt:** `captures/2026-10-14_2047_mmm-ios-reconnect-tests_pump2.pklg` (20:47–21:37, enthält Mitschnitt 1)
+- **Simons Notizen:** A: Werte im 5-Minuten-Takt (20:47, 20:52, …), App im Hintergrund, iPhone gesperrt · B: ab 21:14 Pumpe außer Reichweite · C: 21:23 Bluetooth aus (vorher kurz an/aus), ca. 21:25 an, ca. 21:27 wieder verbunden · D: 21:27 App beendet, ca. 21:33 geöffnet, 21:37 wieder verbunden
+- Pumpen-Verbindungen sind über die Medtronic-OUI `00:23:f7` erkennbar bzw. über GATT-Verkehr auf den Medtronic-UUIDs. Andere Handles gehören zu Uhr, AirPods usw.
+- ⚠️ PacketLogger hat **nicht alle HCI-Events** aufgezeichnet. Für die Pumpenverbindung `0x0402` fehlen sowohl Connection Complete (ca. 20:51:23) als auch Disconnect (spätestens bei Test C). Aussagen dazu stützen sich auf den ATT-Verkehr.
+
+### Ergebnisse
+1. **Dauerhafte Verbindung statt periodischer Verbindungen.** Nach der Kopplung trennt die Pumpe einmal (20:50:39) und verbindet sich nach 44 s erneut (20:51:23, auf `FE81`-Advertising mit 30 ms). Danach **bleibt die Verbindung bestehen**: History-Download 20:51–20:53 (viele Notifications auf *IDD History Data* `…0108`), anschließend kleiner Verkehr jede Minute und Bursts im 5-Minuten-Takt (Sensorwerte). Das gilt auch **mit gesperrtem iPhone und App im Hintergrund** (Test A).
+2. **Die App sendet nach dem Verbindungsaufbau kein eigenes Advertising mehr.** Von 20:51:23 bis zum erneuten Öffnen um 21:34 enthält das Advertising-Set 0 nur Apples eigene Nearby- bzw. Continuity-Daten (`0x10…`, `0x0c…`), connectable, 30–270 ms, mit der RPA des iPhones.
+3. **🔑 Der Reconnect braucht kein `FE81`.** In Test C verbindet sich die Pumpe um 21:26:29 neu (Encryption per LTK aus dem Bond, MTU 184). Zu diesem Zeitpunkt sendet das iPhone **nur Apple-Advertising ohne Medtronic-UUID**. → Die Pumpe löst die RPA des iPhones über den beim Bonding getauschten **IRK** auf und verbindet sich mit *jedem* connectable Advertising des gebondeten Geräts. Damit ist das **Risiko „Hintergrund-Advertising unter iOS“ weitgehend entschärft**: iOS sendet ohnehin dauerhaft connectable Advertising. `FE81` beschleunigt den Reconnect nur.
+4. **Test D (App beendet):** Beim Beenden kappt iOS die Verbindung (21:27:44, Reason 0x16 *Local Host Terminated*). Die Pumpe verbindet sich trotzdem mit dem iPhone (21:29:09, 21:29:39, 21:29:55), weil sie die Apple-Adverts per IRK erkennt. Jede Verbindung bricht nach ca. 7 s ab (Reason 0x08 *Connection Timeout*), weil keine App den GATT-Server bzw. SAKE bedient. Danach zieht sich die Pumpe zurück (Backoff). Nach dem Öffnen (FE81 mit 30 ms ab 21:34:39) wieder verbunden um 21:36:34. **Folge für uns:** Eine beendete App bekommt keine Daten. Das ist bei iOS erwartbar, denn State Restoration greift nach Force-Quit nicht.
+5. **Test B (außer Reichweite):** Wegen der fehlenden HCI-Events nicht eindeutig. Auf `0x0402` gibt es bis 21:13 regelmäßigen Verkehr, dann nur wenig (21:17), dann einen Burst um 21:21 (vermutlich Nachladen nach der Rückkehr). → Simon fragen, wann die Pumpe zurück war. Ggf. wiederholen.
+6. **MTU:** bei der Erstverbindung und nach Bluetooth an/aus jeweils 184 (von der Pumpe angefragt).
+
+### Folgen für die iOS-App
+- Background Modes `bluetooth-peripheral` und `bluetooth-central` plus State Restoration reichen voraussichtlich aus. Die App muss im Hintergrund nur **erreichbar bleiben**, nicht dauerhaft `FE81` senden.
+- Nach dem Start der App sollte sie kurz `FE81` mit kurzem Intervall senden (macht MiniMed Mobile genauso, nur im Vordergrund nötig).
+- Der GATT-Server (SAKE-Port und DIS) muss immer registriert sein, sobald die App läuft, sonst bricht die Pumpe nach ca. 7 s ab.
