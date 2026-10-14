@@ -129,30 +129,60 @@ final class PumpLink: NSObject, ObservableObject {
 
     // MARK: - Peripheral side (GATT server, SAKE)
 
-    private func setUpServices() {
-        guard sakePort == nil else { updateAdvertising(); return }
-        let dis = CBMutableService(type: CBUUID(string: PumpUUID.appDeviceInfoService), primary: true)
-        func ro(_ uuid: String, _ value: Data) -> CBMutableCharacteristic {
-            CBMutableCharacteristic(type: CBUUID(string: uuid), properties: [.read], value: value, permissions: [.readable])
+    /// Values of the app's Device Information Service (custom UUID 0x0900). The pump reads
+    /// all of them before it starts the SAKE handshake. They mirror what the official iOS app
+    /// serves (lab notebook, capture 1) for interoperability; with other values the pump
+    /// reported "device not compatible".
+    private lazy var deviceInfo: [CBUUID: Data] = {
+        var sys = utsname()
+        uname(&sys)
+        let machine = withUnsafeBytes(of: &sys.machine) { raw in
+            String(decoding: raw.prefix { $0 != 0 }, as: UTF8.self)
         }
-        dis.characteristics = [
-            ro("2A29", Data("openMinipump".utf8)),
-            ro("2A24", Data("iPhone".utf8)),
-            ro("2A25", Data(advertisedName.utf8)),
-            ro("2A27", Data("1.0".utf8)),
-            ro("2A26", Data("1.0".utf8)),
-            ro("2A28", Data("0.1.0".utf8)),
-            ro("2A23", Data(count: 8)),
-            ro("2A50", Data(count: 7)),
+        return [
+            CBUUID(string: "2A29"): Data("Apple".utf8),
+            CBUUID(string: "2A24"): Data(machine.utf8),
+            CBUUID(string: "2A25"): Data("Mobile \(advertisedName)".utf8),
+            CBUUID(string: "2A27"): Data("iPhone".utf8),
+            CBUUID(string: "2A26"): Data("iOS".utf8),
+            CBUUID(string: "2A28"): Data(Self.compatSoftwareRevision.utf8),
+            CBUUID(string: "2A23"): Data(count: 8),
+            CBUUID(string: "2A50"): Data(count: 7),
+            CBUUID(string: "2A2A"): Data(),
         ]
+    }()
+
+    /// Software revision reported to the pump. The pump may check the companion app
+    /// version; we report the version seen in capture 1. See docs/lab-notebook.md.
+    static let compatSoftwareRevision = "3.3.0(80)"
+
+    /// Bump when the GATT table changes, so restored (old) services get replaced.
+    private static let gattVersion = 2
+
+    private func setUpServices() {
+        let defaults = UserDefaults.standard
+        if sakePort != nil, defaults.integer(forKey: "gattVersion") == Self.gattVersion {
+            updateAdvertising()
+            return
+        }
+        peripheralManager.removeAllServices()
+        defaults.set(Self.gattVersion, forKey: "gattVersion")
         let port = CBMutableCharacteristic(type: CBUUID(string: PumpUUID.sakePort),
                                            properties: [.write, .notify], value: nil, permissions: [.writeable])
         let sakeService = CBMutableService(type: CBUUID(string: PumpUUID.sakeService), primary: true)
         sakeService.characteristics = [port]
         sakePort = port
-        peripheralManager.add(dis)
+
+        // Values are served dynamically in didReceiveRead, so every read gets logged.
+        let order = ["2A29", "2A24", "2A25", "2A27", "2A26", "2A28", "2A23", "2A50", "2A2A"]
+        let dis = CBMutableService(type: CBUUID(string: PumpUUID.appDeviceInfoService), primary: true)
+        dis.characteristics = order.map {
+            CBMutableCharacteristic(type: CBUUID(string: $0), properties: [.read], value: nil, permissions: [.readable])
+        }
+        // Same order as the official app: SAKE service first, then device information.
         peripheralManager.add(sakeService)
-        log.add("GATT-Server registriert (DIS 0x0900, SAKE 0xFE82)")
+        peripheralManager.add(dis)
+        log.add("GATT-Server registriert (SAKE 0xFE82, DIS 0x0900)")
     }
 
     private func updateAdvertising() {
@@ -191,7 +221,9 @@ final class PumpLink: NSObject, ObservableObject {
         guard let db = config.keyDatabase else { return }
         if sake == nil || sake?.isComplete == true { sake = SakeServer(keyDatabase: db) }
         do {
+            let stage = sake?.stage ?? 0
             if let reply = try sake?.handle([UInt8](value)) {
+                log.add("SAKE Stufe \(stage) → \(sake?.stage ?? 0)")
                 send(reply)
             } else if sake?.isComplete == true {
                 log.add("SAKE-Handshake abgeschlossen")
@@ -542,6 +574,7 @@ extension PumpLink: CBPeripheralManagerDelegate {
     nonisolated func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
         MainActor.assumeIsolated {
             if let error { log.add("Service \(service.uuid) nicht registriert: \(error)", .error) }
+            else { log.add("Service \(service.uuid) registriert") }
             updateAdvertising()
         }
     }
@@ -571,10 +604,30 @@ extension PumpLink: CBPeripheralManagerDelegate {
         }
     }
 
+    nonisolated func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
+        MainActor.assumeIsolated {
+            guard let value = deviceInfo[request.characteristic.uuid] else {
+                log.add("Pumpe liest unbekanntes Merkmal \(request.characteristic.uuid.uuidString)", .warning)
+                peripheral.respond(to: request, withResult: .readNotPermitted)
+                return
+            }
+            guard request.offset <= value.count else {
+                peripheral.respond(to: request, withResult: .invalidOffset)
+                return
+            }
+            request.value = value.subdata(in: request.offset..<value.count)
+            peripheral.respond(to: request, withResult: .success)
+            if request.offset == 0 {
+                log.add("Pumpe liest \(request.characteristic.uuid.uuidString): \"\(String(decoding: value, as: UTF8.self))\"")
+            }
+        }
+    }
+
     nonisolated func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest]) {
         MainActor.assumeIsolated {
             for request in requests {
                 guard request.characteristic.uuid == CBUUID(string: PumpUUID.sakePort), let value = request.value else {
+                    log.add("Pumpe schreibt auf \(request.characteristic.uuid.uuidString), abgelehnt", .warning)
                     peripheral.respond(to: request, withResult: .requestNotSupported)
                     continue
                 }

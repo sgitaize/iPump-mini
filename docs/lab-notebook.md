@@ -62,3 +62,26 @@ Auswertung der Schreibzugriffe des iPhones auf die Pumpe (Link `0x0402`), um uns
 - **Unbekannt:** 5 × 18 Byte auf Handle `0x0081` (`00 2c 00 00 00 06 07 00 01 80 00 02 28 00 03 c8 00 05`, erstes Byte zählt hoch) und 4 × Write Command auf `0x0099` (`28 00 02 00 30 ff 03` usw.). Wahrscheinlich History & Trace bzw. Streaming. Zuordnung zu UUIDs fehlt, weil iOS die GATT-Discovery gecacht hat. → Blockiert.
 
 Folge: Unsere Allowlist ist eine echte Teilmenge dessen, was die offizielle App tut. Neue Befehle nehmen wir nur nach Rückfrage auf.
+
+## 2026-10-14 – Erster Kopplungsversuch: „Gerät nicht kompatibel“
+
+- **Beobachtung (Simon):** Die Pumpe findet „Mobile …“, die Kopplungsanfrage wird auf dem iPhone bestätigt, danach meldet die Pumpe „Gerät nicht kompatibel“.
+- **Analyse Mitschnitt 1:** Nach der BLE-Kopplung sucht die Pumpe auf dem iPhone den SAKE-Service (FE82) und den DIS 0x0900. Sie liest **alle** DIS-Werte, bevor sie die SAKE-Notifications abonniert. Die offizielle iOS-App liefert:
+
+  | Merkmal | Wert |
+  |---|---|
+  | 2A29 Hersteller | `Apple` |
+  | 2A24 Modell | Hardware-Kennung, z. B. `iPhone19,2` |
+  | 2A25 Seriennummer | `Mobile <Name aus dem Advertising>` |
+  | 2A27 Hardware | `iPhone` |
+  | 2A26 Firmware | `iOS` |
+  | 2A28 Software | App-Version `3.3.0(80)` |
+  | 2A23 System ID | 8 × `00` |
+  | 2A50 PnP ID | 7 × `00` |
+  | 2A2A Zertifikatsliste | leer |
+
+  Die SAKE-Port-Characteristic hat dort die Properties `0x98` (Write, Notify, Extended Properties) mit Deskriptor 0x2900.
+- **Unsere erste Version wich ab:** eigene Werte, Seriennummer ohne „Mobile “, Software `0.1.0`, **2A2A fehlte**.
+- **Hypothesen:** (a) fehlende 2A2A, (b) Software-Version unter einer Mindestversion, (c) Seriennummer muss zum angezeigten Namen passen.
+- **Änderung:** Die DIS-Werte sind jetzt aus Gründen der Interoperabilität identisch zur offiziellen App (Software-Version als Konstante `PumpLink.compatSoftwareRevision`). Jede Leseanfrage der Pumpe wird protokolliert. Die GATT-Tabelle ist versioniert, damit wiederhergestellte alte Services ersetzt werden.
+- **Offen:** Die Extended Properties der SAKE-Characteristic kann CoreBluetooth vermutlich nicht nachbilden. Die Android- und Linux-Varianten kommen ohne aus.
