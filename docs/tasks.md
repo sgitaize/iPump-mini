@@ -56,3 +56,12 @@
 - [ ] Dringend niedrig (55 mg/dL / 3,1 mmol/L) als kritischer Alarm (braucht Apple-Freigabe, sonst „zeitkritisch“)
 - [ ] Pumpenalarme (Annunciations) weitergeben, einzeln konfigurierbar, Presets
 - [ ] Widgets: klein (Wert + Trend), groß (mit Graph), Live Activity / Dynamic Island (Wert, Trend, Delta)
+
+## Phase 6 – Veröffentlichung (nächste Schritte, Simon 15.10.)
+- [ ] App grafisch aufwerten: schlicht, aber schick, ohne generischen „AI-Look“
+- [ ] Entwickler-Website (simongutjahr.de / Dev-Portfolio) um openMinipump ergänzen, **ganz oben platzieren**
+- [ ] GitHub-Repo öffentlich machen: README (EN/DE), Build-Anleitung für den Selbstbau
+  - vorher: Git-Historie von den versehentlich eingecheckten SwiftPM-Build-Dateien bereinigen (Commit d9ab5a1, ~227 MB)
+  - vorher: rechtliche Prüfung (Interoperabilität §69e UrhG, Markenhinweise, Haftungsausschluss), Umgang mit der Kompatibilitäts-Kennung `compatSoftwareRevision`
+  - Schlüsseldatenbank bleibt draußen; Anleitung, wie man sie sich selbst beschafft (OpenMinimed-Doku)
+- [ ] AltStore-Veröffentlichung vorbereiten: Source-JSON (apps.json), signierte IPA als GitHub-Release-Asset, GitHub-Actions-Pipeline (Build → IPA → Release → Source aktualisieren)
