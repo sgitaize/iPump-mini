@@ -23,6 +23,9 @@ public enum HistoryEvent: Equatable, Sendable {
     case deliveryRestarted(reason: UInt8)
     /// Sensor value from the pump history; nil for special states (warm-up, out of range…).
     case sensorGlucose(mgdl: Int?)
+    /// Pump alert/alarm (Annunciation Consolidated). Status: 0x33 pending, 0x3C snoozed,
+    /// 0x55 confirmed. Type without the 0xF000 marker.
+    case annunciation(id: UInt16, type: UInt16, status: UInt8)
     case other(type: UInt16)
 }
 
@@ -115,6 +118,13 @@ public struct HistoryRecord: Equatable, Sendable {
             try r.expectEnd()
             // Values from 0x0300 on encode sensor states, not glucose.
             return .sensorGlucose(mgdl: sg < 0x0300 && sg >= 40 && sg <= 400 ? Int(sg) : nil)
+        case 0xF010: // Annunciation Consolidated: flags, id, type (0xF…), status, timestamp, aux…
+            _ = try r.u8()
+            let id = try r.u16()
+            let annType = try r.u16()
+            let status = try r.u8()
+            // The auxiliary data that follows depends on the type; it is not needed here.
+            return .annunciation(id: id, type: annType & 0x0FFF, status: status)
         default:
             return .other(type: type)
         }

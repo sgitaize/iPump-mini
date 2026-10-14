@@ -103,3 +103,15 @@ final class BolusClassificationTests: XCTestCase {
         XCTAssertEqual(Nightscout.treatment(t[0])?["automatic"] as? Bool, true)
     }
 }
+
+final class AnnunciationTests: XCTestCase {
+    func testParsesAnnunciationWithAuxData() throws {
+        // flags 0x01, id 0x0102, type 0xF069 (low reservoir), status pending, timestamp, aux data
+        let raw: [UInt8] = [0x10, 0xF0, 5, 0, 0, 0, 10, 0] + [0x01, 0x02, 0x01, 0x69, 0xF0, 0x33, 1, 2, 3, 4, 0xAA, 0xBB]
+        let r = try HistoryRecord(raw)
+        XCTAssertEqual(r.event, .annunciation(id: 0x0102, type: 0x0069, status: 0x33))
+        XCTAssertEqual(PumpAlarms.info(for: 0x0069).category, .supplies)
+        XCTAssertEqual(PumpAlarms.info(for: 0x0999).category, .other)
+        XCTAssertEqual(StatusChangedFlags([0x08, 0x00])?.contains(.annunciation), true)
+    }
+}

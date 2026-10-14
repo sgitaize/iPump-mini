@@ -185,3 +185,21 @@ public struct ActiveBasalRate: Equatable, Sendable, Codable {
         try r.expectEnd()
     }
 }
+
+/// IDD Status Changed (decrypted): flags. Bit 3 = annunciation status changed (IDS).
+public struct StatusChangedFlags: OptionSet, Sendable {
+    public let rawValue: UInt16
+    public init(rawValue: UInt16) { self.rawValue = rawValue }
+    public init?(_ data: [UInt8]) {
+        guard data.count >= 2 else { return nil }
+        rawValue = UInt16(data[0]) | UInt16(data[1]) << 8
+    }
+    public static let therapyControlState = StatusChangedFlags(rawValue: 1 << 0)
+    public static let operationalState = StatusChangedFlags(rawValue: 1 << 1)
+    public static let reservoir = StatusChangedFlags(rawValue: 1 << 2)
+    public static let annunciation = StatusChangedFlags(rawValue: 1 << 3)
+    public static let totalDailyInsulin = StatusChangedFlags(rawValue: 1 << 4)
+    public static let activeBasal = StatusChangedFlags(rawValue: 1 << 5)
+    public static let activeBolus = StatusChangedFlags(rawValue: 1 << 6)
+    public static let history = StatusChangedFlags(rawValue: 1 << 7)
+}
