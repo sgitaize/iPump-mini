@@ -51,11 +51,22 @@
 - [x] Nightscout-Upload nur bei neuem Sensorwert, dann sofort
 - [x] App-Icon (Tropfen mit CGM-Kurve, Scripts/render-icon.swift)
 
-## Phase 5 – Alarme und Widgets (Simon 15.10.)
-- [ ] Benachrichtigungen mit Stummschalten (Snooze) wie in CGM-Apps
-- [ ] Dringend niedrig (55 mg/dL / 3,1 mmol/L) als kritischer Alarm (braucht Apple-Freigabe, sonst „zeitkritisch“)
-- [ ] Pumpenalarme (Annunciations) weitergeben, einzeln konfigurierbar, Presets
-- [ ] Widgets: klein (Wert + Trend), groß (mit Graph), Live Activity / Dynamic Island (Wert, Trend, Delta)
+## Phase 5 – Alarme und Widgets (Simon 15.10., in Arbeit)
+Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar):
+- [x] MiniMedKit: Pumpenalarme aus der History (Annunciation Consolidated 0xF010: ID, Typ, Status), Katalog `PumpAlarms` (deutsche Texte, Kategorien, „dringend“), `StatusChangedFlags` (Bit 3 = Alarmstatus geändert), Tests (30 grün)
+- [x] App: `Alarms/AlarmEngine.swift` – Glukosealarme (dringend niedrig 55 mg/dL, niedrig 70, hoch 250, schnell fallend/steigend), Pumpenalarm-Kategorien, Presets (Standard / Nur dringend / Alle), Snooze-Aktionen 15/30/60 min, globales Stummschalten (außer dringend niedrig), kritisch falls verfügbar, sonst zeitkritisch
+- [ ] `Watchdog.configure(enabled:minutes:)` ergänzen (Keine-Daten-Alarm aus der Alarm-Konfiguration)
+- [ ] Verdrahten: `AlarmEngine.shared.evaluate` bei jedem neuen Wert (DataStore.onNewReading), `pumpAlarm(...)` in `PumpLink.processHistory` für `.annunciation`-Events, `log` setzen, `registerCategories()` + `requestAuthorization()` beim Start (ersetzt Watchdog.requestAuthorization)
+- [ ] Bei IDD Status Changed mit Bit „annunciation“ sofort History abfragen (`lastHistorySync` zurücksetzen, `scheduleRefresh(force:)`)
+- [ ] AppDelegate als `UNUserNotificationCenterDelegate`: Vordergrund-Anzeige (Banner + Ton), Snooze-Aktionen → `AlarmEngine.shared.snooze(key:minutes:)` (Key in userInfo „alarmKey“)
+- [ ] Einstellungen: Bereich „Alarme“ (Preset-Auswahl, je Alarm Ein/Aus, Schwelle mit mmol-Anzeige, Snooze, Wiederholung; Pumpenkategorien; Test-Alarm; Hinweis kritische Alarme)
+- [ ] Hauptansicht: Hinweis „Alarme stumm bis …“ + Aufheben
+- [ ] Kritische Alarme: Entitlement `com.apple.developer.usernotifications.critical-alerts` bei Apple beantragen (bezahlter Account nötig); bis dahin zeitkritisch (Entitlement ist bereits aktiv und funktioniert mit dem persönlichen Team)
+- [ ] Widgets (Extension-Gerüst + App Group `group.<bundle id>` sind auf main und signieren mit dem persönlichen Team):
+  - Shared-Modell (letzte Werte, Trend, Delta, IOB) als JSON in der App Group; App schreibt bei neuem Wert und ruft `WidgetCenter.reloadAllTimelines()`
+  - klein: Wert + Trendpfeil + Alter; groß: zusätzlich Graph der letzten 3 h; optional Sperrbildschirm (accessory)
+  - Live Activity / Dynamic Island: Wert + Trend + Delta seit letztem Wert (`NSSupportsLiveActivities`, Update aus der App bei jedem Wert; Start nur im Vordergrund möglich, Laufzeit max. 8 h → beim Öffnen neu starten)
+- [ ] Insulin-Graph: Ausrichtung und Antippen auf dem Gerät von Simon bestätigen lassen
 
 ## Phase 6 – Veröffentlichung (nächste Schritte, Simon 15.10.)
 - [ ] App grafisch aufwerten: schlicht, aber schick, ohne generischen „AI-Look“
@@ -65,3 +76,8 @@
   - vorher: rechtliche Prüfung (Interoperabilität §69e UrhG, Markenhinweise, Haftungsausschluss), Umgang mit der Kompatibilitäts-Kennung `compatSoftwareRevision`
   - Schlüsseldatenbank bleibt draußen; Anleitung, wie man sie sich selbst beschafft (OpenMinimed-Doku)
 - [ ] AltStore-Veröffentlichung vorbereiten: Source-JSON (apps.json), signierte IPA als GitHub-Release-Asset, GitHub-Actions-Pipeline (Build → IPA → Release → Source aktualisieren)
+
+## Stand am Ende der Sitzung (15.10.2026, ~00:50)
+- main (`bb71a98`) ist auf Simons iPhone installiert und läuft: Werte, Historie, Behandlungen, Nightscout, API, antippbarer Insulin-Graph.
+- Offene Arbeit: Phase 5 (Branch `wip/alarms-widgets`), Phase 6 (Veröffentlichung), Pebble-Test debuggen.
+- Weitermachen: `git checkout wip/alarms-widgets`, Punkte oben abarbeiten, `cd apps/ios && xcodegen`, bauen, installieren (`xcrun devicectl device install app …`), dann nach main mergen.
