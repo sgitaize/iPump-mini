@@ -173,11 +173,60 @@ struct GlucoseChart: View {
     @AppStorage("chartHours") private var hours = 3
     @Binding var insulinSelection: Date?
 
+    /// Height of the insulin band below the glucose values, in chart units (mg/dL scale).
+    private static let band: Double = 36
+    private static let bandTop: Double = 40
+
+    private struct InsulinSegment: Identifiable {
+        let id: String
+        let start: Date
+        let end: Date
+        let low: Double
+        let high: Double
+        let color: Color
+    }
+
+    private var binSize: TimeInterval { Double((hours <= 3 ? 15 : hours <= 6 ? 30 : 60) * 60) }
+
+    /// Insulin per time block, stacked by kind, scaled into the band at the bottom. Drawn in
+    /// the same chart as the glucose values so both share one time axis.
+    private func insulinSegments(_ events: [Treatment], from: Date) -> [InsulinSegment] {
+        let size = binSize
+        let order: [(Treatment.Kind, Color)] = [(.autoBasal, .teal), (.autoCorrection, .purple), (.bolus, .blue)]
+        var sums: [Double: [Treatment.Kind: Double]] = [:]
+        for t in events where order.contains(where: { $0.0 == t.kind }) {
+            let bin = (t.date.timeIntervalSince1970 / size).rounded(.down) * size
+            sums[bin, default: [:]][t.kind, default: 0] += t.value ?? 0
+        }
+        let maxTotal = max(1, sums.values.map { $0.values.reduce(0, +) }.max() ?? 1)
+        let scale = (Self.band - 4) / maxTotal
+        var out: [InsulinSegment] = []
+        for (bin, perKind) in sums where bin + size > from.timeIntervalSince1970 {
+            var base = 0.0
+            for (kind, color) in order {
+                guard let units = perKind[kind], units > 0 else { continue }
+                out.append(InsulinSegment(id: "\(bin)-\(kind)",
+                                          start: Date(timeIntervalSince1970: max(bin + size * 0.1, from.timeIntervalSince1970)),
+                                          end: Date(timeIntervalSince1970: bin + size * 0.9),
+                                          low: base * scale, high: (base + units) * scale, color: color))
+                base += units
+            }
+        }
+        return out
+    }
+
+    private func block(for date: Date) -> (start: Date, end: Date) {
+        let start = (date.timeIntervalSince1970 / binSize).rounded(.down) * binSize
+        return (Date(timeIntervalSince1970: start), Date(timeIntervalSince1970: start + binSize))
+    }
+
     var body: some View {
         let from = Date().addingTimeInterval(-Double(hours) * 3600)
         let points = store.readings.filter { $0.date >= from }
         let events = store.treatments.filter { $0.date >= from }
         let yMax = max(250, (points.map(\.mgdl).max() ?? 0) + 40)
+        let segments = insulinSegments(store.treatments.filter { $0.date >= from.addingTimeInterval(-binSize) }, from: from)
+        let selected = insulinSelection.map(block(for:))
         Picker("Zeitraum", selection: $hours) {
             ForEach([3, 6, 12, 24], id: \.self) { Text("\($0) h").tag($0) }
         }
@@ -185,6 +234,19 @@ struct GlucoseChart: View {
         Chart {
             RectangleMark(yStart: .value("", 70), yEnd: .value("", 180))
                 .foregroundStyle(.green.opacity(0.12))
+            RuleMark(y: .value("", Self.bandTop))
+                .foregroundStyle(.secondary.opacity(0.3))
+                .lineStyle(StrokeStyle(lineWidth: 0.5))
+            if let selected {
+                RectangleMark(xStart: .value("Von", selected.start), xEnd: .value("Bis", selected.end),
+                              yStart: .value("", 0), yEnd: .value("", Self.bandTop))
+                    .foregroundStyle(.gray.opacity(0.18))
+            }
+            ForEach(segments) { s in
+                RectangleMark(xStart: .value("Von", s.start), xEnd: .value("Bis", s.end),
+                              yStart: .value("IE", s.low), yEnd: .value("IE", s.high))
+                    .foregroundStyle(s.color)
+            }
             ForEach(points, id: \.date) { r in
                 PointMark(x: .value("Zeit", r.date), y: .value("mg/dL", r.mgdl))
                     .symbolSize(hours > 6 ? 10 : 24)
@@ -195,7 +257,7 @@ struct GlucoseChart: View {
                     .foregroundStyle(.gray.opacity(0.6))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
             }
-            // Only user boluses and carbs here; SmartGuard insulin is in the insulin chart.
+            // Only user boluses and carbs as symbols; SmartGuard insulin is in the band.
             ForEach(events.filter { $0.kind == .carbs }) { t in
                 PointMark(x: .value("Zeit", t.date), y: .value("mg/dL", yMax - 15))
                     .symbol(.circle)
@@ -221,115 +283,46 @@ struct GlucoseChart: View {
                     .foregroundStyle(.red)
             }
         }
-        .chartYScale(domain: 40...yMax)
+        .chartYScale(domain: 0...yMax)
+        .chartYAxis {
+            AxisMarks(position: .trailing, values: Array(stride(from: 50, through: yMax, by: 50)))
+        }
         .chartXScale(domain: from...Date())
-        .frame(height: 200)
+        .chartPlotStyle { $0.clipped() }
+        .chartOverlay { proxy in
+            GeometryReader { geo in
+                Rectangle().fill(.clear).contentShape(Rectangle())
+                    .onTapGesture { location in
+                        guard let frame = proxy.plotFrame else { return }
+                        let origin = geo[frame].origin
+                        guard let date: Date = proxy.value(atX: location.x - origin.x),
+                              let y: Double = proxy.value(atY: location.y - origin.y) else { return }
+                        // Taps in the insulin band select a block; anywhere else clears it.
+                        if y <= Self.bandTop, segments.contains(where: { block(for: $0.start).start == block(for: date).start }) {
+                            if let current = insulinSelection, block(for: current).start == block(for: date).start {
+                                insulinSelection = nil
+                            } else {
+                                insulinSelection = date
+                            }
+                        } else {
+                            insulinSelection = nil
+                        }
+                    }
+            }
+        }
+        .frame(height: 240)
         .overlay {
             if points.isEmpty { Text("Keine Werte in diesem Zeitraum").font(.caption).foregroundStyle(.secondary) }
         }
-        InsulinChart(from: from, hours: hours, events: events, selected: $insulinSelection)
+        if let selected {
+            InsulinBlockDetail(start: selected.start, end: selected.end,
+                               items: store.treatments.filter {
+                                   [.autoBasal, .autoCorrection, .bolus].contains($0.kind) && $0.date >= selected.start && $0.date < selected.end
+                               })
+        } else if !segments.isEmpty {
+            Text("Insulin-Balken unten antippen für Details").font(.caption2).foregroundStyle(.secondary)
+        }
         ChartLegend()
-    }
-}
-
-/// Insulin per time block, stacked by kind, so many small SmartGuard deliveries stay readable.
-/// Drawn as rectangles: bar widths relative to a date axis would collapse to zero.
-struct InsulinChart: View {
-    let from: Date
-    let hours: Int
-    let events: [Treatment]
-    @Binding var selected: Date?
-
-    private var binSize: TimeInterval { Double((hours <= 3 ? 15 : hours <= 6 ? 30 : 60) * 60) }
-    private static let kinds: Set<Treatment.Kind> = [.autoBasal, .autoCorrection, .bolus]
-
-    private struct Segment: Identifiable {
-        let id: String
-        let start: Date
-        let end: Date
-        let low: Double
-        let high: Double
-        let color: Color
-    }
-
-    private var segments: [Segment] {
-        let size = binSize
-        let order: [(Treatment.Kind, Color)] = [(.autoBasal, .teal), (.autoCorrection, .purple), (.bolus, .blue)]
-        var sums: [Double: [Treatment.Kind: Double]] = [:]
-        for t in events where order.contains(where: { $0.0 == t.kind }) {
-            let bin = (t.date.timeIntervalSince1970 / size).rounded(.down) * size
-            sums[bin, default: [:]][t.kind, default: 0] += t.value ?? 0
-        }
-        var out: [Segment] = []
-        for (bin, perKind) in sums {
-            var base = 0.0
-            for (kind, color) in order {
-                guard let units = perKind[kind], units > 0 else { continue }
-                guard bin + size * 0.9 > from.timeIntervalSince1970 else { continue }
-                out.append(Segment(id: "\(bin)-\(kind)", start: Date(timeIntervalSince1970: max(bin + size * 0.1, from.timeIntervalSince1970)),
-                                   end: Date(timeIntervalSince1970: bin + size * 0.9),
-                                   low: base, high: base + units, color: color))
-                base += units
-            }
-        }
-        return out
-    }
-
-    var body: some View {
-        let data = segments
-        if !data.isEmpty {
-            let block = selectedBlock
-            Chart {
-                if let block {
-                    RectangleMark(xStart: .value("Von", block.start), xEnd: .value("Bis", block.end))
-                        .foregroundStyle(.gray.opacity(0.15))
-                }
-                ForEach(data) { s in
-                    RectangleMark(xStart: .value("Von", s.start), xEnd: .value("Bis", s.end),
-                                  yStart: .value("IE", s.low), yEnd: .value("IE", s.high))
-                        .foregroundStyle(s.color)
-                }
-            }
-            .chartXScale(domain: from...Date())
-            // Same trailing axis width as the glucose chart above, so the time scales align.
-            .chartYAxis {
-                AxisMarks(position: .trailing, values: [0]) { _ in
-                    AxisValueLabel { Text("250").foregroundStyle(.clear) }
-                }
-            }
-            .chartXAxis(.hidden)
-            .chartPlotStyle { $0.clipped() }
-            .chartOverlay { proxy in
-                GeometryReader { geo in
-                    Rectangle().fill(.clear).contentShape(Rectangle())
-                        .onTapGesture { location in
-                            guard let frame = proxy.plotFrame else { return }
-                            let x = location.x - geo[frame].origin.x
-                            guard let date: Date = proxy.value(atX: x) else { return }
-                            let block = (date.timeIntervalSince1970 / binSize).rounded(.down)
-                            if let current = selected, (current.timeIntervalSince1970 / binSize).rounded(.down) == block {
-                                selected = nil
-                            } else {
-                                selected = date
-                            }
-                        }
-                }
-            }
-            .frame(height: 70)
-            .accessibilityLabel("Insulinabgaben, antippen für Details")
-            if let block {
-                InsulinBlockDetail(start: block.start, end: block.end,
-                                   items: events.filter { Self.kinds.contains($0.kind) && $0.date >= block.start && $0.date < block.end })
-            } else {
-                Text("Insulin-Balken antippen für Details").font(.caption2).foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private var selectedBlock: (start: Date, end: Date)? {
-        guard let selected else { return nil }
-        let start = (selected.timeIntervalSince1970 / binSize).rounded(.down) * binSize
-        return (Date(timeIntervalSince1970: start), Date(timeIntervalSince1970: start + binSize))
     }
 }
 

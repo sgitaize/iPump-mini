@@ -66,7 +66,7 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
   - Shared-Modell (letzte Werte, Trend, Delta, IOB) als JSON in der App Group; App schreibt bei neuem Wert und ruft `WidgetCenter.reloadAllTimelines()`
   - klein: Wert + Trendpfeil + Alter; groß: zusätzlich Graph der letzten 3 h; optional Sperrbildschirm (accessory)
   - Live Activity / Dynamic Island: Wert + Trend + Delta seit letztem Wert (`NSSupportsLiveActivities`, Update aus der App bei jedem Wert; Start nur im Vordergrund möglich, Laufzeit max. 8 h → beim Öffnen neu starten)
-- [ ] Insulin-Graph: Ausrichtung und Antippen auf dem Gerät von Simon bestätigen lassen
+- [ ] Insulin-Band im Glukose-Graph (gleiche Zeitachse, Antippen für Details): von Simon auf dem Gerät bestätigen lassen
 
 ## Phase 6 – Veröffentlichung (nächste Schritte, Simon 15.10.)
 - [ ] App grafisch aufwerten: schlicht, aber schick, ohne generischen „AI-Look“
