@@ -40,6 +40,25 @@ final class DataStore: ObservableObject {
 
     var latest: GlucoseReading? { readings.last }
 
+    #if DEBUG
+    /// Synthetic values for simulator tests (launch argument -demoData). Never in release builds.
+    func loadDemoData() {
+        let now = Date()
+        readings = (0..<72).map { i in
+            let t = Double(71 - i)
+            let mgdl = Int(130 + 50 * sin(t / 9))
+            return GlucoseReading(date: now.addingTimeInterval(-t * 300), mgdl: mgdl,
+                                  trendMgdlPerMin: -50.0 / 45.0 * cos(t / 9), sessionOffsetMinutes: UInt16(5000 - Int(t) * 5))
+        }
+        var s = PumpSnapshot(updatedAt: now)
+        s.pumpBatteryPercent = 75
+        s.transmitterBatteryPercent = 100
+        s.sensorEnd = now.addingTimeInterval(3 * 86400 + 5 * 3600)
+        snapshot = s
+        touched()
+    }
+    #endif
+
     func add(_ reading: GlucoseReading) {
         // Same sensor record (offset) or a value within 2 minutes counts as duplicate.
         if let i = readings.lastIndex(where: {
@@ -116,10 +135,41 @@ final class EventLog: ObservableObject {
 
     @Published private(set) var entries: [Entry] = []
 
+    /// Also written to Application Support/openminipump.log (rotated at 2 MB), so background
+    /// behaviour can be analysed later (pull via Xcode/devicectl or share in the app).
+    static let fileURL: URL = {
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("openminipump.log")
+    }()
+    private let formatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+        return f
+    }()
+    private lazy var handle: FileHandle? = {
+        let url = Self.fileURL
+        if let size = try? FileManager.default.attributesOfItem(atPath: url.path)[.size] as? Int, size > 2_000_000 {
+            let old = url.deletingPathExtension().appendingPathExtension("1.log")
+            try? FileManager.default.removeItem(at: old)
+            try? FileManager.default.moveItem(at: url, to: old)
+        }
+        if !FileManager.default.fileExists(atPath: url.path) {
+            FileManager.default.createFile(atPath: url.path, contents: nil,
+                                           attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication])
+        }
+        let h = try? FileHandle(forWritingTo: url)
+        _ = try? h?.seekToEnd()
+        return h
+    }()
+
     func add(_ text: String, _ level: Level = .info) {
-        entries.append(Entry(level: level, text: text))
+        let entry = Entry(level: level, text: text)
+        entries.append(entry)
         if entries.count > 500 { entries.removeFirst(entries.count - 500) }
         print("[omp] \(text)")
+        let line = "\(formatter.string(from: entry.date)) [\(level)] \(text)\n"
+        try? handle?.write(contentsOf: Data(line.utf8))
     }
 
     var exportText: String {

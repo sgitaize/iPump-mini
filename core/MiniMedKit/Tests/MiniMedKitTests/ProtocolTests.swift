@@ -94,3 +94,35 @@ final class ProtocolTests: XCTestCase {
         XCTAssertTrue(JSONSerialization.isValidJSONObject(e))
     }
 }
+
+final class PebbleTests: XCTestCase {
+    func testPebbleShape() {
+        let base = Date(timeIntervalSince1970: 1_760_000_000)
+        let readings = [
+            GlucoseReading(date: base, mgdl: 120, trendMgdlPerMin: 0.2, sessionOffsetMinutes: 1),
+            GlucoseReading(date: base.addingTimeInterval(300), mgdl: 126, trendMgdlPerMin: 1.3, sessionOffsetMinutes: 6),
+        ]
+        var snap = PumpSnapshot(updatedAt: base)
+        snap.iob = nil
+        let p = Nightscout.pebble(readings: readings, snapshot: snap, uploaderBattery: 80, count: 2)
+        let bgs = p["bgs"] as! [[String: Any]]
+        XCTAssertEqual(bgs.count, 2)
+        XCTAssertEqual(bgs[0]["sgv"] as? String, "126")
+        XCTAssertEqual(bgs[0]["bgdelta"] as? Double, 6)
+        XCTAssertEqual(bgs[0]["direction"] as? String, "SingleUp")
+        XCTAssertEqual(bgs[0]["battery"] as? String, "80")
+        XCTAssertNil(bgs[1]["bgdelta"])
+        XCTAssertTrue(JSONSerialization.isValidJSONObject(p))
+
+        let m = Nightscout.pebble(readings: readings, snapshot: nil, uploaderBattery: nil, mmol: true)
+        let bg = (m["bgs"] as! [[String: Any]])[0]
+        XCTAssertEqual(bg["sgv"] as? String, "7.0")
+        XCTAssertEqual(bg["bgdelta"] as? Double, 0.3)
+    }
+
+    func testUploadEntryHasNoId() {
+        let r = GlucoseReading(date: Date(), mgdl: 100, trendMgdlPerMin: nil, sessionOffsetMinutes: nil)
+        XCTAssertNil(Nightscout.entry(r, includeId: false)["_id"])
+        XCTAssertNotNil(Nightscout.entry(r)["_id"])
+    }
+}

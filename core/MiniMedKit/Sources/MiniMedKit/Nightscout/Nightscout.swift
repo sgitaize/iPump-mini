@@ -28,6 +28,7 @@ public struct PumpSnapshot: Codable, Equatable, Sendable {
     public var pumpBatteryPercent: Int?
     public var transmitterBatteryPercent: Int?
     public var sensorStart: Date?
+    public var sensorEnd: Date?
     public var sensorExpiresInMinutes: Int?
 
     public init(updatedAt: Date = .distantPast) { self.updatedAt = updatedAt }
@@ -60,11 +61,11 @@ public enum Nightscout {
     public static func isoString(_ date: Date) -> String { iso.string(from: date) }
     public static func millis(_ date: Date) -> Int64 { Int64((date.timeIntervalSince1970 * 1000).rounded()) }
 
-    public static func entry(_ r: GlucoseReading) -> [String: Any] {
+    /// - Parameter includeId: local API only. For uploads Nightscout assigns its own id.
+    public static func entry(_ r: GlucoseReading, includeId: Bool = true) -> [String: Any] {
         let dir = direction(forRate: r.trendMgdlPerMin)
         let ms = millis(r.date)
         var e: [String: Any] = [
-            "_id": "omp-\(ms)",
             "type": "sgv",
             "sgv": r.mgdl,
             "direction": dir.name,
@@ -75,6 +76,7 @@ public enum Nightscout {
             "device": device,
             "utcOffset": TimeZone.current.secondsFromGMT(for: r.date) / 60,
         ]
+        if includeId { e["_id"] = "omp-\(ms)" }
         if let rate = r.trendMgdlPerMin { e["trendRate"] = rate }
         return e
     }
@@ -98,11 +100,13 @@ public enum Nightscout {
         if let basal = s.basal { extended["basalRate"] = basal.tempBasalUnitsPerHour ?? basal.unitsPerHour }
         if let tir = s.timeInRange { extended["timeInRange"] = Int(tir.inRangePercent) }
         if let t = s.transmitterBatteryPercent { extended["transmitterBattery"] = t }
-        if let e = s.sensorExpiresInMinutes { extended["sensorExpiresInMinutes"] = e }
+        if let end = s.sensorEnd {
+            extended["sensorEnd"] = isoString(end)
+            extended["sensorExpiresInMinutes"] = Int(end.timeIntervalSinceNow / 60)
+        }
         if !extended.isEmpty { pump["extended"] = extended }
 
         var ds: [String: Any] = [
-            "_id": "omp-ds-\(millis(s.updatedAt))",
             "device": device,
             "created_at": isoString(s.updatedAt),
             "pump": pump,
@@ -111,23 +115,35 @@ public enum Nightscout {
         return ds
     }
 
-    /// Classic `/pebble` endpoint used by Pebble watchfaces and other simple clients.
-    public static func pebble(readings: [GlucoseReading], snapshot: PumpSnapshot?, uploaderBattery: Int?, now: Date = Date()) -> [String: Any] {
+    /// Classic Nightscout `/pebble` endpoint (cgm-remote-monitor lib/server/pebble.js):
+    /// `?count=N` (default 1) and `?units=mmol`. Values are strings, the first entry carries
+    /// `bgdelta`, `battery` and `iob`.
+    public static func pebble(readings: [GlucoseReading], snapshot: PumpSnapshot?, uploaderBattery: Int?,
+                              count: Int = 1, mmol: Bool = false, now: Date = Date()) -> [String: Any] {
         let sorted = readings.sorted { $0.date > $1.date }
+        func fmt(_ mgdl: Int) -> String {
+            mmol ? String(format: "%.1f", Double(mgdl) / 18.0) : String(mgdl)
+        }
         var bgs: [[String: Any]] = []
-        for (i, r) in sorted.prefix(1).enumerated() {
+        for (i, r) in sorted.prefix(max(1, min(count, 100))).enumerated() {
             let dir = direction(forRate: r.trendMgdlPerMin)
             var bg: [String: Any] = [
-                "sgv": String(r.mgdl),
+                "sgv": fmt(r.mgdl),
                 "trend": dir.trend,
                 "direction": dir.name,
                 "datetime": millis(r.date),
             ]
-            if sorted.count > i + 1 {
-                bg["bgdelta"] = r.mgdl - sorted[i + 1].mgdl
+            if i == 0 {
+                // Delta only between consecutive 5-minute values (gap < 15 min), like Nightscout.
+                if sorted.count > 1, r.date.timeIntervalSince(sorted[1].date) < 15 * 60 {
+                    let d = r.mgdl - sorted[1].mgdl
+                    bg["bgdelta"] = mmol ? (Double(d) / 18.0 * 10).rounded() / 10 : Double(d)
+                } else {
+                    bg["bgdelta"] = 0
+                }
+                if let u = uploaderBattery { bg["battery"] = String(u) }
+                if let iob = snapshot?.iob { bg["iob"] = String(format: "%.2f", iob.units) }
             }
-            if let u = uploaderBattery { bg["battery"] = String(u) }
-            if let iob = snapshot?.iob { bg["iob"] = String(format: "%.2f", iob.units) }
             bgs.append(bg)
         }
         return ["status": [["now": millis(now)]], "bgs": bgs, "cals": [] as [Any]]

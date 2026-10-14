@@ -40,6 +40,8 @@ targets:
         UIApplicationSupportsIndirectInputEvents: true
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIBackgroundModes: [bluetooth-central, bluetooth-peripheral]
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
         NSBluetoothAlwaysUsageDescription: "openMinipump verbindet sich per Bluetooth mit deiner MiniMed-Pumpe und liest Werte aus (nur lesend)."
         NSLocalNetworkUsageDescription: "Optional: Die lokale API kann im WLAN freigegeben werden."
     postCompileScripts:

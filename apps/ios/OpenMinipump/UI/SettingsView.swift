@@ -5,11 +5,46 @@ struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
     @EnvironmentObject private var link: PumpLink
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var uploader: NightscoutUploader
     @State private var watchdog = Watchdog.enabled
+    @State private var testResult: String?
+    @State private var testing = false
 
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    Toggle("Zu Nightscout hochladen", isOn: $uploader.enabled)
+                    if uploader.enabled {
+                        TextField("https://dein-nightscout.example", text: $uploader.url)
+                            .keyboardType(.URL)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                        SecureField("API-Secret (oder token=…)", text: $uploader.secret)
+                        Toggle("Pumpenstatus (devicestatus) senden", isOn: $uploader.uploadDeviceStatus)
+                        Button(testing ? "Teste…" : "Verbindung testen") {
+                            testing = true
+                            Task {
+                                testResult = await uploader.test()
+                                testing = false
+                            }
+                        }
+                        .disabled(testing || uploader.url.isEmpty)
+                        if let testResult { Text(testResult).font(.caption) }
+                        LabeledContent("Letzter Upload", value: uploader.lastSuccess.map { $0.formatted(date: .omitted, time: .shortened) } ?? "–")
+                        if let error = uploader.lastError { Text(error).font(.caption).foregroundStyle(.red) }
+                        Button("Jetzt hochladen") { Task { await uploader.sync() } }
+                        Button("Letzte 24 h erneut hochladen") {
+                            uploader.resetUploadMarker()
+                            Task { await uploader.sync() }
+                        }
+                    }
+                } header: {
+                    Text("Nightscout-Upload")
+                } footer: {
+                    Text("Sendet Sensorwerte und Pumpenstatus an dein eigenes Nightscout. Funktioniert auch im Hintergrund, weil die Pumpe die App alle 5 Minuten weckt. Das Secret liegt im Schlüsselbund.")
+                }
+
                 Section {
                     LabeledContent("Status", value: model.apiState)
                     LabeledContent("Adresse", value: "http://127.0.0.1:\(LocalAPIServer.port)")
@@ -25,7 +60,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Lokale API (Nightscout-kompatibel)")
                 } footer: {
-                    Text("Endpunkte wie Nightscout: /api/v1/entries.json, /api/v1/devicestatus.json, /pebble. iOS pausiert die App im Hintergrund zwischen den Bluetooth-Ereignissen; dann antwortet die API nicht.")
+                    Text("Endpunkte wie Nightscout: /api/v1/entries.json, /api/v1/devicestatus.json, /pebble?count=N&units=mmol. iOS pausiert die App im Hintergrund zwischen den Bluetooth-Ereignissen; dann antwortet die API nicht. Für Uhren und andere Geräte ist der Nightscout-Upload zuverlässiger.")
                 }
 
                 Section {
@@ -75,7 +110,8 @@ struct LogView: View {
         }
         .navigationTitle("Protokoll")
         .toolbar {
-            ShareLink(item: log.exportText) { Image(systemName: "square.and.arrow.up") }
+            ShareLink(item: EventLog.fileURL) { Image(systemName: "square.and.arrow.up") }
+                .accessibilityLabel("Protokolldatei teilen")
         }
     }
 }

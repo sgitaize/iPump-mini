@@ -85,3 +85,10 @@ Folge: Unsere Allowlist ist eine echte Teilmenge dessen, was die offizielle App 
 - **Hypothesen:** (a) fehlende 2A2A, (b) Software-Version unter einer Mindestversion, (c) Seriennummer muss zum angezeigten Namen passen.
 - **Änderung:** Die DIS-Werte sind jetzt aus Gründen der Interoperabilität identisch zur offiziellen App (Software-Version als Konstante `PumpLink.compatSoftwareRevision`). Jede Leseanfrage der Pumpe wird protokolliert. Die GATT-Tabelle ist versioniert, damit wiederhergestellte alte Services ersetzt werden.
 - **Offen:** Die Extended Properties der SAKE-Characteristic kann CoreBluetooth vermutlich nicht nachbilden. Die Android- und Linux-Varianten kommen ohne aus.
+
+## 2026-10-14 – Erster erfolgreicher Betrieb und Hintergrund-Problem
+
+- **Kopplung mit openMinipump klappt** (nach der DIS-Anpassung). Gelesen wurden SG, IOB, Reservoir, Pumpenbatterie, SmartGuard-Status, TIR und Sensorstart. Die Werte sind plausibel und stimmen mit der Pumpe überein.
+- **0x0202 „Time Of Sensor Expiration“** liefert 8 Nullbytes + CRC, nicht das dokumentierte u16. Der Sensorablauf wird deshalb aus Sensorstart (0x2AAA) + Session Run Time (0x2AAB, Stunden) berechnet.
+- **Hintergrund:** Automatische Aktualisierung blieb aus, manuell ging es. Im Mitschnitt 2 beginnt jeder 5-Minuten-Zyklus mit einer Notification auf GST Battery Level (0x0400) und einer Indication auf IDD Status Changed (0x0101); die offizielle App fragt danach SRCP, Sensorstart und CGM-RACP ab.
+- **Maßnahmen:** Beide Signale (und spontane CGM-Messungen) lösen die Abfrage aus, auch wenn die Entschlüsselung scheitert. Hängende Abfragen werden über die Zeit erkannt, da Timer in suspendierten Apps nicht laufen. Die SAKE-Sitzung (Schlüssel, Nonce, Zähler) wird gespeichert und nach einem Neustart der App durch iOS fortgesetzt. Das Protokoll wird zusätzlich in `Application Support/openminipump.log` geschrieben.

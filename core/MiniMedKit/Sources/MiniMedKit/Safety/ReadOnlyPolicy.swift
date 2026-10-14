@@ -35,6 +35,7 @@ public enum ReadOnlyPolicy {
     public static let subscribable: Set<String> = Set([
         PumpUUID.cgmMeasurement, PumpUUID.recordAccessCP,
         PumpUUID.iddStatusReaderCP, PumpUUID.iddStatusChanged,
+        PumpUUID.gstBatteryLevel, PumpUUID.batteryLevel,
     ].map { $0.uppercased() })
 
     /// Characteristics we may read.

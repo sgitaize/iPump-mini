@@ -43,6 +43,7 @@ struct ContentView: View {
 struct StatusBanner: View {
     @EnvironmentObject private var link: PumpLink
     @EnvironmentObject private var store: DataStore
+    @EnvironmentObject private var uploader: NightscoutUploader
     @Binding var showPairing: Bool
 
     var body: some View {
@@ -52,6 +53,16 @@ struct StatusBanner: View {
                 Text(link.phase.label).font(.headline)
                 Spacer()
                 if let serial = link.pumpSerial { Text(serial).font(.caption).foregroundStyle(.secondary) }
+            }
+            if let last = store.lastDataAt {
+                Text("Letzte Daten \(last.formatted(.relative(presentation: .named)))")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            if uploader.enabled {
+                Label(uploader.lastError ?? "Nightscout \(uploader.lastSuccess.map { "ok, \($0.formatted(date: .omitted, time: .shortened))" } ?? "wartet")",
+                      systemImage: uploader.lastError == nil ? "icloud.and.arrow.up" : "exclamationmark.icloud")
+                    .font(.caption)
+                    .foregroundStyle(uploader.lastError == nil ? Color.secondary : Color.red)
             }
             switch link.phase {
             case .blocked(let reason), .failed(let reason):
@@ -141,16 +152,21 @@ struct GlucoseHeader: View {
 
 struct GlucoseChart: View {
     @EnvironmentObject private var store: DataStore
+    @AppStorage("chartHours") private var hours = 3
 
     var body: some View {
-        let from = Date().addingTimeInterval(-3 * 3600)
+        let from = Date().addingTimeInterval(-Double(hours) * 3600)
         let points = store.readings.filter { $0.date >= from }
+        Picker("Zeitraum", selection: $hours) {
+            ForEach([3, 6, 12, 24], id: \.self) { Text("\($0) h").tag($0) }
+        }
+        .pickerStyle(.segmented)
         Chart {
             RectangleMark(yStart: .value("", 70), yEnd: .value("", 180))
                 .foregroundStyle(.green.opacity(0.12))
             ForEach(points, id: \.date) { r in
                 PointMark(x: .value("Zeit", r.date), y: .value("mg/dL", r.mgdl))
-                    .symbolSize(24)
+                    .symbolSize(hours > 6 ? 10 : 24)
                     .foregroundStyle(r.mgdl < 70 ? .red : r.mgdl > 180 ? .orange : .primary)
             }
         }
@@ -158,7 +174,7 @@ struct GlucoseChart: View {
         .chartXScale(domain: from...Date())
         .frame(height: 180)
         .overlay {
-            if points.isEmpty { Text("Keine Werte der letzten 3 Stunden").font(.caption).foregroundStyle(.secondary) }
+            if points.isEmpty { Text("Keine Werte in diesem Zeitraum").font(.caption).foregroundStyle(.secondary) }
         }
     }
 }
@@ -174,13 +190,13 @@ struct ValueGrid: View {
             Tile(title: "Reservoir", value: s.status.map { String(format: "%.0f IE", $0.reservoirUnits) })
             Tile(title: "Modus", value: s.algorithm?.modeDescription,
                  detail: s.status.map { $0.isSuspended ? "Abgabe angehalten" : "Abgabe läuft" })
-            Tile(title: "Basalrate", value: s.basal.map { String(format: "%.3f IE/h", $0.tempBasalUnitsPerHour ?? $0.unitsPerHour) },
-                 detail: s.basal?.tempBasalUnitsPerHour != nil ? "temporär" : nil)
+            Tile(title: "Basalrate", value: basalText(s),
+                 detail: s.basal?.tempBasalUnitsPerHour != nil ? "temporär" : s.algorithm?.shieldState == .autoBasal ? "von SmartGuard gesteuert" : nil)
             Tile(title: "Zeit im Zielbereich", value: s.timeInRange.map { "\($0.inRangePercent) %" },
                  detail: s.timeInRange.map { "↑ \($0.abovePercent) %  ↓ \($0.belowPercent) %" })
             Tile(title: "Pumpenbatterie", value: s.pumpBatteryPercent.map { "\($0) %" })
             Tile(title: "Sensor", value: s.status?.sensorMessage,
-                 detail: s.sensorExpiresInMinutes.map { expiry($0) })
+                 detail: s.sensorEnd.map { expiry(Int($0.timeIntervalSinceNow / 60)) })
             Tile(title: "Transmitter", value: s.transmitterBatteryPercent.map { "\($0) %" })
         }
         if s.updatedAt > .distantPast {
@@ -190,7 +206,15 @@ struct ValueGrid: View {
         }
     }
 
+    private func basalText(_ s: PumpSnapshot) -> String? {
+        guard let basal = s.basal else { return nil }
+        if let temp = basal.tempBasalUnitsPerHour { return String(format: "%.3f IE/h", temp) }
+        if s.algorithm?.shieldState == .autoBasal { return "Auto" }
+        return String(format: "%.3f IE/h", basal.unitsPerHour)
+    }
+
     private func expiry(_ minutes: Int) -> String {
+        if minutes <= 0 { return "abgelaufen" }
         let h = minutes / 60
         return h >= 24 ? "noch \(h / 24) T \(h % 24) h" : "noch \(h) h \(minutes % 60) min"
     }

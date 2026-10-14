@@ -121,3 +121,16 @@ final class SakeTests: XCTestCase {
         XCTAssertThrowsError(try server.handle([0x00]))
     }
 }
+
+final class SeqCryptStateTests: XCTestCase {
+    func testStateRoundTrip() throws {
+        let key = [UInt8](hex: "00112233445566778899aabbccddeeff")!
+        let nonce = [UInt8](hex: "a1b2c3d4e5f60718")!
+        let a = SeqCrypt(key: key, nonce: nonce, initialSeq: 1)
+        _ = try a.encrypt([1, 2, 3])
+        let data = try JSONEncoder().encode(a.state)
+        let b = try XCTUnwrap(SeqCrypt(state: try JSONDecoder().decode(SeqCrypt.State.self, from: data)))
+        XCTAssertEqual(b.txSeq, 3)
+        XCTAssertEqual(try a.encrypt([4]), try b.encrypt([4]))
+    }
+}

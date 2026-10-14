@@ -69,6 +69,13 @@ final class PumpLink: NSObject, ObservableObject {
     private var operationTimer: Timer?
     private var lastRefresh: Date = .distantPast
     private var retrieveAttempts = 0
+    private var sensorRunHours: Int?
+    /// Session cipher after the handshake; persisted so it survives an app relaunch.
+    private var crypt: SeqCrypt?
+    private var decryptFailures = 0
+    private var currentStartedAt: Date?
+    private var refreshPending = false
+    private var backfilledSession: Date?
 
     /// Characteristics whose values are SAKE-encrypted (OpenMinimed pump-services.md).
     private static let encrypted: Set<String> = Set([
@@ -81,12 +88,14 @@ final class PumpLink: NSObject, ObservableObject {
         case read(service: String, characteristic: String)
         case statusReader(StatusReaderOpcode)
         case cgmLastRecord
+        case cgmBackfill(fromOffset: UInt16)
 
         var description: String {
             switch self {
             case .read(_, let c): "Lesen \(c)"
             case .statusReader(let op): "SRCP \(op)"
             case .cgmLastRecord: "CGM letzter Wert"
+            case .cgmBackfill(let o): "CGM-Historie ab Offset \(o)"
             }
         }
     }
@@ -227,6 +236,10 @@ final class PumpLink: NSObject, ObservableObject {
                 send(reply)
             } else if sake?.isComplete == true {
                 log.add("SAKE-Handshake abgeschlossen")
+                crypt = sake?.crypt
+                decryptFailures = 0
+                if let crypt { SessionStore.save(crypt) }
+                if let id = pumpCentral?.identifier { UserDefaults.standard.set(id.uuidString, forKey: "pumpID") }
                 if pairingMode { setPairingMode(false) }
                 connectAsGattClient()
             }
@@ -264,7 +277,38 @@ final class PumpLink: NSObject, ObservableObject {
         retrieveAttempts = 0
         pump = peripheral
         peripheral.delegate = self
-        centralManager.connect(peripheral)
+        if peripheral.state == .connected {
+            startDiscovery(peripheral)
+        } else {
+            centralManager.connect(peripheral)
+        }
+    }
+
+    private func startDiscovery(_ peripheral: CBPeripheral) {
+        resetClientState()
+        peripheral.discoverServices([
+            CBUUID(string: PumpUUID.deviceInfoService), CBUUID(string: PumpUUID.iddService),
+            CBUUID(string: PumpUUID.cgmService), CBUUID(string: PumpUUID.batteryService),
+        ])
+    }
+
+    /// After iOS relaunched the app in the background, the pump may still be connected
+    /// with the old SAKE session. Continue with the saved cipher instead of losing data.
+    private func resumeSavedSession() {
+        guard crypt == nil, sake == nil, let saved = SessionStore.load() else { return }
+        guard let idString = UserDefaults.standard.string(forKey: "pumpID"), let id = UUID(uuidString: idString) else { return }
+        let peripheral = pump ?? centralManager.retrievePeripherals(withIdentifiers: [id]).first
+        guard let peripheral else { return }
+        crypt = saved
+        pump = peripheral
+        peripheral.delegate = self
+        log.add("Setze gespeicherte Sitzung fort (Pumpe \(peripheral.state == .connected ? "verbunden" : "nicht verbunden"))")
+        phase = .connecting
+        if peripheral.state == .connected {
+            startDiscovery(peripheral)
+        } else {
+            centralManager.connect(peripheral)
+        }
     }
 
     private func resetClientState() {
@@ -274,6 +318,8 @@ final class PumpLink: NSObject, ObservableObject {
         current = nil
         operationTimer?.invalidate()
         sessionStart = nil
+        sensorRunHours = nil
+        backfilledSession = nil
     }
 
     private func key(_ service: CBUUID, _ characteristic: CBUUID) -> String {
@@ -311,6 +357,8 @@ final class PumpLink: NSObject, ObservableObject {
             (PumpUUID.cgmService, PumpUUID.recordAccessCP),
             (PumpUUID.iddService, PumpUUID.iddStatusReaderCP),
             (PumpUUID.iddService, PumpUUID.iddStatusChanged),
+            (PumpUUID.iddService, PumpUUID.gstBatteryLevel),
+            (PumpUUID.batteryService, PumpUUID.batteryLevel),
         ] {
             if let c = characteristic(service, uuid) { guardedSubscribe(c) }
         }
@@ -362,8 +410,11 @@ final class PumpLink: NSObject, ObservableObject {
         guard let c = characteristic(service, uuid), let pump else { return false }
         var payload = plaintext
         if Self.encrypted.contains(c.uuid.uuidString.uppercased()) {
-            guard let crypt = sake?.crypt else { return false }
-            do { payload = try crypt.encrypt(plaintext) } catch {
+            guard let crypt else { return false }
+            do {
+                payload = try crypt.encrypt(plaintext)
+                SessionStore.save(crypt)
+            } catch {
                 log.add("Verschlüsselung fehlgeschlagen: \(error)", .error)
                 return false
             }
@@ -376,8 +427,19 @@ final class PumpLink: NSObject, ObservableObject {
 
     private func scheduleRefresh(force: Bool = false) {
         guard serialVerified else { return }
-        if !force, Date().timeIntervalSince(lastRefresh) < 45 { return }
-        if current != nil || !operations.isEmpty { return }
+        // Timers do not fire while iOS suspends the app. Detect a stuck operation by time.
+        if let started = currentStartedAt, Date().timeIntervalSince(started) > 20 {
+            log.add("Abfrage hängt (\(current.map { "\($0)" } ?? "?")), setze zurück", .warning)
+            operations = []
+            current = nil
+            currentStartedAt = nil
+        }
+        if current != nil || !operations.isEmpty {
+            refreshPending = true
+            return
+        }
+        if !force, Date().timeIntervalSince(lastRefresh) < 50 { return }
+        refreshPending = false
         lastRefresh = Date()
         operations = [
             .read(service: PumpUUID.iddService, characteristic: PumpUUID.iddStatus),
@@ -387,23 +449,44 @@ final class PumpLink: NSObject, ObservableObject {
             .statusReader(.getTimeInRange),
             .read(service: PumpUUID.batteryService, characteristic: PumpUUID.batteryLevel),
             .read(service: PumpUUID.iddService, characteristic: PumpUUID.gstBatteryLevel),
-            .read(service: PumpUUID.cgmService, characteristic: PumpUUID.sensorExpiration),
         ]
         if sessionStart == nil {
             operations.append(.read(service: PumpUUID.cgmService, characteristic: PumpUUID.cgmSessionStartTime))
+        }
+        if sensorRunHours == nil {
+            operations.append(.read(service: PumpUUID.cgmService, characteristic: PumpUUID.cgmSessionRunTime))
         }
         operations.append(.cgmLastRecord)
         nextOperation()
     }
 
+    /// After a (re)connect: fetch missed sensor values of the running session, at most 24 h.
+    private func scheduleBackfillIfNeeded() {
+        guard let start = sessionStart, backfilledSession != start else { return }
+        backfilledSession = start
+        let nowOffset = max(0, Int(Date().timeIntervalSince(start) / 60))
+        var from = max(0, nowOffset - 24 * 60)
+        let known = store.readings
+            .filter { $0.date >= start && $0.sessionOffsetMinutes != nil }
+            .compactMap(\.sessionOffsetMinutes).max()
+        if let known { from = max(from, Int(known) + 1) }
+        guard nowOffset - from > 6, from <= Int(UInt16.max) else { return }
+        log.add("Lade Sensorwerte der letzten \((nowOffset - from) / 60) h \((nowOffset - from) % 60) min nach")
+        operations.append(.cgmBackfill(fromOffset: UInt16(from)))
+        if current == nil { nextOperation() }
+    }
+
     private func nextOperation() {
         operationTimer?.invalidate()
         current = nil
+        currentStartedAt = nil
         while !operations.isEmpty {
             let op = operations.removeFirst()
             if start(op) {
                 current = op
-                operationTimer = Timer.scheduledTimer(withTimeInterval: 6, repeats: false) { [weak self] _ in
+                currentStartedAt = Date()
+                let timeout: TimeInterval = if case .cgmBackfill = op { 60 } else { 6 }
+                operationTimer = Timer.scheduledTimer(withTimeInterval: timeout, repeats: false) { [weak self] _ in
                     Task { @MainActor in
                         guard let self, let op = self.current else { return }
                         self.log.add("Zeitüberschreitung: \(op)", .warning)
@@ -413,6 +496,8 @@ final class PumpLink: NSObject, ObservableObject {
                 return
             }
         }
+        // Queue drained: run a refresh that was requested while busy.
+        if refreshPending { scheduleRefresh() }
     }
 
     private func start(_ op: Operation) -> Bool {
@@ -427,6 +512,10 @@ final class PumpLink: NSObject, ObservableObject {
         case .cgmLastRecord:
             return guardedWrite(service: PumpUUID.cgmService, characteristic: PumpUUID.recordAccessCP,
                                 plaintext: [0x01, 0x06])
+        case .cgmBackfill(let offset):
+            // Report Stored Records, operator >=, filter type time offset.
+            return guardedWrite(service: PumpUUID.cgmService, characteristic: PumpUUID.recordAccessCP,
+                                plaintext: [0x01, 0x03, 0x01, UInt8(offset & 0xFF), UInt8(offset >> 8)])
         }
     }
 
@@ -440,14 +529,35 @@ final class PumpLink: NSObject, ObservableObject {
         let uuid = c.uuid.uuidString.uppercased()
         let service = c.service?.uuid.uuidString.uppercased() ?? ""
         var plain = data
+        // The pump signals new data every ~5 min with a notification on GST Battery Level
+        // followed by an indication on IDD Status Changed (capture 2). Any of these starts
+        // a refresh, even if the payload cannot be decrypted.
+        let isTrigger = uuid == PumpUUID.iddStatusChanged.uppercased() || uuid == PumpUUID.gstBatteryLevel.uppercased()
+            || (uuid == PumpUUID.cgmMeasurement.uppercased() && current == nil)
         if Self.encrypted.contains(uuid) {
-            guard let crypt = sake?.crypt else { return }
-            do { plain = try crypt.decrypt(data) } catch {
-                log.add("Entschlüsselung \(uuid) fehlgeschlagen: \(error)", .warning)
+            guard let crypt else {
+                log.add("Keine Sitzung zum Entschlüsseln von \(uuid)", .warning)
+                return
+            }
+            do {
+                plain = try crypt.decrypt(data)
+                decryptFailures = 0
+                SessionStore.save(crypt)
+            } catch {
+                decryptFailures += 1
+                log.add("Entschlüsselung \(uuid) fehlgeschlagen (\(decryptFailures)×): \(error)", .warning)
+                if decryptFailures >= 5 {
+                    log.add("Sitzung ungültig, warte auf neuen Handshake der Pumpe", .error)
+                    self.crypt = nil
+                    SessionStore.clear()
+                    phase = .failed("Sitzung verloren – die Pumpe verbindet sich neu")
+                }
                 finish { _ in true }
+                if isTrigger { scheduleRefresh() }
                 return
             }
         }
+        defer { if isTrigger { scheduleRefresh() } }
 
         switch uuid {
         case PumpUUID.serialNumber:
@@ -462,7 +572,7 @@ final class PumpLink: NSObject, ObservableObject {
                 var date = now
                 if let start = sessionStart {
                     let candidate = start.addingTimeInterval(Double(m.timeOffsetMinutes) * 60)
-                    if candidate <= now.addingTimeInterval(300), candidate > now.addingTimeInterval(-24 * 3600) { date = candidate }
+                    if candidate <= now.addingTimeInterval(300), candidate > now.addingTimeInterval(-11 * 24 * 3600) { date = candidate }
                 }
                 // SG values outside 40…400 are sensor states, not glucose values.
                 if m.glucoseMgdl >= 40, m.glucoseMgdl <= 400 {
@@ -470,21 +580,30 @@ final class PumpLink: NSObject, ObservableObject {
                                              trendMgdlPerMin: m.trendMgdlPerMin, sessionOffsetMinutes: m.timeOffsetMinutes))
                     onData()
                 }
-                log.add("SG \(Int(m.glucoseMgdl)) mg/dL, Trend \(m.trendMgdlPerMin.map { String($0) } ?? "–")")
+                if case .cgmBackfill = current {} else {
+                    log.add("SG \(Int(m.glucoseMgdl)) mg/dL, Trend \(m.trendMgdlPerMin.map { String($0) } ?? "–")")
+                }
             } catch {
                 log.add("CGM-Messung nicht lesbar: \(error) \(plain.hex)", .warning)
             }
 
         case PumpUUID.recordAccessCP:
             log.add("RACP-Antwort \(plain.hex)")
-            if service == PumpUUID.cgmService { finish { if case .cgmLastRecord = $0 { true } else { false } } }
+            if service == PumpUUID.cgmService {
+                finish {
+                    switch $0 {
+                    case .cgmLastRecord, .cgmBackfill: true
+                    default: false
+                    }
+                }
+                scheduleBackfillIfNeeded()
+            }
 
         case PumpUUID.iddStatusReaderCP.uppercased():
             handleStatusReader(plain)
 
         case PumpUUID.iddStatusChanged.uppercased():
             log.add("Pumpe meldet Statusänderung")
-            scheduleRefresh()
 
         case PumpUUID.iddStatus.uppercased():
             if let s = try? PumpStatus(plain) {
@@ -495,29 +614,42 @@ final class PumpLink: NSObject, ObservableObject {
 
         case PumpUUID.batteryLevel:
             if let b = plain.first { store.update { $0.pumpBatteryPercent = Int(b) } }
-            finish { if case .read = $0 { true } else { false } }
+            finish { if case .read(_, let c) = $0 { c == PumpUUID.batteryLevel } else { false } }
 
         case PumpUUID.gstBatteryLevel.uppercased():
             if let b = plain.first { store.update { $0.transmitterBatteryPercent = Int(b) } }
-            finish { if case .read = $0 { true } else { false } }
+            finish { if case .read(_, let c) = $0 { c == PumpUUID.gstBatteryLevel } else { false } }
 
-        case PumpUUID.sensorExpiration.uppercased():
-            if plain.count >= 2 {
-                let minutes = Int(plain[0]) | Int(plain[1]) << 8
-                store.update { $0.sensorExpiresInMinutes = minutes }
-            }
+        case PumpUUID.cgmSessionRunTime:
+            // u16 expected session run time in hours + E2E-CRC (CGMS).
+            if plain.count == 4, Checksums.hasValidE2ECRC(plain) {
+                let hours = Int(plain[0]) | Int(plain[1]) << 8
+                sensorRunHours = hours
+                updateSensorExpiry()
+                log.add("Sensorlaufzeit \(hours) h")
+            } else { log.add("Sensorlaufzeit nicht lesbar: \(plain.hex)", .warning) }
             finish { if case .read = $0 { true } else { false } }
 
         case PumpUUID.cgmSessionStartTime:
             if let t = try? CGMSessionStartTime(plain), let date = t.date() {
                 sessionStart = date
                 store.update { $0.sensorStart = date }
+                updateSensorExpiry()
                 log.add("Sensorstart \(date.formatted())")
             } else { log.add("Sensorstart nicht lesbar: \(plain.hex)", .warning) }
             finish { if case .read = $0 { true } else { false } }
 
         default:
             log.add("Wert von \(uuid): \(plain.hex)")
+        }
+    }
+
+    private func updateSensorExpiry() {
+        guard let start = sessionStart, let hours = sensorRunHours else { return }
+        let end = start.addingTimeInterval(Double(hours) * 3600)
+        store.update {
+            $0.sensorEnd = end
+            $0.sensorExpiresInMinutes = Int(end.timeIntervalSinceNow / 60)
         }
     }
 
@@ -587,6 +719,8 @@ extension PumpLink: CBPeripheralManagerDelegate {
             peripheral.setDesiredConnectionLatency(.low, for: central)
             resetClientState()
             sake = nil
+            crypt = nil
+            SessionStore.clear()
             outbox = []
             phase = .handshake
             send([UInt8](repeating: 0, count: SakeServer.messageSize))
@@ -648,25 +782,33 @@ extension PumpLink: CBPeripheralManagerDelegate {
 
 extension PumpLink: CBCentralManagerDelegate {
     nonisolated func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        MainActor.assumeIsolated { log.add("Central-Status: \(central.state.rawValue)") }
+        MainActor.assumeIsolated {
+            log.add("Central-Status: \(central.state.rawValue)")
+            if central.state == .poweredOn { resumeSavedSession() }
+        }
     }
 
     nonisolated func centralManager(_ central: CBCentralManager, willRestoreState dict: [String: Any]) {
         MainActor.assumeIsolated {
             let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] ?? []
             log.add("Central wiederhergestellt (\(peripherals.count) Geräte)")
-            // The pump starts a new SAKE handshake after every reconnect; we attach then.
+            let savedID = UserDefaults.standard.string(forKey: "pumpID")
+            if let p = peripherals.first(where: { $0.identifier.uuidString == savedID }) ?? peripherals.first {
+                pump = p
+                p.delegate = self
+            }
         }
     }
 
     nonisolated func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         MainActor.assumeIsolated {
             log.add("GATT-Client verbunden mit \(peripheral.name ?? "Pumpe")")
-            resetClientState()
-            peripheral.discoverServices([
-                CBUUID(string: PumpUUID.deviceInfoService), CBUUID(string: PumpUUID.iddService),
-                CBUUID(string: PumpUUID.cgmService), CBUUID(string: PumpUUID.batteryService),
-            ])
+            // A handshake is running: discovery starts once it completed.
+            if phase == .handshake || crypt == nil {
+                log.add("Warte auf SAKE-Handshake")
+                return
+            }
+            startDiscovery(peripheral)
         }
     }
 
@@ -681,8 +823,9 @@ extension PumpLink: CBCentralManagerDelegate {
         MainActor.assumeIsolated {
             log.add("Pumpe getrennt\(error.map { ": \($0.localizedDescription)" } ?? "")", .warning)
             resetClientState()
-            pump = nil
-            if case .blocked = phase { return }
+            if case .blocked = phase { pump = nil; return }
+            // Pending connect: completes as soon as the pump links up again (no timeout).
+            central.connect(peripheral)
             phase = .waitingForPump
             updateAdvertising()
         }

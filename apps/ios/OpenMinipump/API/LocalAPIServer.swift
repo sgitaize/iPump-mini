@@ -117,9 +117,9 @@ final class LocalAPIServer: @unchecked Sendable {
         switch path {
         case "/api/v1/entries.json", "/api/v1/entries", "/api/v1/entries/sgv.json", "/api/v1/entries/sgv", "/sgv.json":
             let count = Int(query["count"] ?? "") ?? 10
-            send(connection, json: filtered(newestFirst, query).prefix(max(0, count)).map(Nightscout.entry))
+            send(connection, json: filtered(newestFirst, query).prefix(max(0, count)).map { Nightscout.entry($0) })
         case "/api/v1/entries/current.json", "/api/v1/entries/current":
-            send(connection, json: newestFirst.prefix(1).map(Nightscout.entry))
+            send(connection, json: newestFirst.prefix(1).map { Nightscout.entry($0) })
         case "/api/v1/devicestatus.json", "/api/v1/devicestatus":
             let hasData = snapshot.updatedAt > .distantPast
             send(connection, json: hasData ? [Nightscout.deviceStatus(snapshot, uploaderBattery: uploaderBattery)] : [])
@@ -128,7 +128,10 @@ final class LocalAPIServer: @unchecked Sendable {
         case "/api/v1/status.json", "/api/v1/status":
             send(connection, json: Nightscout.status(version: version))
         case "/pebble":
-            send(connection, json: Nightscout.pebble(readings: readings, snapshot: snapshot, uploaderBattery: uploaderBattery))
+            let count = Int(query["count"] ?? "") ?? 1
+            let mmol = (query["units"] ?? "").lowercased().hasPrefix("mmol")
+            send(connection, json: Nightscout.pebble(readings: readings, snapshot: snapshot, uploaderBattery: uploaderBattery,
+                                                     count: count, mmol: mmol))
         case "/", "/api/v1":
             send(connection, json: ["name": "openMinipump", "readOnly": true, "endpoints": [
                 "/api/v1/entries.json?count=N", "/api/v1/entries/current.json", "/api/v1/devicestatus.json",

@@ -34,6 +34,24 @@ public final class SeqCrypt {
         rxSeq = initialSeq
     }
 
+    /// Snapshot of the session cipher, so a session can survive an app relaunch
+    /// (iOS may terminate and restore the app while the pump stays connected).
+    public struct State: Codable, Equatable, Sendable {
+        public let key: [UInt8]
+        public let nonce: [UInt8]
+        public let txSeq: UInt64
+        public let rxSeq: UInt64
+    }
+
+    public var state: State { State(key: key, nonce: nonce, txSeq: txSeq, rxSeq: rxSeq) }
+
+    public convenience init?(state: State) {
+        guard state.key.count == 16, state.nonce.count == 8 else { return nil }
+        self.init(key: state.key, nonce: state.nonce, initialSeq: 0)
+        txSeq = state.txSeq
+        rxSeq = state.rxSeq
+    }
+
     public func encrypt(_ plaintext: [UInt8]) throws -> [UInt8] {
         let seq = txSeq
         guard seq < Self.maxSeq else { throw SakeError.sequenceExhausted }

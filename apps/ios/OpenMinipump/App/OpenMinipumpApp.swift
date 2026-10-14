@@ -15,6 +15,7 @@ final class AppModel: ObservableObject {
     let log = EventLog()
     let api: LocalAPIServer
     private(set) var link: PumpLink!
+    let uploader: NightscoutUploader
 
     @Published var apiState = "gestartet"
     @Published var apiAllowLAN = UserDefaults.standard.bool(forKey: "apiAllowLAN") {
@@ -27,12 +28,26 @@ final class AppModel: ObservableObject {
 
     init() {
         api = LocalAPIServer(shared: store.shared)
-        link = PumpLink(config: config, store: store, log: log) { Watchdog.arm() }
+        uploader = NightscoutUploader(store: store, log: log)
+        let uploader = uploader
+        link = PumpLink(config: config, store: store, log: log) {
+            Watchdog.arm()
+            uploader.dataChanged()
+        }
         api.onStateChange = { [weak self] text in
             Task { @MainActor in self?.apiState = text }
         }
         restartAPI()
         Watchdog.requestAuthorization()
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-demoData") { store.loadDemoData() }
+        if let url = ProcessInfo.processInfo.environment["OMP_NS_URL"] {
+            uploader.url = url
+            uploader.secret = ProcessInfo.processInfo.environment["OMP_NS_SECRET"] ?? ""
+            uploader.enabled = true
+            uploader.dataChanged()
+        }
+        #endif
     }
 
     func restartAPI() {
@@ -53,6 +68,7 @@ struct OpenMinipumpApp: App {
                 .environmentObject(model.store)
                 .environmentObject(model.link)
                 .environmentObject(model.log)
+                .environmentObject(model.uploader)
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { Watchdog.appOpened() }

@@ -29,12 +29,16 @@
 - [x] Lokale Nightscout-kompatible API (Port 17580), docs/api.md
 - [x] Über & Impressum mit Quellenangaben
 - [ ] Simon: Impressumsdaten + Website-URL bestätigen (apps/ios/OpenMinipump/UI/AboutView.swift)
-- [ ] Simon: Signing-Team in apps/ios/Config/Local.xcconfig, App aufs iPhone
-- [ ] Simon: MiniMed Mobile an der Pumpe entkoppeln, openMinipump koppeln (erster Hardwaretest)
-- [ ] Hardwaretest auswerten: GATT-Client-Zugriff, Handshake, Werte, Hintergrund, Reconnect
-- [ ] Backfill: CGM-Historie per RACP nach Reconnect
+- [x] Simon: Signing-Team (lokal in Local.xcconfig), App aufs iPhone
+- [x] Simon: openMinipump gekoppelt, Werte kommen (14.10.)
+- [x] Hardwaretest: GATT-Client-Zugriff, Handshake, Werte ✅
+- [x] Hintergrund-Aktualisierung robuster (Trigger GST/Status Changed, Hänger-Erkennung, Sitzung persistiert)
+- [ ] Hintergrund über mehrere Stunden prüfen (Protokolldatei vom iPhone ziehen)
+- [x] Backfill: CGM-Historie per RACP (≥ Offset) nach Reconnect, max. 24 h
 - [ ] Treatments (Bolus, Kohlenhydrate) aus IDD-History
 
-## Phase 4 – Nightscout-Upload (geplant)
-- [ ] Upload zu Simons Nightscout bei jedem BLE-Ereignis (funktioniert auch im Hintergrund)
-- [ ] Secrets im Schlüsselbund
+## Phase 4 – Nightscout-Upload und Pebble
+- [x] Optionaler Upload (entries + devicestatus), Secret im Schlüsselbund, Verbindungstest
+- [x] /pebble mit count und units=mmol
+- [ ] Upload gegen Simons echtes Nightscout prüfen (Simon trägt URL/Secret in der App ein)
+- [ ] casiocgm: Datenquelle „openMinipump lokal“ (VPS-Projekt)
