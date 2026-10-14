@@ -92,3 +92,10 @@ Folge: Unsere Allowlist ist eine echte Teilmenge dessen, was die offizielle App 
 - **0x0202 „Time Of Sensor Expiration“** liefert 8 Nullbytes + CRC, nicht das dokumentierte u16. Der Sensorablauf wird deshalb aus Sensorstart (0x2AAA) + Session Run Time (0x2AAB, Stunden) berechnet.
 - **Hintergrund:** Automatische Aktualisierung blieb aus, manuell ging es. Im Mitschnitt 2 beginnt jeder 5-Minuten-Zyklus mit einer Notification auf GST Battery Level (0x0400) und einer Indication auf IDD Status Changed (0x0101); die offizielle App fragt danach SRCP, Sensorstart und CGM-RACP ab.
 - **Maßnahmen:** Beide Signale (und spontane CGM-Messungen) lösen die Abfrage aus, auch wenn die Entschlüsselung scheitert. Hängende Abfragen werden über die Zeit erkannt, da Timer in suspendierten Apps nicht laufen. Die SAKE-Sitzung (Schlüssel, Nonce, Zähler) wird gespeichert und nach einem Neustart der App durch iOS fortgesetzt. Das Protokoll wird zusätzlich in `Application Support/openminipump.log` geschrieben.
+
+## 2026-10-14 – Sitzung, Selbstheilung, Historie
+
+- **Sitzung über App-Neustart:** Nach einem Update setzt die App die gespeicherte SAKE-Sitzung fort; die Pumpe bleibt verbunden, Entschlüsselung läuft weiter (verifiziert).
+- **Ohne Sitzung:** Das Neu-Registrieren der eigenen GATT-Dienste lässt die Pumpe die Verbindung nach ~7 s per Timeout trennen und ~25 s später mit neuem Handshake zurückkommen (verifiziert). Ändert nichts an der Pumpe.
+- **CGM RACP „≥ Zeit-Offset“** (`01 03 01 <u16>`) beantwortet die 780G mit `06 00 01 04` (Operator not supported). Die Historie muss über die IDD-History (RACP `33 5a 0f <Seq-Bereich>`, wie die offizielle App) geholt werden → nächster Ausbauschritt, braucht den History-Parser.
+- **GST Battery Level (0x0400)** ist auf der 780G nur per Notification verfügbar, Lesen liefert „Reading is not permitted“.

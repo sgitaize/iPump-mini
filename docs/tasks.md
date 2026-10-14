@@ -34,7 +34,7 @@
 - [x] Hardwaretest: GATT-Client-Zugriff, Handshake, Werte ✅
 - [x] Hintergrund-Aktualisierung robuster (Trigger GST/Status Changed, Hänger-Erkennung, Sitzung persistiert)
 - [ ] Hintergrund über mehrere Stunden prüfen (Protokolldatei vom iPhone ziehen)
-- [x] Backfill: CGM-Historie per RACP (≥ Offset) nach Reconnect, max. 24 h
+- [ ] Backfill: CGM RACP „≥ Offset“ wird von der 780G nicht unterstützt → über IDD-History (Seq-Bereich) nachladen
 - [ ] Treatments (Bolus, Kohlenhydrate) aus IDD-History
 
 ## Phase 4 – Nightscout-Upload und Pebble

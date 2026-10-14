@@ -497,6 +497,8 @@ final class PumpLink: NSObject, ObservableObject {
 
     /// After a (re)connect: fetch missed sensor values of the running session, at most 24 h.
     private func scheduleBackfillIfNeeded() {
+        // The 780G answers "operator not supported" (06 00 01 04) to ">= time offset".
+        guard !UserDefaults.standard.bool(forKey: "cgmBackfillUnsupported") else { return }
         guard let start = sessionStart, backfilledSession != start else { return }
         backfilledSession = start
         let nowOffset = max(0, Int(Date().timeIntervalSince(start) / 60))
@@ -629,6 +631,10 @@ final class PumpLink: NSObject, ObservableObject {
 
         case PumpUUID.recordAccessCP:
             log.add("RACP-Antwort \(plain.hex)")
+            if service == PumpUUID.cgmService, case .cgmBackfill = current, plain == [0x06, 0x00, 0x01, 0x04] {
+                log.add("Pumpe unterstützt CGM-Abruf ab Zeitpunkt nicht, Nachladen deaktiviert", .warning)
+                UserDefaults.standard.set(true, forKey: "cgmBackfillUnsupported")
+            }
             if service == PumpUUID.cgmService {
                 finish {
                     switch $0 {
