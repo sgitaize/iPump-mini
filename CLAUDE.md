@@ -20,11 +20,13 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 - Physische Schritte an der Pumpe macht Simon. Sag ihm jeweils genau, was er wann tun soll.
 
 ## Repo-Struktur
-`docs/` Wissen · `research/` eigene Skripte · `captures/` (ignored) Mitschnitte · `_vendor/` (ignored) Vendor-Material · `proto/` Python/bleak-Referenz · `core/` gemeinsame Protokoll-Lib · `apps/ios/` SwiftUI · `apps/android/` Kotlin
+`docs/` Wissen · `research/` eigene Skripte · `captures/` (ignored) Mitschnitte · `_vendor/` (ignored) Vendor-Material · `proto/` Referenz/Prototypen (bleak entfällt, siehe ADR 0003) · `core/` gemeinsame Protokoll-Lib · `apps/ios/` SwiftUI · `apps/android/` Kotlin
 
 ## Umgebung
 - Repo: `~/Dev/openMinipump` (bewusst nicht in iCloud, siehe ADR 0001), GitHub: `sgitaize/openMinipump` (privat)
 - Der iOS-Simulator hat kein Bluetooth, deshalb braucht es einen Replay-Transport aus echten Mitschnitten.
 
 ## Aktueller Stand
-- **Phase 0** (Umgebung/Repo) läuft. Details in `docs/tasks.md`.
+- Phase 0 ✅. Phase 1 (Recherche) ✅, wartet auf Simons Go zu ADR 0003.
+- Kernwissen: `docs/landscape.md`. Das Protokoll ist durch OpenMinimed (GPL-3.0) bekannt, das Telefon ist BLE-**Peripheral** und SAKE-Server, die Pumpe ist Central. Pairing läuft lokal ohne Cloud. Für iOS existiert noch nichts.
+- Größte Risiken für iOS: Hintergrund-Reconnect (FE81), GATT-Client auf einer eingehenden Verbindung, MTU 23.
