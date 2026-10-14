@@ -18,7 +18,7 @@ Stand: vorbereitet, **nicht aktiv**. Bevor etwas veröffentlicht wird, entscheid
 Die Quelle könnte später über GitHub Pages ausgeliefert werden (`https://<user>.github.io/<repo>/altstore/source.json`); dafür muss das Repo öffentlich sein.
 
 ## Offene Entscheidungen vor einer Veröffentlichung
-- [ ] **Schlüsseldatenbank:** Sie darf nach unseren Regeln nicht ins Repo und auch nicht in eine öffentliche IPA. Lösung: In der App eine Import-Funktion (Hex einfügen oder Datei wählen), die die Datenbank lokal im Schlüsselbund speichert. Der Nutzer holt sie sich selbst aus der OpenMinimed-Doku. Die CI-Builds enthalten dann keinen Schlüssel.
+- [x] **Schlüsseldatenbank:** Sie darf nach unseren Regeln nicht ins Repo und auch nicht in eine öffentliche IPA. Umgesetzt (Branch `feature/alarms-widgets`): Einstellungen › Pumpe › Schlüsseldatenbank. Hex einfügen, Prüfung (CRC, richtige Datenbank), Speicherung im Schlüsselbund. Eigene Builds nutzen weiterhin die Datei aus `_vendor/`.
 - [ ] **DEV_MODE:** Öffentliche Builds müssen jede (vom Nutzer gekoppelte) Pumpe akzeptieren, also `DEV_MODE=0`. Regel 2 des Projekt-Briefs gilt für die Entwicklung; Freigabe durch Simon nötig.
 - [ ] **Kompatibilitäts-Kennung:** Die App meldet sich gegenüber der Pumpe mit den Geräteinfos der offiziellen App (`PumpLink.compatSoftwareRevision`). Rechtliche Einschätzung vor Veröffentlichung.
 - [ ] **Name/Bundle-ID:** Umbenennung in „iPump-mini“ vorher abschließen (Bundle-ID nicht mehr ändern, sobald Nutzer installiert haben).

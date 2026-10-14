@@ -54,6 +54,7 @@ final class PumpLink: NSObject, ObservableObject {
     let advertisedName: String
 
     private let config: AppConfig
+    @Published private(set) var keyDatabase: KeyDatabase?
     private let store: DataStore
     private let log: EventLog
     private let onData: () -> Void
@@ -116,6 +117,7 @@ final class PumpLink: NSObject, ObservableObject {
     init(config: AppConfig, store: DataStore, log: EventLog,
          onData: @escaping () -> Void, onHistory: @escaping (Date?) -> Void = { _ in }) {
         self.config = config
+        self.keyDatabase = config.keyDatabase
         self.store = store
         self.log = log
         self.onData = onData
@@ -144,6 +146,13 @@ final class PumpLink: NSObject, ObservableObject {
         pairingMode = on
         log.add(on ? "Kopplungsmodus an (Mobile \(advertisedName))" : "Kopplungsmodus aus")
         updateAdvertising()
+    }
+
+    /// A key database was imported in the settings.
+    func setKeyDatabase(_ db: KeyDatabase) {
+        keyDatabase = db
+        if case .failed = phase { phase = .waitingForPump }
+        log.add("Schlüsseldatenbank importiert")
     }
 
     func refreshNow() {
@@ -242,7 +251,7 @@ final class PumpLink: NSObject, ObservableObject {
     }
 
     private func handleSake(_ value: Data) {
-        guard let db = config.keyDatabase else { return }
+        guard let db = keyDatabase else { return }
         if sake == nil || sake?.isComplete == true { sake = SakeServer(keyDatabase: db) }
         do {
             let stage = sake?.stage ?? 0

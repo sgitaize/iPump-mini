@@ -29,6 +29,7 @@ struct SettingsView: View {
                     LabeledContent("Firmware", value: link.pumpFirmware ?? "–")
                     LabeledContent("Verbindung", value: link.phase.label)
                     LabeledContent("Entwicklermodus", value: model.config.devGuard.devMode ? "an (nur Testpumpe)" : "aus")
+                    NavigationLink("Schlüsseldatenbank") { KeyImportView() }
                 }
 
                 Section("Sensor", isExpanded: $openSensor) {
