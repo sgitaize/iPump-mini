@@ -47,3 +47,8 @@ apps/android/**/build/
 
 # --- macOS ---
 .DS_Store
+
+# iOS: generated project (XcodeGen) and personal signing config
+apps/ios/*.xcodeproj/
+apps/ios/OpenMinipump/Info.plist
+apps/ios/Config/Local.xcconfig

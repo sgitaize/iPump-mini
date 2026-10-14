@@ -27,6 +27,8 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 - Der iOS-Simulator hat kein Bluetooth, deshalb braucht es einen Replay-Transport aus echten Mitschnitten.
 
 ## Aktueller Stand
-- Phase 0 ✅. Phase 1 (Recherche) ✅, ADR 0003 angenommen, Lizenz GPL-3.0. Nächster Schritt: PacketLogger-Mitschnitt der offiziellen MiniMed Mobile auf Simons iPhone 18 Pro, danach der Swift-Spike.
-- Kernwissen: `docs/landscape.md`. Das Protokoll ist durch OpenMinimed (GPL-3.0) bekannt, das Telefon ist BLE-**Peripheral** und SAKE-Server, die Pumpe ist Central. Pairing läuft lokal ohne Cloud. Für iOS existiert noch nichts.
-- Größte Risiken für iOS: Hintergrund-Reconnect (FE81), GATT-Client auf einer eingehenden Verbindung, MTU 23.
+- Phase 0–2 ✅ (Recherche, ADR 0003, GPL-3.0, Mitschnitte der offiziellen App). Phase 3 läuft: erste iOS-App gebaut, **Hardwaretest steht aus**.
+- `core/MiniMedKit` (Swift-Paket): SAKE-Port, Parser, `ReadOnlyPolicy` (die Allowlist, Änderungen nur mit Simon), `DevModeGuard`, Nightscout-Mapping. `swift test` prüft den Handshake gegen den echten 780G-Trace (Key-DB aus `_vendor/keys/`, sonst Skip).
+- `apps/ios`: XcodeGen (`project.yml`), Setup in `docs/setup-ios.md`. Alle Schreibzugriffe auf die Pumpe laufen über `PumpLink.guardedWrite`. API: `docs/api.md`.
+- Kernwissen: `docs/landscape.md`, Laborbuch. Die Pumpe ist Central und SAKE-Client, das Telefon Peripheral und SAKE-Server und zusätzlich GATT-Client auf derselben Verbindung. Dauerverbindung, Reconnect über den Bond.
+- Offene Risiken: GATT-Client-Zugriff unter iOS (`retrievePeripherals`/`retrieveConnectedPeripherals`) noch unbewiesen. API unter iOS im Hintergrund nicht erreichbar, daher Nightscout-Upload als Phase 4.

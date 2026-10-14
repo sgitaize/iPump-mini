@@ -50,3 +50,15 @@ Format: Datum · Was getestet · Ergebnis · Mitschnitt-Datei (in `captures/`, g
 - Background Modes `bluetooth-peripheral` und `bluetooth-central` plus State Restoration reichen voraussichtlich aus. Die App muss im Hintergrund nur **erreichbar bleiben**, nicht dauerhaft `FE81` senden.
 - Nach dem Start der App sollte sie kurz `FE81` mit kurzem Intervall senden (macht MiniMed Mobile genauso, nur im Vordergrund nötig).
 - Der GATT-Server (SAKE-Port und DIS) muss immer registriert sein, sobald die App läuft, sonst bricht die Pumpe nach ca. 7 s ab.
+
+## 2026-10-14 – Was die offizielle App auf der Dauerverbindung schreibt (Mitschnitt 2)
+
+Auswertung der Schreibzugriffe des iPhones auf die Pumpe (Link `0x0402`), um unsere Allowlist an der Praxis zu prüfen:
+
+- **CGM RACP:** 9 × `01 06` (Report Stored Records, Last Record), Antwort `06 00 01 01` (Erfolg). Identisch mit OpenMinimed. → In unserer Allowlist.
+- **IDD Status Reader CP:** 93 verschlüsselte Schreibzugriffe (5 und 11 Byte, also 2 bzw. 8 Byte Klartext). Die 2-Byte-Variante passt zu den Get-Opcodes ohne Parameter. Die 8-Byte-Variante ist ein Opcode mit Parametern, noch nicht identifiziert (vermutlich aktive Boli). → Nicht in der Allowlist.
+- **IDD RACP** (unverschlüsselt): `33 69 0f` (Report Stored Records, Last) und `33 5a 0f <u32> <u32>` (Records im Sequenzbereich). So lädt die App die Historie nach. Kein Delete (`0x3c`) beobachtet. → Für die spätere History-Funktion; derzeit blockiert.
+- **CGM Specific Ops CP:** 3 verschlüsselte Zugriffe (Längen passend zu `0x90` Sensordetails und `0x81` Kalibrierkontext). → Blockiert, nicht nötig.
+- **Unbekannt:** 5 × 18 Byte auf Handle `0x0081` (`00 2c 00 00 00 06 07 00 01 80 00 02 28 00 03 c8 00 05`, erstes Byte zählt hoch) und 4 × Write Command auf `0x0099` (`28 00 02 00 30 ff 03` usw.). Wahrscheinlich History & Trace bzw. Streaming. Zuordnung zu UUIDs fehlt, weil iOS die GATT-Discovery gecacht hat. → Blockiert.
+
+Folge: Unsere Allowlist ist eine echte Teilmenge dessen, was die offizielle App tut. Neue Befehle nehmen wir nur nach Rückfrage auf.

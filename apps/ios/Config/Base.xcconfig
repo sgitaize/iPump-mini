@@ -1,0 +1,4 @@
+// Shared build settings. Personal values (signing team, bundle id) go into
+// Local.xcconfig next to this file. It is gitignored, see Local.xcconfig.example.
+OMP_BUNDLE_ID = de.sgitaize.openminipump
+#include? "Local.xcconfig"
