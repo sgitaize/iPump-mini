@@ -61,8 +61,11 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - [ ] AppDelegate als `UNUserNotificationCenterDelegate`: Vordergrund-Anzeige (Banner + Ton), Snooze-Aktionen → `AlarmEngine.shared.snooze(key:minutes:)` (Key in userInfo „alarmKey“)
 - [ ] Einstellungen: Bereich „Alarme“ (Preset-Auswahl, je Alarm Ein/Aus, Schwelle mit mmol-Anzeige, Snooze, Wiederholung; Pumpenkategorien; Test-Alarm; Hinweis kritische Alarme)
 - [ ] Hauptansicht: Hinweis „Alarme stumm bis …“ + Aufheben
-- [ ] Kritische Alarme: Entitlement `com.apple.developer.usernotifications.critical-alerts` bei Apple beantragen (bezahlter Account nötig); bis dahin zeitkritisch (Entitlement ist bereits aktiv und funktioniert mit dem persönlichen Team)
-- [ ] Widgets (Extension-Gerüst + App Group `group.<bundle id>` sind auf main und signieren mit dem persönlichen Team):
+- [ ] Kritische Alarme: Entitlement `com.apple.developer.usernotifications.critical-alerts` bei Apple beantragen (bezahlter Account nötig); bis dahin zeitkritisch
+- [ ] **Simon: in Xcode › Target › Signing & Capabilities prüfen, ob das persönliche Team „App Groups“ und „Time Sensitive Notifications“ anbietet.** Korrektur 15.10.: Die frühere Aussage „funktioniert mit dem persönlichen Team“ war falsch. XcodeGen hatte die Entitlements-Dateien leer überschrieben, deshalb lief der Build nur ohne diese Berechtigungen. Die Berechtigungen sind jetzt per `OMP_APP_ENTITLEMENTS` / `OMP_WIDGET_ENTITLEMENTS` (Base.xcconfig) schaltbar und in Simons Local.xcconfig vorerst aus.
+- [x] Alarme verdrahtet (Branch `feature/alarms-widgets`): Auswertung je Wert, Pumpenalarme aus der History, sofortiger History-Abruf bei Alarm-Bit, Snooze-Aktionen, Einstellungsseite, Stumm-Banner. Im Simulator ausgelöst („Dringend niedrig 52 mg/dL“). **Bewusst noch nicht aufs iPhone gespielt** (soll Simon nachts nicht wecken), morgen gemeinsam testen.
+- [x] Widgets + Live Activity gebaut (Branch `feature/alarms-widgets`): klein, mittel, groß mit Graph, Sperrbildschirm (rund, rechteckig, Zeile), Dynamic Island (kompakt Wert+Pfeil / Delta, erweitert, minimal). Live Activity startet im Simulator. Daten: App-Group-Datei, Fallback über lokalen Server (ohne App Group).
+- Ursprüngliche Widget-Planung:
   - Shared-Modell (letzte Werte, Trend, Delta, IOB) als JSON in der App Group; App schreibt bei neuem Wert und ruft `WidgetCenter.reloadAllTimelines()`
   - klein: Wert + Trendpfeil + Alter; groß: zusätzlich Graph der letzten 3 h; optional Sperrbildschirm (accessory)
   - Live Activity / Dynamic Island: Wert + Trend + Delta seit letztem Wert (`NSSupportsLiveActivities`, Update aus der App bei jedem Wert; Start nur im Vordergrund möglich, Laufzeit max. 8 h → beim Öffnen neu starten)

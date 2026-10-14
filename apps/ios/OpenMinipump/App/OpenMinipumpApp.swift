@@ -66,8 +66,10 @@ final class AppModel: ObservableObject {
         store.onNewReading = {
             uploader.newReading()
             if let latest = store.latest { AlarmEngine.shared.evaluate(latest) }
+            WidgetBridge.update(store: store)
         }
         AlarmEngine.shared.log = log
+        WidgetBridge.log = log
         AlarmEngine.shared.registerCategories()
         api.onStateChange = { [weak self] text in
             Task { @MainActor in self?.apiState = text }
@@ -77,11 +79,20 @@ final class AppModel: ObservableObject {
             Task { @MainActor in log.add(text, .warning) }
         }
         restartAPI()
-        AlarmEngine.shared.requestAuthorization()
+        #if DEBUG
+        let isDemo = ProcessInfo.processInfo.arguments.contains("-demoData")
+        #else
+        let isDemo = false
+        #endif
+        // Simulator tests with demo data skip the permission dialog (it blocks the UI).
+        if !isDemo { AlarmEngine.shared.requestAuthorization() }
         Watchdog.configure(enabled: AlarmEngine.shared.config.noDataEnabled, minutes: AlarmEngine.shared.config.noDataMinutes)
         link.migrateHistoryIfNeeded()
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-demoData") { store.loadDemoData() }
+        if ProcessInfo.processInfo.arguments.contains("-demoData") {
+            store.loadDemoData()
+            WidgetBridge.update(store: store)
+        }
         if ProcessInfo.processInfo.arguments.contains("-demoAlarm") {
             Task { @MainActor in
                 try? await Task.sleep(for: .seconds(2))
@@ -121,6 +132,7 @@ struct OpenMinipumpApp: App {
             if phase == .active {
                 Watchdog.appOpened()
                 model.api.ensureRunning()
+                WidgetBridge.appBecameActive(store: model.store)
             }
         }
     }
