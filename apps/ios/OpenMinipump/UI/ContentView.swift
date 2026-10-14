@@ -233,6 +233,10 @@ struct InsulinChart: View {
     let from: Date
     let hours: Int
     let events: [Treatment]
+    @State private var selected: Date?
+
+    private var binSize: TimeInterval { Double((hours <= 3 ? 15 : hours <= 6 ? 30 : 60) * 60) }
+    private static let kinds: Set<Treatment.Kind> = [.autoBasal, .autoCorrection, .bolus]
 
     private struct Segment: Identifiable {
         let id: String
@@ -244,8 +248,7 @@ struct InsulinChart: View {
     }
 
     private var segments: [Segment] {
-        let minutes = hours <= 3 ? 15 : hours <= 6 ? 30 : 60
-        let size = Double(minutes * 60)
+        let size = binSize
         let order: [(Treatment.Kind, Color)] = [(.autoBasal, .teal), (.autoCorrection, .purple), (.bolus, .blue)]
         var sums: [Double: [Treatment.Kind: Double]] = [:]
         for t in events where order.contains(where: { $0.0 == t.kind }) {
@@ -269,17 +272,90 @@ struct InsulinChart: View {
     var body: some View {
         let data = segments
         if !data.isEmpty {
-            Chart(data) { s in
-                RectangleMark(xStart: .value("Von", s.start), xEnd: .value("Bis", s.end),
-                              yStart: .value("IE", s.low), yEnd: .value("IE", s.high))
-                    .foregroundStyle(s.color)
+            let block = selectedBlock
+            Chart {
+                if let block {
+                    RectangleMark(xStart: .value("Von", block.start), xEnd: .value("Bis", block.end))
+                        .foregroundStyle(.gray.opacity(0.15))
+                }
+                ForEach(data) { s in
+                    RectangleMark(xStart: .value("Von", s.start), xEnd: .value("Bis", s.end),
+                                  yStart: .value("IE", s.low), yEnd: .value("IE", s.high))
+                        .foregroundStyle(s.color)
+                }
             }
             .chartXScale(domain: from...Date())
-            .chartYAxis { AxisMarks(position: .trailing, values: .automatic(desiredCount: 2)) }
+            .chartXSelection(value: $selected)
+            .chartYAxis(.hidden)
             .chartXAxis(.hidden)
             .frame(height: 70)
+            .accessibilityLabel("Insulinabgaben, antippen für Details")
+            if let block {
+                InsulinBlockDetail(start: block.start, end: block.end,
+                                   items: events.filter { Self.kinds.contains($0.kind) && $0.date >= block.start && $0.date < block.end })
+            } else {
+                Text("Insulin-Balken antippen für Details").font(.caption2).foregroundStyle(.secondary)
+            }
         }
     }
+
+    private var selectedBlock: (start: Date, end: Date)? {
+        guard let selected else { return nil }
+        let start = (selected.timeIntervalSince1970 / binSize).rounded(.down) * binSize
+        return (Date(timeIntervalSince1970: start), Date(timeIntervalSince1970: start + binSize))
+    }
+}
+
+/// Details of one insulin time block: sums per kind and the single deliveries.
+struct InsulinBlockDetail: View {
+    let start: Date
+    let end: Date
+    let items: [Treatment]
+
+    var body: some View {
+        let time = start.formatted(date: .omitted, time: .shortened) + "–" + end.formatted(date: .omitted, time: .shortened)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(time).font(.subheadline.weight(.semibold))
+                Spacer()
+                Text(String(format: "%.2f IE", items.reduce(0) { $0 + ($1.value ?? 0) })).font(.subheadline.monospacedDigit())
+            }
+            if items.isEmpty {
+                Text("Keine Abgaben in diesem Zeitraum").font(.caption).foregroundStyle(.secondary)
+            } else {
+                HStack(spacing: 14) {
+                    sum(.bolus, "Bolus", .blue)
+                    sum(.autoCorrection, "Autokorrektur", .purple)
+                    sum(.autoBasal, "Auto-Basal", .teal)
+                }
+                .font(.caption)
+                ForEach(items.sorted { $0.date < $1.date }) { t in
+                    HStack {
+                        Circle().fill(color(t.kind)).frame(width: 6, height: 6)
+                        Text(t.date.formatted(date: .omitted, time: .shortened)).monospacedDigit()
+                        Text(label(t.kind)).foregroundStyle(.secondary)
+                        Spacer()
+                        Text(String(format: "%.3f IE", t.value ?? 0)).monospacedDigit()
+                    }
+                    .font(.caption)
+                }
+            }
+        }
+        .padding(10)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    private func sum(_ kind: Treatment.Kind, _ title: String, _ c: Color) -> some View {
+        let total = items.filter { $0.kind == kind }.reduce(0) { $0 + ($1.value ?? 0) }
+        return HStack(spacing: 4) {
+            Circle().fill(c).frame(width: 7, height: 7)
+            Text("\(title) \(String(format: "%.2f", total))")
+        }
+        .opacity(total > 0 ? 1 : 0.4)
+    }
+
+    private func color(_ k: Treatment.Kind) -> Color { k == .bolus ? .blue : k == .autoCorrection ? .purple : .teal }
+    private func label(_ k: Treatment.Kind) -> String { k == .bolus ? "Bolus" : k == .autoCorrection ? "Autokorrektur" : "Auto-Basal" }
 }
 
 struct ChartLegend: View {
