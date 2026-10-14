@@ -1,0 +1,15 @@
+#!/bin/sh
+# Secret-Scan vor jedem Commit (Regel 4) und Schutz vor proprietärem Material (Regel 3).
+set -e
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks nicht installiert (brew install gitleaks) – Commit abgebrochen." >&2
+  exit 1
+fi
+gitleaks git --pre-commit --staged --redact --no-banner
+
+blocked=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(_vendor|captures)/|\.(apk|apks|xapk|ipa|dex|so|btsnoop|pklg|pcapng?|p12|pem|key)$' || true)
+if [ -n "$blocked" ]; then
+  echo "pre-commit: proprietäres Material/Mitschnitte gestaged – Commit abgebrochen:" >&2
+  echo "$blocked" >&2
+  exit 1
+fi

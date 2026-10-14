@@ -1,0 +1,49 @@
+# --- Proprietäres Material & Mitschnitte (Regel 3/4) ---
+_vendor/
+captures/
+*.apk
+*.apks
+*.xapk
+*.ipa
+*.dex
+*.so
+*.btsnoop
+*.pklg
+*.pcap
+*.pcapng
+*.mitm
+*.har
+*.flow
+*.p12
+*.pem
+*.key
+*.keystore
+*.jks
+*.mobileprovision
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# --- Xcode / iOS ---
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xcarchive
+
+# --- Android ---
+.gradle/
+local.properties
+apps/android/**/build/
+
+# --- macOS ---
+.DS_Store
