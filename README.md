@@ -38,4 +38,4 @@ git config core.hooksPath .githooks   # gitleaks-Pre-Commit-Hook aktivieren
 
 ## Lizenz
 
-Noch offen, siehe [docs/decisions/0002-lizenz.md](docs/decisions/0002-lizenz.md).
+GPL-3.0, siehe [LICENSE](LICENSE) und [ADR 0002](docs/decisions/0002-lizenz.md).

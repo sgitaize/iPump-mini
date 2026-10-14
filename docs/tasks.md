@@ -11,11 +11,11 @@
 ## Phase 1 – Recherche ✅ (wartet auf Go)
 - [x] docs/landscape.md
 - [x] Empfehlung: ADR 0003 (vorgeschlagen)
-- [ ] Simon: Entscheidung zu ADR 0003, GPL-3.0, Key-DB-Umgang
+- [x] Simon: ADR 0003, GPL-3.0, Key-DB lokal aus _vendor/ (angenommen)
 - [ ] Simon: Discord OpenMinimed beitreten / vorstellen (optional, eigener Account)
 
 ## Phase 2/3 – neu zugeschnitten (Vorschlag)
 - [ ] Testpumpe: Seriennummer + Firmware-Version ins Laborbuch / .env
-- [ ] Ground Truth: PythonPumpConnector auf Raspberry Pi gegen Testpumpe
+- [ ] (Fallback) Linux-Referenz mit PythonPumpConnector, nur bei Bedarf
 - [ ] PacketLogger-Mitschnitt: offizielle MiniMed Mobile (iOS) koppeln + Reconnect im Hintergrund
 - [ ] Swift-Spike (macOS-CLI → iPhone): Advertising FE82, GATT-Server, retrieveConnectedPeripherals

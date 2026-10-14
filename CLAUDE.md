@@ -27,6 +27,6 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 - Der iOS-Simulator hat kein Bluetooth, deshalb braucht es einen Replay-Transport aus echten Mitschnitten.
 
 ## Aktueller Stand
-- Phase 0 ✅. Phase 1 (Recherche) ✅, wartet auf Simons Go zu ADR 0003.
+- Phase 0 ✅. Phase 1 (Recherche) ✅, ADR 0003 angenommen, Lizenz GPL-3.0. Nächster Schritt: PacketLogger-Mitschnitt der offiziellen MiniMed Mobile auf Simons iPhone 18 Pro, danach der Swift-Spike.
 - Kernwissen: `docs/landscape.md`. Das Protokoll ist durch OpenMinimed (GPL-3.0) bekannt, das Telefon ist BLE-**Peripheral** und SAKE-Server, die Pumpe ist Central. Pairing läuft lokal ohne Cloud. Für iOS existiert noch nichts.
 - Größte Risiken für iOS: Hintergrund-Reconnect (FE81), GATT-Client auf einer eingehenden Verbindung, MTU 23.

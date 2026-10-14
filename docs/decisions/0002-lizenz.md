@@ -1,6 +1,6 @@
 # ADR 0002: Lizenz (offen)
 
-- Status: offen, die Entscheidung fällt spätestens in Phase 6
+- Status: **angenommen: GPL-3.0** (2026-10-14, Simon)
 - Datum: 2026-10-14
 
 ## Kontext
@@ -17,3 +17,6 @@ Das Projekt soll später veröffentlicht werden. Relevant sind die Kompatibilit�
 
 ## Vorläufige Tendenz
 Wir entscheiden nach Phase 1. Übernehmen wir GPL-Code, ist GPL-3.0 zwingend. Bei einer Neuentwicklung ist Apache-2.0 oder MPL-2.0 attraktiv, weil der Fokus auf iOS liegt.
+
+## Entscheidung
+GPL-3.0. Das Projekt wird Open Source und baut auf OpenMinimed (GPL-3.0) auf, siehe ADR 0003. Für iOS: Selbst-Build bzw. TestFlight statt App Store.

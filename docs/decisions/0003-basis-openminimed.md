@@ -1,16 +1,16 @@
 # ADR 0003: Auf OpenMinimed aufbauen, iOS neu entwickeln
 
-- Status: **vorgeschlagen**, wartet auf Simons Go
+- Status: **angenommen** (2026-10-14, Simon)
 - Datum: 2026-10-14
 
 ## Kontext
 Die Recherche in Phase 1 (`docs/landscape.md`) zeigt: Protokoll und SAKE-Krypto der 700er-Serie sind durch OpenMinimed (GPL-3.0) öffentlich verstanden und implementiert (Python, Java, PebbleOS-C). Eine iOS-Implementierung existiert nicht.
 
-## Entscheidung (Vorschlag)
+## Entscheidung
 1. Wir schließen uns der OpenMinimed-Community an (Discord) und nutzen deren Dokumentation als Protokollquelle.
 2. Wir bauen eine Swift-Portierung von PythonSake als eigenständiges Paket (GPL-3.0) und bieten sie upstream an.
 3. Die iOS-App ist Neuentwicklung. Android folgt später auf Basis von JavaSake und in Abstimmung mit GlycemicGPT.
-4. Prototyp und Ground Truth: PythonPumpConnector unverändert auf Linux (Raspberry Pi) statt eines eigenen `bleak`-Prototyps (bleak kann keine Peripheral-Rolle).
+4. Kein `bleak`-Prototyp (bleak kann keine Peripheral-Rolle). Wir gehen direkt zu einem Swift-Spike, zuerst als macOS-CLI, dann auf dem iPhone. Eine Linux-Referenz mit PythonPumpConnector (z. B. Pi Zero 2 W) gibt es nur als Fallback, falls wir festhängen.
 5. Die SAKE-Key-DB kommt nicht ins Repo. Sie wird lokal aus `_vendor/` bzw. einer Konfiguration geladen.
 
 ## Konsequenzen
