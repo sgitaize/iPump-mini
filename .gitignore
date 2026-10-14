@@ -52,3 +52,7 @@ apps/android/**/build/
 apps/ios/*.xcodeproj/
 apps/ios/OpenMinipump/Info.plist
 apps/ios/Config/Local.xcconfig
+
+# SwiftPM build output
+.build/
+.swiftpm/
