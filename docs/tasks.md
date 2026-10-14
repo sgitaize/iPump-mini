@@ -68,7 +68,11 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
   - Live Activity / Dynamic Island: Wert + Trend + Delta seit letztem Wert (`NSSupportsLiveActivities`, Update aus der App bei jedem Wert; Start nur im Vordergrund möglich, Laufzeit max. 8 h → beim Öffnen neu starten)
 - [ ] Insulin-Band im Glukose-Graph (gleiche Zeitachse, Antippen für Details): von Simon auf dem Gerät bestätigen lassen
 
+## Ideen (Simon 15.10.)
+- [ ] Im CGM-Graph auf einen 5-Minuten-Wert tippen: Uhrzeit, genauer SG-Wert, aktives Insulin (IOB) zu diesem Zeitpunkt und das in diesem 5-Minuten-Fenster abgegebene Insulin anzeigen (IOB-Verlauf müsste dafür gespeichert werden, bisher nur aktueller Wert)
+
 ## Phase 6 – Veröffentlichung (nächste Schritte, Simon 15.10.)
+- [ ] **Umbenennen in „iPump-mini“** (Anzeigename, Bundle-ID/Repo-Name prüfen), App-Icon und Designsprache passend dazu entwickeln
 - [ ] App grafisch aufwerten: schlicht, aber schick, ohne generischen „AI-Look“
 - [ ] Entwickler-Website (simongutjahr.de / Dev-Portfolio) um openMinipump ergänzen, **ganz oben platzieren**
 - [ ] GitHub-Repo öffentlich machen: README (EN/DE), Build-Anleitung für den Selbstbau

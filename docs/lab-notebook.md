@@ -114,3 +114,10 @@ Folge: Unsere Allowlist ist eine echte Teilmenge dessen, was die offizielle App 
 - „Bolus Delivered P2“ (0x0096) folgt direkt auf P1 (Sequenz +1) und enthält die Aktivierungsart. 0x5A („commanded“) sind die SmartGuard-Autokorrekturen.
 - Ergebnis für ~2,5 Tage: 14 manuelle/Bolusrechner-Boli, 95 Autokorrekturen. Das passt zu den Mahlzeiten.
 - Nightscout aktualisiert vorhandene Treatments beim erneuten Hochladen (Upsert über `created_at` + `eventType`). Die neu eingestuften Autokorrekturen tragen dort jetzt `automatic: true`.
+
+## 2026-10-15 – Verbindungsabbruch durch eigene Verbindungsanfragen (Bug)
+
+- **Symptom:** Nach dem Update „Sitzung fortsetzen“ verband die Pumpe nicht mehr. Im App-Log: „GATT-Client verbunden“ ohne SAKE-Abo, Trennung nach 30 s, später „Encryption is insufficient“ beim Lesen von IDD Status.
+- **Ursache:** Die App rief `centralManager.connect(pump)` beim Fortsetzen ohne Verbindung und nach jeder Trennung auf. Damit baut das iPhone als Central eine **zweite Verbindung** zur Pumpe auf. Diese ist nicht über die Kopplung verschlüsselt (die Pumpe ist im Bond der Central). Die Pumpe startet dort kein SAKE, und durch die ständigen Versuche kommt ihre eigene Neuverbindung nicht zustande.
+- **Fix (53191ce):** Die App initiiert nie eine Verbindung zur Pumpe. Sie hängt sich nur nach dem SAKE-Handshake an die Verbindung der Pumpe (`retrievePeripherals` + `connect` auf den bestehenden Link). Einmaliges Aufräumen: hängende Anfrage abbrechen, Dienste neu registrieren.
+- **Offen:** Pumpe verbindet nach dem Fix noch nicht neu (Stand 01:05). Prüfen, ob die Pumpe die Kopplung verworfen hat → ggf. neu koppeln.
