@@ -32,8 +32,8 @@ final class AppModel: ObservableObject {
         let uploader = uploader
         link = PumpLink(config: config, store: store, log: log) {
             Watchdog.arm()
-            uploader.dataChanged()
         }
+        store.onNewReading = { uploader.newReading() }
         api.onStateChange = { [weak self] text in
             Task { @MainActor in self?.apiState = text }
         }
@@ -49,7 +49,7 @@ final class AppModel: ObservableObject {
             uploader.url = url
             uploader.secret = ProcessInfo.processInfo.environment["OMP_NS_SECRET"] ?? ""
             uploader.enabled = true
-            uploader.dataChanged()
+            uploader.newReading()
         }
         #endif
     }

@@ -63,22 +63,17 @@ final class NightscoutUploader: ObservableObject {
     }
     private var lastDeviceStatus: Date = .distantPast
     private var running = false
-    private var pending: Task<Void, Never>?
 
     init(store: DataStore, log: EventLog) {
         self.store = store
         self.log = log
     }
 
-    /// Debounced: data arrives in bursts during a refresh cycle.
-    func dataChanged() {
+    /// Uploads only when a new sensor value arrived, then immediately (saves battery).
+    /// The pump status of the same refresh cycle goes along with it.
+    func newReading() {
         guard enabled else { return }
-        pending?.cancel()
-        pending = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(4))
-            guard !Task.isCancelled else { return }
-            await self?.sync()
-        }
+        Task { [weak self] in await self?.sync() }
     }
 
     func sync() async {
@@ -96,7 +91,7 @@ final class NightscoutUploader: ObservableObject {
                 log.add("Nightscout: \(newReadings.count) Wert(e) hochgeladen")
             }
             let snap = store.snapshot
-            if uploadDeviceStatus, snap.updatedAt > lastDeviceStatus.addingTimeInterval(4 * 60) {
+            if uploadDeviceStatus, snap.updatedAt > lastDeviceStatus {
                 let level = UIDevice.current.batteryLevel
                 let ds = Nightscout.deviceStatus(snap, uploaderBattery: level >= 0 ? Int((level * 100).rounded()) : nil)
                 try await post(base, path: "api/v1/devicestatus", json: ds)

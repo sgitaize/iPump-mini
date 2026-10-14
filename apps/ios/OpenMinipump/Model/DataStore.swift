@@ -14,6 +14,9 @@ final class DataStore: ObservableObject {
     /// Thread-safe view for the API server (runs on its own queue).
     let shared = SharedData()
 
+    /// Called once per genuinely new sensor value (not for updates of a known one).
+    var onNewReading: (() -> Void)?
+
     private let retention: TimeInterval = 7 * 24 * 3600
     private let fileURL: URL = {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -70,9 +73,12 @@ final class DataStore: ObservableObject {
         } else {
             readings.append(reading)
             readings.sort { $0.date < $1.date }
+            let cutoff = Date().addingTimeInterval(-retention)
+            readings.removeAll { $0.date < cutoff }
+            touched()
+            onNewReading?()
+            return
         }
-        let cutoff = Date().addingTimeInterval(-retention)
-        readings.removeAll { $0.date < cutoff }
         touched()
     }
 

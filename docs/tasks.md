@@ -41,4 +41,7 @@
 - [x] Optionaler Upload (entries + devicestatus), Secret im Schlüsselbund, Verbindungstest
 - [x] /pebble mit count und units=mmol
 - [ ] Upload gegen Simons echtes Nightscout prüfen (Simon trägt URL/Secret in der App ein)
-- [ ] casiocgm: Datenquelle „openMinipump lokal“ (VPS-Projekt)
+- [x] casiocgm 2.4.0 (Test): Datenquelle „openMinipump lokal“, Branch feature/openminipump-source, Config docs/config-beta (VPS-Projekt)
+- [ ] Simon: casiocgm-Testversion auf der Uhr testen
+- [x] Nightscout-Upload nur bei neuem Sensorwert, dann sofort
+- [x] App-Icon (Tropfen mit CGM-Kurve, Scripts/render-icon.swift)
