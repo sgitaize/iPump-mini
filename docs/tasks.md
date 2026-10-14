@@ -84,6 +84,22 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
   - Schlüsseldatenbank bleibt draußen; Anleitung, wie man sie sich selbst beschafft (OpenMinimed-Doku)
 - [ ] AltStore-Veröffentlichung vorbereiten: Source-JSON (apps.json), signierte IPA als GitHub-Release-Asset, GitHub-Actions-Pipeline (Build → IPA → Release → Source aktualisieren)
 
+## Nachtarbeit 15.10.2026 (01:08–01:30, Simon schläft, Freigabe „selbstständig nach Plan“)
+- 01:08 Neukopplung durch Simon nach dem Verbindungsfehler: läuft, Werte alle 5 min im Hintergrund, Nightscout-Upload ok (main-Build auf dem iPhone).
+- Branch **`feature/alarms-widgets`** (gepusht, **nicht auf dem iPhone**, nicht nach main gemergt):
+  - Alarme komplett verdrahtet + Einstellungsseite, im Simulator ausgelöst
+  - Widgets (klein/mittel/groß/Sperrbildschirm) + Live Activity/Dynamic Island, Live Activity startet im Simulator
+  - Tippen auf Sensorwert → Details mit IOB-Verlauf und Abgaben im 5-min-Fenster
+  - Import der Schlüsseldatenbank in der App (für spätere öffentliche Builds)
+  - README + Build-Anleitung, AltStore-Vorbereitung (`docs/release-altstore.md`, `altstore/source.json`, manuelle Draft-Pipeline)
+- Designvorschlag iPump-mini: `docs/design/ipump-mini.md`, `docs/design/icon-proposals.png` (Empfehlung Variante A)
+- Website: Entwurf der openMinipump-Karte (oben auf /dev/) im VPS-Projekt `simongutjahr-website/drafts/`, **nicht deployt**
+- **Für Simon am Morgen:**
+  1. In Xcode mit angemeldetem Account Signing & Capabilities prüfen (App Groups, Time Sensitive). Falls verfügbar, in `Local.xcconfig` die zwei leeren `OMP_*_ENTITLEMENTS`-Zeilen entfernen.
+  2. Branch `feature/alarms-widgets` gemeinsam aufs iPhone spielen und testen (Alarme, Widgets, Dynamic Island), dann nach main mergen.
+  3. Icon-Variante und Namen entscheiden.
+  4. Freigabe für die Website-Karte und den Zeitpunkt „Repo öffentlich“.
+
 ## Stand am Ende der Sitzung (15.10.2026, ~00:50)
 - main (`bb71a98`) ist auf Simons iPhone installiert und läuft: Werte, Historie, Behandlungen, Nightscout, API, antippbarer Insulin-Graph.
 - Offene Arbeit: Phase 5 (Branch `wip/alarms-widgets`), Phase 6 (Veröffentlichung), Pebble-Test debuggen.
