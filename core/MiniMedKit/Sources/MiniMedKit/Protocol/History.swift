@@ -9,6 +9,10 @@ public enum HistoryEvent: Equatable, Sendable {
     /// relative offset (seconds) from the latest reference.
     case referenceTime(DateComponents)
     case bolusDelivered(id: UInt16, fastUnits: Double, extendedUnits: Double, durationMinutes: UInt16)
+    /// Second part of a delivered bolus (follows part 1). Activation type (IDS): 0x33 manual,
+    /// 0x3C recommended (bolus wizard), 0x55 recommendation changed by the user,
+    /// 0x5A commanded (SmartGuard auto correction).
+    case bolusDeliveredDetails(activationType: UInt8?)
     /// SmartGuard auto basal (micro bolus).
     case autoBasal(units: Double)
     case meal(grams: Double)
@@ -61,6 +65,14 @@ public struct HistoryRecord: Equatable, Sendable {
             let duration = try r.u16()
             try r.expectEnd()
             return .bolusDelivered(id: id, fastUnits: fast, extendedUnits: ext, durationMinutes: duration)
+        case 0x0096: // Bolus Delivered P2: flags, start time offset, [activation], [end reason], [annunciation]
+            let flags = try r.u8()
+            _ = try r.u32()
+            let activation: UInt8? = flags & 0x01 != 0 ? try r.u8() : nil
+            if flags & 0x02 != 0 { _ = try r.u8() }
+            if flags & 0x04 != 0 { _ = try r.u16() }
+            try r.expectEnd()
+            return .bolusDeliveredDetails(activationType: activation)
         case 0xF001: // Auto basal delivery
             _ = try r.u8()
             let units = try r.float32()

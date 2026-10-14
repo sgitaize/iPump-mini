@@ -36,10 +36,10 @@
 - [ ] Hintergrund über mehrere Stunden prüfen (Protokolldatei vom iPhone ziehen)
 - [x] Pumpenhistorie über IDD RACP (Allowlist erweitert, Simons Freigabe 15.10.): Behandlungen + Sensorwerte
 - [x] Behandlungen im Graph (Bolus, KH, BZ/Kalibrierung, Pausen) + Insulin-Graph (Bolus, Auto-Basal)
-- [x] Nightscout: Behandlungen hochladen, Historie aus Nightscout nachladen, lokale API /api/v1/treatments
+- [x] Nightscout: Behandlungen hochladen (Autokorrekturen als automatic), lokale API /api/v1/treatments; fehlende Werte kommen aus der Pumpenhistorie (kein Nachladen aus Nightscout)
 - [x] Einstellungen in einklappbaren Bereichen
-- [ ] SmartGuard-Autokorrekturen von manuellen Boli unterscheiden (Bolus Programmed P2)
-- [ ] Fehlenden History-Block untersuchen (1800 von 2000)
+- [x] SmartGuard-Autokorrekturen von manuellen Boli unterscheiden (Bolus Delivered P2, Aktivierungsart 0x5A)
+- [x] „Fehlender“ History-Block: war doppelte Verarbeitung, behoben
 - [ ] Treatments (Bolus, Kohlenhydrate) aus IDD-History
 
 ## Phase 4 – Nightscout-Upload und Pebble
@@ -50,3 +50,9 @@
 - [ ] casiocgm-Test auf der Uhr klappt noch nicht (Simon 15.10.) → später debuggen (ATS/HTTP in der Pebble-App? App im Hintergrund pausiert?)
 - [x] Nightscout-Upload nur bei neuem Sensorwert, dann sofort
 - [x] App-Icon (Tropfen mit CGM-Kurve, Scripts/render-icon.swift)
+
+## Phase 5 – Alarme und Widgets (Simon 15.10.)
+- [ ] Benachrichtigungen mit Stummschalten (Snooze) wie in CGM-Apps
+- [ ] Dringend niedrig (55 mg/dL / 3,1 mmol/L) als kritischer Alarm (braucht Apple-Freigabe, sonst „zeitkritisch“)
+- [ ] Pumpenalarme (Annunciations) weitergeben, einzeln konfigurierbar, Presets
+- [ ] Widgets: klein (Wert + Trend), groß (mit Graph), Live Activity / Dynamic Island (Wert, Trend, Delta)

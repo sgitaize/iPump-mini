@@ -65,6 +65,8 @@ final class DataStore: ObservableObject {
             Treatment(id: 1, date: now.addingTimeInterval(-150 * 60), kind: .carbs, value: 45),
             Treatment(id: 2, date: now.addingTimeInterval(-148 * 60), kind: .bolus, value: 3.5),
             Treatment(id: 3, date: now.addingTimeInterval(-60 * 60), kind: .calibration, value: 152),
+            Treatment(id: 4, date: now.addingTimeInterval(-40 * 60), kind: .autoCorrection, value: 0.45),
+            Treatment(id: 5, date: now.addingTimeInterval(-25 * 60), kind: .autoCorrection, value: 0.6),
         ] + (0..<36).map { i in
             Treatment(id: UInt32(10 + i), date: now.addingTimeInterval(-Double(i) * 300), kind: .autoBasal,
                       value: [0.05, 0.1, 0.0, 0.15, 0.05][i % 5])
@@ -122,6 +124,11 @@ final class DataStore: ObservableObject {
         treatments.removeAll { $0.date < cutoff }
         touched()
         return new
+    }
+
+    func resetTreatments() {
+        treatments = []
+        touched()
     }
 
     func update(_ change: (inout PumpSnapshot) -> Void) {

@@ -45,7 +45,7 @@ final class AppModel: ObservableObject {
         }
         restartAPI()
         Watchdog.requestAuthorization()
-        uploader.pullIfGaps()
+        link.migrateHistoryIfNeeded()
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-demoData") { store.loadDemoData() }
         if let url = ProcessInfo.processInfo.environment["OMP_NS_URL"] {

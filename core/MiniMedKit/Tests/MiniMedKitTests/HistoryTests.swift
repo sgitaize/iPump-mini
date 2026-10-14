@@ -83,3 +83,23 @@ final class TreatmentTests: XCTestCase {
         XCTAssertEqual((Nightscout.treatment(Treatment(id: 6, date: d, kind: .carbs, value: 40))?["carbs"] as? NSNumber)?.doubleValue, 40)
     }
 }
+
+final class BolusClassificationTests: XCTestCase {
+    func testAutoCorrectionUsesActivationType() throws {
+        let d = Date(timeIntervalSince1970: 1_760_000_000)
+        // P2: flags 0x03 (activation + end reason), start offset 0, activation, end reason 0x33
+        let p2Auto = try HistoryRecord([0x96, 0x00, 11, 0, 0, 0, 0, 0] + [0x03, 0, 0, 0, 0, 0x5A, 0x33])
+        let p2Wizard = try HistoryRecord([0x96, 0x00, 21, 0, 0, 0, 0, 0] + [0x03, 0, 0, 0, 0, 0x3C, 0x33])
+        XCTAssertEqual(p2Auto.event, .bolusDeliveredDetails(activationType: 0x5A))
+        let events = [
+            TimedHistoryEvent(sequence: 10, date: d, event: .bolusDelivered(id: 1, fastUnits: 0.4, extendedUnits: 0, durationMinutes: 0)),
+            TimedHistoryEvent(sequence: 11, date: d, event: p2Auto.event),
+            TimedHistoryEvent(sequence: 20, date: d, event: .bolusDelivered(id: 2, fastUnits: 5, extendedUnits: 0, durationMinutes: 0)),
+            TimedHistoryEvent(sequence: 21, date: d, event: p2Wizard.event),
+            TimedHistoryEvent(sequence: 30, date: d, event: .bolusDelivered(id: 3, fastUnits: 1, extendedUnits: 0, durationMinutes: 0)),
+        ]
+        let t = Treatment.from(events)
+        XCTAssertEqual(t.map(\.kind), [.autoCorrection, .bolus, .bolus])
+        XCTAssertEqual(Nightscout.treatment(t[0])?["automatic"] as? Bool, true)
+    }
+}

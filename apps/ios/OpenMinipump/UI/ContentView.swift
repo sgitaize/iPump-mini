@@ -190,13 +190,14 @@ struct GlucoseChart: View {
                     .foregroundStyle(.gray.opacity(0.6))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
             }
+            // Only user boluses and carbs here; SmartGuard insulin is in the insulin chart.
             ForEach(events.filter { $0.kind == .carbs }) { t in
                 PointMark(x: .value("Zeit", t.date), y: .value("mg/dL", yMax - 15))
                     .symbol(.circle)
                     .symbolSize(70)
                     .foregroundStyle(.orange)
                     .annotation(position: .bottom, spacing: 2) {
-                        Text("\(Int(t.value ?? 0)) g").font(.system(size: 9)).foregroundStyle(.orange)
+                        if hours <= 6 { Text("\(Int(t.value ?? 0)) g").font(.system(size: 9)).foregroundStyle(.orange) }
                     }
             }
             ForEach(events.filter { $0.kind == .bolus }) { t in
@@ -205,7 +206,7 @@ struct GlucoseChart: View {
                     .symbolSize(70)
                     .foregroundStyle(.blue)
                     .annotation(position: .bottom, spacing: 2) {
-                        Text(String(format: "%.1f", t.value ?? 0)).font(.system(size: 9)).foregroundStyle(.blue)
+                        if hours <= 6 { Text(String(format: "%.1f", t.value ?? 0)).font(.system(size: 9)).foregroundStyle(.blue) }
                     }
             }
             ForEach(events.filter { $0.kind == .bgCheck || $0.kind == .calibration }) { t in
@@ -221,27 +222,56 @@ struct GlucoseChart: View {
         .overlay {
             if points.isEmpty { Text("Keine Werte in diesem Zeitraum").font(.caption).foregroundStyle(.secondary) }
         }
-        InsulinChart(from: from, events: events)
+        InsulinChart(from: from, hours: hours, events: events)
         ChartLegend()
     }
 }
 
-/// Bolus and SmartGuard auto basal (micro boluses) per event.
+/// Insulin per time block, stacked by kind, so many small SmartGuard deliveries stay readable.
 struct InsulinChart: View {
     let from: Date
+    let hours: Int
     let events: [Treatment]
 
-    var body: some View {
-        let insulin = events.filter { $0.kind == .bolus || $0.kind == .autoBasal }
-        if !insulin.isEmpty {
-            Chart(insulin) { t in
-                BarMark(x: .value("Zeit", t.date), y: .value("IE", t.value ?? 0), width: .fixed(t.kind == .bolus ? 4 : 2))
-                    .foregroundStyle(t.kind == .bolus ? Color.blue : Color.teal)
+    private struct Bin: Identifiable {
+        let id: String
+        let start: Date
+        let kind: String
+        let units: Double
+    }
+
+    private var bins: [Bin] {
+        let minutes = hours <= 3 ? 15 : hours <= 6 ? 30 : 60
+        let size = Double(minutes * 60)
+        var sums: [String: (Date, String, Double)] = [:]
+        for t in events {
+            let kind: String
+            switch t.kind {
+            case .bolus: kind = "Bolus"
+            case .autoCorrection: kind = "Autokorrektur"
+            case .autoBasal: kind = "Auto-Basal"
+            default: continue
             }
+            let start = Date(timeIntervalSince1970: (t.date.timeIntervalSince1970 / size).rounded(.down) * size)
+            let key = "\(start.timeIntervalSince1970)-\(kind)"
+            sums[key] = (start, kind, (sums[key]?.2 ?? 0) + (t.value ?? 0))
+        }
+        return sums.map { Bin(id: $0.key, start: $0.value.0, kind: $0.value.1, units: $0.value.2) }
+    }
+
+    var body: some View {
+        let data = bins
+        if !data.isEmpty {
+            Chart(data) { b in
+                BarMark(x: .value("Zeit", b.start), y: .value("IE", b.units), width: .ratio(0.8))
+                    .foregroundStyle(by: .value("Art", b.kind))
+            }
+            .chartForegroundStyleScale(["Bolus": Color.blue, "Autokorrektur": Color.purple, "Auto-Basal": Color.teal])
+            .chartLegend(.hidden)
             .chartXScale(domain: from...Date())
             .chartYAxis { AxisMarks(position: .trailing, values: .automatic(desiredCount: 2)) }
             .chartXAxis(.hidden)
-            .frame(height: 60)
+            .frame(height: 70)
         }
     }
 }
@@ -252,6 +282,7 @@ struct ChartLegend: View {
             legend("triangle.fill", .blue, "Bolus")
             legend("circle.fill", .orange, "KH")
             legend("diamond.fill", .red, "BZ/Kalibr.")
+            legend("square.fill", .purple, "Autokorr.")
             legend("square.fill", .teal, "Auto-Basal")
         }
         .font(.caption2)

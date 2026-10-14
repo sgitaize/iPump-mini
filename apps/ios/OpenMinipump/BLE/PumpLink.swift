@@ -536,6 +536,19 @@ final class PumpLink: NSObject, ObservableObject {
         }
     }
 
+    /// Bump to re-read the pump history once (e.g. after improving the classification).
+    private static let historyVersion = 2
+
+    func migrateHistoryIfNeeded() {
+        guard UserDefaults.standard.integer(forKey: "historyVersion") < Self.historyVersion else { return }
+        UserDefaults.standard.set(Self.historyVersion, forKey: "historyVersion")
+        historyLastSeq = nil
+        historyReference = nil
+        store.resetTreatments()
+        UserDefaults.standard.set(0, forKey: "nsLastTreatment")
+        log.add("History wird neu eingelesen (Bolus-Einstufung verbessert)")
+    }
+
     /// After "last record" told us the newest sequence number: queue the missing ranges.
     private func queueHistoryRanges() {
         guard let newest = historyNewestSeq else { return }
@@ -562,14 +575,16 @@ final class PumpLink: NSObject, ObservableObject {
         historyReference = reference
         if let maxSeq = records.map(\.sequence).max() { historyLastSeq = max(historyLastSeq ?? 0, maxSeq) }
 
-        let treatments = events.compactMap(Treatment.init)
+        let treatments = Treatment.from(events)
+        let auto = treatments.filter { $0.kind == .autoCorrection }.count
+        let manual = treatments.filter { $0.kind == .bolus }.count
         let sgv = events.compactMap { e -> GlucoseReading? in
             guard case .sensorGlucose(let mgdl?) = e.event else { return nil }
             return GlucoseReading(date: e.date, mgdl: mgdl, trendMgdlPerMin: nil, sessionOffsetMinutes: nil)
         }
         let newTreatments = store.addTreatments(treatments)
         let newReadings = store.merge(sgv)
-        log.add("History: \(records.count) Einträge, \(newTreatments.count) neue Behandlungen, \(newReadings.count) Sensorwerte nachgetragen"
+        log.add("History: \(records.count) Einträge, \(newTreatments.count) neue Behandlungen (Boli \(manual), Autokorrekturen \(auto)), \(newReadings.count) Sensorwerte nachgetragen"
                 + (reference == nil ? " (noch keine Zeitreferenz)" : ""))
         if !newTreatments.isEmpty || !newReadings.isEmpty { onHistory(newReadings.map(\.date).min()) }
     }
@@ -702,7 +717,9 @@ final class PumpLink: NSObject, ObservableObject {
                     finish { _ in true }
                 case .historyRange?:
                     finish { _ in true }
-                    if !operations.contains(where: { if case .historyRange = $0 { true } else { false } }) {
+                    // Process once, after the last range (which may already be running now).
+                    let isRange: (Operation?) -> Bool = { if case .historyRange? = $0 { true } else { false } }
+                    if !operations.contains(where: { isRange($0) }), !isRange(current) {
                         processHistory()
                     }
                 default:

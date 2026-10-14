@@ -4,7 +4,13 @@ import Foundation
 /// Therapy event from the pump history, as shown in the chart and uploaded to Nightscout.
 public struct Treatment: Codable, Equatable, Sendable, Identifiable {
     public enum Kind: String, Codable, Sendable {
-        case bolus, autoBasal, carbs, bgCheck, calibration, basalChange, suspend, resume
+        /// User-initiated bolus (manual or bolus wizard, usually with carbs).
+        case bolus
+        /// SmartGuard auto correction bolus.
+        case autoCorrection
+        case autoBasal, carbs, bgCheck, calibration, basalChange, suspend, resume
+
+        public var isAutomatic: Bool { self == .autoBasal || self == .autoCorrection }
     }
 
     /// Pump history sequence number.
@@ -19,6 +25,22 @@ public struct Treatment: Codable, Equatable, Sendable, Identifiable {
         self.date = date
         self.kind = kind
         self.value = value
+    }
+
+    /// Builds treatments from a run of history events. A delivered bolus is classified with
+    /// the activation type of its second part (next record): "commanded" (0x5A) means a
+    /// SmartGuard auto correction.
+    public static func from(_ events: [TimedHistoryEvent]) -> [Treatment] {
+        let sorted = events.sorted { $0.sequence < $1.sequence }
+        var details: [UInt32: UInt8?] = [:]
+        for e in sorted { if case .bolusDeliveredDetails(let a) = e.event { details[e.sequence] = a } }
+        return sorted.compactMap { e in
+            guard var t = Treatment(e) else { return nil }
+            if t.kind == .bolus, let activation = details[e.sequence + 1] ?? nil, activation == 0x5A {
+                t = Treatment(id: t.id, date: t.date, kind: .autoCorrection, value: t.value)
+            }
+            return t
+        }
     }
 
     public init?(_ e: TimedHistoryEvent) {
@@ -67,6 +89,11 @@ extension Nightscout {
         case .bolus:
             out["eventType"] = "Correction Bolus"
             out["insulin"] = dec(t.value)
+        case .autoCorrection:
+            out["eventType"] = "Correction Bolus"
+            out["insulin"] = dec(t.value)
+            out["automatic"] = true
+            out["notes"] = "SmartGuard Autokorrektur"
         case .autoBasal:
             guard includeAutoBasal else { return nil }
             out["eventType"] = "Correction Bolus"

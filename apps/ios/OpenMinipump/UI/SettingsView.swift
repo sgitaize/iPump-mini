@@ -18,7 +18,6 @@ struct SettingsView: View {
     @AppStorage("settings.api") private var openAPI = false
     @AppStorage("settings.notify") private var openNotify = false
     @AppStorage("settings.info") private var openInfo = false
-    @State private var pulling = false
 
     var body: some View {
         NavigationStack {
@@ -46,7 +45,7 @@ struct SettingsView: View {
                             .autocorrectionDisabled()
                         SecureField("API-Secret (oder token=…)", text: $uploader.secret)
                         Toggle("Pumpenstatus (devicestatus)", isOn: $uploader.uploadDeviceStatus)
-                        Toggle("Behandlungen (Bolus, KH, BZ)", isOn: $uploader.uploadTreatments)
+                        Toggle("Behandlungen (Bolus, Autokorrektur, KH, BZ)", isOn: $uploader.uploadTreatments)
                         if uploader.uploadTreatments {
                             Toggle("Auch Auto-Basal-Mikroboli", isOn: $uploader.uploadAutoBasal)
                         }
@@ -66,17 +65,8 @@ struct SettingsView: View {
                             uploader.resetUploadMarker()
                             Task { await uploader.sync() }
                         }
-                        Button(pulling ? "Lade…" : "Historie aus Nightscout laden (24 h)") {
-                            pulling = true
-                            Task {
-                                await uploader.pullHistory(hours: 24)
-                                pulling = false
-                            }
-                        }
-                        .disabled(pulling)
-                        if let pull = uploader.lastPull { Text(pull).font(.caption) }
                     }
-                    Text("Lädt neue Sensorwerte sofort hoch, dazu Pumpenstatus und Behandlungen aus der Pumpenhistorie. Funktioniert auch im Hintergrund, weil die Pumpe die App alle 5 Minuten weckt. Fehlen beim Start Werte der letzten 24 h, werden sie aus Nightscout nachgeladen. Das Secret liegt im Schlüsselbund.")
+                    Text("Lädt neue Sensorwerte sofort hoch, dazu Pumpenstatus und Behandlungen aus der Pumpenhistorie. Funktioniert auch im Hintergrund, weil die Pumpe die App alle 5 Minuten weckt. Fehlende Werte liest die App aus der Pumpenhistorie nach und lädt sie gesammelt hoch. Das Secret liegt im Schlüsselbund.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
 

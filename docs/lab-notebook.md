@@ -108,3 +108,9 @@ Folge: Unsere Allowlist ist eine echte Teilmenge dessen, was die offizielle App 
 - **Ergebnis:** 395 Behandlungen (291 Auto-Basal-Mikroboli, 108 Boli, 12 KH, 24 Basaländerungen, 3 Pausen/Fortsetzungen), 257 Sensorwerte nachgetragen. Upload zu Nightscout: 288 Werte, 109 Behandlungen.
 - **Offen:** Ein 200er-Block fehlte (1800 von 2000). Die vielen kleinen Boli (0,3–0,8 IE) sind SmartGuard-Autokorrekturen; sie lassen sich über „Bolus Programmed P2“ (Aktivierungsart) von manuellen Boli unterscheiden, das ist noch nicht ausgewertet.
 - **Nightscout-Historie** nachladen: 284 Werte gelesen, 274 neu (`/api/v1/entries/sgv.json` mit `find[date][$gte]`).
+
+## 2026-10-15 – Bolus-Einstufung
+
+- „Bolus Delivered P2“ (0x0096) folgt direkt auf P1 (Sequenz +1) und enthält die Aktivierungsart. 0x5A („commanded“) sind die SmartGuard-Autokorrekturen.
+- Ergebnis für ~2,5 Tage: 14 manuelle/Bolusrechner-Boli, 95 Autokorrekturen. Das passt zu den Mahlzeiten.
+- Nightscout aktualisiert vorhandene Treatments beim erneuten Hochladen (Upsert über `created_at` + `eventType`). Die neu eingestuften Autokorrekturen tragen dort jetzt `automatic: true`.
