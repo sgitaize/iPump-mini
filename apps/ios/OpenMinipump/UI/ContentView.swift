@@ -8,6 +8,8 @@ struct ContentView: View {
     @EnvironmentObject private var link: PumpLink
     @State private var showPairing = false
     @State private var showSettings = false
+    /// Selected insulin time block; tapping anywhere else clears it.
+    @State private var insulinSelection: Date?
 
     var body: some View {
         NavigationStack {
@@ -16,7 +18,7 @@ struct ContentView: View {
                     StatusBanner(showPairing: $showPairing)
                     SensorTypeCard()
                     GlucoseHeader()
-                    GlucoseChart()
+                    GlucoseChart(insulinSelection: $insulinSelection)
                     ValueGrid()
                     Text("Nur zur Information. Keine Therapieentscheidungen auf Basis dieser App treffen – maßgeblich ist die Anzeige der Pumpe. Kein Medizinprodukt, nicht mit Medtronic verbunden.")
                         .font(.footnote)
@@ -26,6 +28,8 @@ struct ContentView: View {
                         .font(.footnote)
                 }
                 .padding()
+                .contentShape(Rectangle())
+                .onTapGesture { insulinSelection = nil }
             }
             .refreshable { link.refreshNow() }
             .navigationTitle("openMinipump")
@@ -167,6 +171,7 @@ struct GlucoseHeader: View {
 struct GlucoseChart: View {
     @EnvironmentObject private var store: DataStore
     @AppStorage("chartHours") private var hours = 3
+    @Binding var insulinSelection: Date?
 
     var body: some View {
         let from = Date().addingTimeInterval(-Double(hours) * 3600)
@@ -222,7 +227,7 @@ struct GlucoseChart: View {
         .overlay {
             if points.isEmpty { Text("Keine Werte in diesem Zeitraum").font(.caption).foregroundStyle(.secondary) }
         }
-        InsulinChart(from: from, hours: hours, events: events)
+        InsulinChart(from: from, hours: hours, events: events, selected: $insulinSelection)
         ChartLegend()
     }
 }
@@ -233,7 +238,7 @@ struct InsulinChart: View {
     let from: Date
     let hours: Int
     let events: [Treatment]
-    @State private var selected: Date?
+    @Binding var selected: Date?
 
     private var binSize: TimeInterval { Double((hours <= 3 ? 15 : hours <= 6 ? 30 : 60) * 60) }
     private static let kinds: Set<Treatment.Kind> = [.autoBasal, .autoCorrection, .bolus]
@@ -260,7 +265,8 @@ struct InsulinChart: View {
             var base = 0.0
             for (kind, color) in order {
                 guard let units = perKind[kind], units > 0 else { continue }
-                out.append(Segment(id: "\(bin)-\(kind)", start: Date(timeIntervalSince1970: bin + size * 0.1),
+                guard bin + size * 0.9 > from.timeIntervalSince1970 else { continue }
+                out.append(Segment(id: "\(bin)-\(kind)", start: Date(timeIntervalSince1970: max(bin + size * 0.1, from.timeIntervalSince1970)),
                                    end: Date(timeIntervalSince1970: bin + size * 0.9),
                                    low: base, high: base + units, color: color))
                 base += units
@@ -285,9 +291,30 @@ struct InsulinChart: View {
                 }
             }
             .chartXScale(domain: from...Date())
-            .chartXSelection(value: $selected)
-            .chartYAxis(.hidden)
+            // Same trailing axis width as the glucose chart above, so the time scales align.
+            .chartYAxis {
+                AxisMarks(position: .trailing, values: [0]) { _ in
+                    AxisValueLabel { Text("250").foregroundStyle(.clear) }
+                }
+            }
             .chartXAxis(.hidden)
+            .chartPlotStyle { $0.clipped() }
+            .chartOverlay { proxy in
+                GeometryReader { geo in
+                    Rectangle().fill(.clear).contentShape(Rectangle())
+                        .onTapGesture { location in
+                            guard let frame = proxy.plotFrame else { return }
+                            let x = location.x - geo[frame].origin.x
+                            guard let date: Date = proxy.value(atX: x) else { return }
+                            let block = (date.timeIntervalSince1970 / binSize).rounded(.down)
+                            if let current = selected, (current.timeIntervalSince1970 / binSize).rounded(.down) == block {
+                                selected = nil
+                            } else {
+                                selected = date
+                            }
+                        }
+                }
+            }
             .frame(height: 70)
             .accessibilityLabel("Insulinabgaben, antippen für Details")
             if let block {
