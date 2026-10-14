@@ -3,7 +3,8 @@
 //
 // Port 17580 like the xDrip+ local web server, so existing clients work unchanged.
 // By default only reachable from this iPhone (loopback). LAN access is opt-in and then
-// requires the API secret (header `api-secret`: SHA-1 hex or plain, or `?token=`).
+// requires the API secret (header `api-secret`: SHA-1 hex or plain, `?token=`, or Basic Auth
+// with the secret as password). `/status.html` is a human-readable page (Basic Auth).
 //
 // Note: iOS suspends the app in the background between Bluetooth events. While
 // suspended the server does not answer. See docs/api.md.
@@ -21,8 +22,14 @@ final class LocalAPIServer: @unchecked Sendable {
     private var allowLAN = false
     private var secret = ""
     private let version: String
+    /// Identifies the current listener. State updates of replaced listeners are ignored;
+    /// otherwise a late "cancelled" of the old one overwrote "ready" of the new one.
+    private var generation = 0
+    private var isReady = false
+    private var retryDelay: TimeInterval = 1
 
     var onStateChange: ((String) -> Void)?
+    var onLog: ((String) -> Void)?
 
     init(shared: SharedData) {
         self.shared = shared
@@ -31,40 +38,93 @@ final class LocalAPIServer: @unchecked Sendable {
 
     func start(allowLAN: Bool, secret: String) {
         queue.async { [self] in
-            listener?.cancel()
+            let lanChanged = allowLAN != self.allowLAN
             self.allowLAN = allowLAN
+            // A new secret only affects authorization; no restart needed for that.
             self.secret = secret
-            do {
-                let params = NWParameters.tcp
-                params.allowLocalEndpointReuse = true
-                let port = NWEndpoint.Port(rawValue: Self.port)!
-                let l: NWListener
-                if allowLAN {
-                    l = try NWListener(using: params, on: port)
-                } else {
-                    params.requiredLocalEndpoint = .hostPort(host: .ipv4(.loopback), port: port)
-                    l = try NWListener(using: params)
-                }
-                l.newConnectionHandler = { [weak self] c in self?.accept(c) }
-                l.stateUpdateHandler = { [weak self] state in
-                    let text: String
-                    switch state {
-                    case .ready: text = allowLAN ? "läuft (WLAN, Port \(Self.port))" : "läuft (nur dieses iPhone, Port \(Self.port))"
-                    case .failed(let e): text = "Fehler: \(e)"
-                    case .cancelled: text = "gestoppt"
-                    default: return
-                    }
-                    self?.onStateChange?(text)
-                }
-                l.start(queue: queue)
-                listener = l
-            } catch {
-                onStateChange?("Fehler: \(error)")
-            }
+            if isReady, !lanChanged { return }
+            restart()
         }
     }
 
-    func stop() { queue.async { [self] in listener?.cancel(); listener = nil } }
+    /// iOS takes listening sockets away from suspended apps; call when the app becomes active.
+    func ensureRunning() {
+        queue.async { [self] in
+            if !isReady { restart() }
+        }
+    }
+
+    func stop() {
+        queue.async { [self] in
+            generation += 1
+            listener?.stateUpdateHandler = nil
+            listener?.cancel()
+            listener = nil
+            isReady = false
+            onStateChange?("gestoppt")
+        }
+    }
+
+    private func restart() {
+        generation += 1
+        let gen = generation
+        if let old = listener {
+            old.stateUpdateHandler = nil
+            old.newConnectionHandler = nil
+            old.cancel()
+        }
+        listener = nil
+        isReady = false
+        let lan = allowLAN
+        do {
+            let params = NWParameters.tcp
+            params.allowLocalEndpointReuse = true
+            let port = NWEndpoint.Port(rawValue: Self.port)!
+            let l: NWListener
+            if lan {
+                l = try NWListener(using: params, on: port)
+            } else {
+                params.requiredLocalEndpoint = .hostPort(host: .ipv4(.loopback), port: port)
+                l = try NWListener(using: params)
+            }
+            l.newConnectionHandler = { [weak self] c in self?.accept(c) }
+            l.stateUpdateHandler = { [weak self, weak l] state in
+                guard let self, gen == self.generation else { return }
+                switch state {
+                case .ready:
+                    self.isReady = true
+                    self.retryDelay = 1
+                    self.onStateChange?(lan ? "läuft (WLAN, Port \(Self.port))" : "läuft (nur dieses iPhone, Port \(Self.port))")
+                case .waiting(let e):
+                    self.onStateChange?("wartet: \(e)")
+                case .failed(let e):
+                    self.isReady = false
+                    l?.cancel()
+                    let delay = self.retryDelay
+                    self.retryDelay = min(self.retryDelay * 2, 30)
+                    self.onLog?("API-Server Fehler: \(e), Neustart in \(Int(delay)) s")
+                    self.onStateChange?("Neustart nach Fehler …")
+                    self.queue.asyncAfter(deadline: .now() + delay) { [weak self] in
+                        guard let self, gen == self.generation else { return }
+                        self.restart()
+                    }
+                default:
+                    break
+                }
+            }
+            listener = l
+            l.start(queue: queue)
+        } catch {
+            onLog?("API-Server konnte nicht starten: \(error)")
+            onStateChange?("Fehler: \(error)")
+            let delay = retryDelay
+            retryDelay = min(retryDelay * 2, 30)
+            queue.asyncAfter(deadline: .now() + delay) { [weak self] in
+                guard let self, gen == self.generation else { return }
+                self.restart()
+            }
+        }
+    }
 
     private func accept(_ connection: NWConnection) {
         connection.start(queue: queue)
@@ -106,12 +166,26 @@ final class LocalAPIServer: @unchecked Sendable {
         guard method == "GET" || method == "HEAD" else {
             return send(connection, status: "405 Method Not Allowed", json: ["error": "read-only API"])
         }
+        let path = components.path.lowercased()
+        let wantsHTML = path == "/status.html" || (path == "/" && (headers["accept"] ?? "").contains("text/html"))
+        if wantsHTML {
+            // Human-readable page: Basic Auth with the API secret as password (any user name).
+            guard htmlAuthorized(connection, headers: headers) else {
+                return send(connection, status: "401 Unauthorized",
+                            body: Data("Anmeldung erforderlich: Benutzername beliebig, Passwort = API-Secret.".utf8),
+                            type: "text/plain; charset=utf-8",
+                            extraHeaders: ["WWW-Authenticate": "Basic realm=\"openMinipump\", charset=\"UTF-8\""])
+            }
+            let (readings, snapshot, battery) = shared.get()
+            return send(connection, status: "200 OK",
+                        body: Data(StatusPage.html(readings: readings, snapshot: snapshot, uploaderBattery: battery, version: version).utf8),
+                        type: "text/html; charset=utf-8")
+        }
         guard authorized(connection, headers: headers, query: query) else {
             return send(connection, status: "401 Unauthorized", json: ["status": 401, "message": "api-secret fehlt oder falsch"])
         }
 
         let (readings, snapshot, uploaderBattery) = shared.get()
-        let path = components.path.lowercased()
         let newestFirst = readings.sorted { $0.date > $1.date }
 
         switch path {
@@ -134,7 +208,7 @@ final class LocalAPIServer: @unchecked Sendable {
                                                      count: count, mmol: mmol))
         case "/", "/api/v1":
             send(connection, json: ["name": "openMinipump", "readOnly": true, "endpoints": [
-                "/api/v1/entries.json?count=N", "/api/v1/entries/current.json", "/api/v1/devicestatus.json",
+                "/status.html", "/api/v1/entries.json?count=N", "/api/v1/entries/current.json", "/api/v1/devicestatus.json",
                 "/api/v1/treatments.json", "/api/v1/status.json", "/pebble", "/sgv.json",
             ]] as [String: Any])
         default:
@@ -154,12 +228,28 @@ final class LocalAPIServer: @unchecked Sendable {
         }
     }
 
+    private func isLoopback(_ connection: NWConnection) -> Bool {
+        guard case .hostPort(let host, _) = connection.endpoint else { return false }
+        let h = "\(host)"
+        return h == "127.0.0.1" || h == "::1" || h.hasPrefix("::ffff:127.")
+    }
+
+    private func basicAuthPassword(_ headers: [String: String]) -> String? {
+        guard let value = headers["authorization"], value.lowercased().hasPrefix("basic "),
+              let data = Data(base64Encoded: String(value.dropFirst(6)).trimmingCharacters(in: .whitespaces)),
+              let decoded = String(data: data, encoding: .utf8), let colon = decoded.firstIndex(of: ":") else { return nil }
+        return String(decoded[decoded.index(after: colon)...])
+    }
+
+    private func htmlAuthorized(_ connection: NWConnection, headers: [String: String]) -> Bool {
+        if secret.isEmpty { return isLoopback(connection) }
+        return basicAuthPassword(headers) == secret
+    }
+
     private func authorized(_ connection: NWConnection, headers: [String: String], query: [String: String]) -> Bool {
-        if case .hostPort(let host, _) = connection.endpoint {
-            let h = "\(host)"
-            if h == "127.0.0.1" || h == "::1" || h.hasPrefix("::ffff:127.") { return true }
-        }
+        if isLoopback(connection) { return true }
         guard allowLAN, !secret.isEmpty else { return false }
+        if basicAuthPassword(headers) == secret { return true }
         let sha1 = Insecure.SHA1.hash(data: Data(secret.utf8)).map { String(format: "%02x", $0) }.joined()
         let given = headers["api-secret"] ?? query["token"] ?? ""
         return given == secret || given.lowercased() == sha1
@@ -170,12 +260,14 @@ final class LocalAPIServer: @unchecked Sendable {
         send(connection, status: status, body: body, type: "application/json; charset=utf-8")
     }
 
-    private func send(_ connection: NWConnection, status: String, body: Data, type: String) {
+    private func send(_ connection: NWConnection, status: String, body: Data, type: String,
+                      extraHeaders: [String: String] = [:]) {
         var head = "HTTP/1.1 \(status)\r\n"
+        for (k, v) in extraHeaders { head += "\(k): \(v)\r\n" }
         head += "Content-Type: \(type)\r\n"
         head += "Content-Length: \(body.count)\r\n"
         head += "Access-Control-Allow-Origin: *\r\n"
-        head += "Access-Control-Allow-Headers: api-secret, content-type\r\n"
+        head += "Access-Control-Allow-Headers: api-secret, authorization, content-type\r\n"
         head += "Cache-Control: no-store\r\n"
         head += "Connection: close\r\n\r\n"
         connection.send(content: Data(head.utf8) + body, completion: .contentProcessed { _ in connection.cancel() })

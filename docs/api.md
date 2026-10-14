@@ -6,6 +6,9 @@ Die iOS-App stellt die gelesenen Daten über einen kleinen HTTP-Server bereit. E
 - **Standard:** nur auf dem iPhone selbst erreichbar (`http://127.0.0.1:17580`).
 - **WLAN (optional):** in den Einstellungen freigeben. Dann ist ein API-Secret Pflicht: Header `api-secret` (Klartext oder SHA-1-Hex wie bei Nightscout) oder `?token=<secret>`. Anfragen vom iPhone selbst brauchen kein Secret.
 - **Nur lesen:** Alles außer `GET`/`HEAD` liefert `405`.
+- **Startseite für Menschen:** `/status.html` (oder `/` im Browser) zeigt Wert, Trend, Pumpenstatus und die letzten Werte, lädt jede Minute neu. Schutz per **Basic Auth**: Benutzername beliebig, Passwort = API-Secret. Ohne gesetztes Secret nur auf dem iPhone selbst erreichbar. Achtung: Im WLAN läuft das unverschlüsselt (HTTP).
+- **Basic Auth** mit dem Secret als Passwort funktioniert auch für die JSON-Endpunkte.
+- **Stabilität:** iOS entzieht pausierten Apps die Server-Sockets. Der Server startet nach Fehlern selbst neu (Backoff bis 30 s) und beim Öffnen der App.
 
 ## Endpunkte
 

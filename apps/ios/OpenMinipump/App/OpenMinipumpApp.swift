@@ -37,6 +37,10 @@ final class AppModel: ObservableObject {
         api.onStateChange = { [weak self] text in
             Task { @MainActor in self?.apiState = text }
         }
+        let log = log
+        api.onLog = { text in
+            Task { @MainActor in log.add(text, .warning) }
+        }
         restartAPI()
         Watchdog.requestAuthorization()
         #if DEBUG
@@ -71,7 +75,10 @@ struct OpenMinipumpApp: App {
                 .environmentObject(model.uploader)
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { Watchdog.appOpened() }
+            if phase == .active {
+                Watchdog.appOpened()
+                model.api.ensureRunning()
+            }
         }
     }
 }
