@@ -1,0 +1,78 @@
+# Builds an unsigned IPA for AltStore/SideStore (they re-sign it with the user's Apple ID).
+# Manual only; creates a DRAFT release. Nothing is published automatically.
+# Note: the SAKE key database is not part of the build (see docs/release-altstore.md).
+name: Release IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (e.g. 0.2.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tools
+        run: brew install xcodegen
+
+      - name: Generate project
+        working-directory: apps/ios
+        run: xcodegen
+
+      - name: Build (unsigned, Release)
+        working-directory: apps/ios
+        run: |
+          xcodebuild -project OpenMinipump.xcodeproj -scheme OpenMinipump -configuration Release \
+            -destination 'generic/platform=iOS' -derivedDataPath build \
+            MARKETING_VERSION=${{ inputs.version }} CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            OMP_APP_ENTITLEMENTS= OMP_WIDGET_ENTITLEMENTS= \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+
+      - name: Package IPA
+        run: |
+          mkdir -p dist/Payload
+          cp -R apps/ios/build/Build/Products/Release-iphoneos/OpenMinipump.app dist/Payload/
+          (cd dist && zip -qr "OpenMinipump-${{ inputs.version }}.ipa" Payload)
+          ls -l dist/*.ipa
+
+      - name: Update AltStore source (artifact)
+        run: |
+          IPA="dist/OpenMinipump-${{ inputs.version }}.ipa"
+          SIZE=$(stat -f%z "$IPA")
+          URL="https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/OpenMinipump-${{ inputs.version }}.ipa"
+          python3 - "$SIZE" "$URL" <<'PY'
+          import json, sys, datetime
+          size, url = int(sys.argv[1]), sys.argv[2]
+          p = "altstore/source.json"
+          s = json.load(open(p))
+          app = s["apps"][0]
+          app["versions"].insert(0, {
+              "version": "${{ inputs.version }}",
+              "buildVersion": "${{ github.run_number }}",
+              "date": datetime.date.today().isoformat(),
+              "localizedDescription": "Siehe Release-Notizen auf GitHub.",
+              "downloadURL": url,
+              "size": size,
+              "minOSVersion": "17.0",
+          })
+          json.dump(s, open("dist/source.json", "w"), indent=2, ensure_ascii=False)
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: altstore
+          path: dist/
+
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ inputs.version }}" "dist/OpenMinipump-${{ inputs.version }}.ipa" \
+            --draft --title "v${{ inputs.version }}" --notes "Entwurf – vor Veröffentlichung prüfen."
