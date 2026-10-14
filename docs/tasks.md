@@ -3,7 +3,7 @@
 ## Phase 0 – Umgebung und Repo ✅
 - [x] Tool-Bestand prüfen
 - [x] Tools: python@3.12, apktool, adb, wireshark (CLI), mitmproxy, gitleaks, frida-tools
-- [ ] jadx, Wireshark.app (Nachinstallation läuft)
+- [x] jadx 1.5.6, Wireshark.app
 - [x] Xcode inkl. Lizenz, PacketLogger, iOS-Bluetooth-Profil (Simon)
 - [x] Repo-Struktur, .gitignore, .env.example, gitleaks-Hook, README, CLAUDE.md, ADR 0001/0002
 - [x] Privates GitHub-Repo sgitaize/openMinipump
