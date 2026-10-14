@@ -14,6 +14,7 @@ struct ContentView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     StatusBanner(showPairing: $showPairing)
+                    SensorTypeCard()
                     GlucoseHeader()
                     GlucoseChart()
                     ValueGrid()
@@ -71,18 +72,31 @@ struct StatusBanner: View {
                 EmptyView()
             }
             if link.phase != .connected {
-                Text(store.lastDataAt == nil
-                     ? "Noch keine Pumpe gekoppelt. Die Pumpe muss einmalig mit dieser App gekoppelt werden."
-                     : "Wenn die Pumpe in Reichweite ist, verbindet sie sich von selbst. Die App muss dafür geöffnet bleiben (im Hintergrund ist ok, nicht wegwischen).")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Button {
-                    showPairing = true
-                } label: {
-                    Label("Pumpe koppeln", systemImage: "link")
-                        .frame(maxWidth: .infinity)
+                if link.isPaired || store.lastDataAt != nil {
+                    Text("Gekoppelt. Die Pumpe verbindet sich von selbst, sobald sie in Reichweite ist. Die App muss dafür geöffnet bleiben (im Hintergrund ist ok, nicht wegwischen).")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    TimelineView(.periodic(from: .now, by: 30)) { context in
+                        if let since = link.waitingSince, context.date.timeIntervalSince(since) > 3 * 60 {
+                            Text("Seit über 3 Minuten keine Verbindung: In den iPhone-Einstellungen Bluetooth kurz aus- und wieder einschalten. Die Pumpe verbindet sich dann neu.")
+                                .font(.subheadline)
+                                .foregroundStyle(.orange)
+                        }
+                    }
+                    Button("Neu koppeln …") { showPairing = true }
+                        .font(.footnote)
+                } else {
+                    Text("Noch keine Pumpe gekoppelt. Die Pumpe muss einmalig mit dieser App gekoppelt werden.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Button {
+                        showPairing = true
+                    } label: {
+                        Label("Pumpe koppeln", systemImage: "link")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
-                .buttonStyle(.borderedProminent)
             }
         }
         .padding()
@@ -195,9 +209,13 @@ struct ValueGrid: View {
             Tile(title: "Zeit im Zielbereich", value: s.timeInRange.map { "\($0.inRangePercent) %" },
                  detail: s.timeInRange.map { "↑ \($0.abovePercent) %  ↓ \($0.belowPercent) %" })
             Tile(title: "Pumpenbatterie", value: s.pumpBatteryPercent.map { "\($0) %" })
-            Tile(title: "Sensor", value: s.status?.sensorMessage,
-                 detail: s.sensorEnd.map { expiry(Int($0.timeIntervalSinceNow / 60)) })
-            Tile(title: "Transmitter", value: s.transmitterBatteryPercent.map { "\($0) %" })
+            Tile(title: "Sensor", value: s.status.map { $0.sensorOK ? "Sensor ok" : $0.sensorMessage },
+                 detail: s.sensorEnd.map { expiry(Int($0.timeIntervalSinceNow / 60)) },
+                 systemImage: s.status.map { $0.sensorOK ? "checkmark.circle.fill" : "exclamationmark.triangle.fill" },
+                 tint: s.status.map { $0.sensorOK ? .green : .orange })
+            if SensorType.current.hasTransmitter {
+                Tile(title: "Transmitter", value: s.transmitterBatteryPercent.map { "\($0) %" })
+            }
         }
         if s.updatedAt > .distantPast {
             Text("Pumpenstatus aktualisiert \(s.updatedAt.formatted(date: .omitted, time: .shortened))\(link.pumpFirmware.map { " · FW \($0)" } ?? "")")
@@ -224,15 +242,66 @@ struct Tile: View {
     let title: String
     let value: String?
     var detail: String?
+    var systemImage: String?
+    var tint: Color?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title).font(.caption).foregroundStyle(.secondary)
-            Text(value ?? "–").font(.title3.weight(.semibold)).lineLimit(2).minimumScaleFactor(0.7)
+            HStack(spacing: 6) {
+                if let systemImage { Image(systemName: systemImage).foregroundStyle(tint ?? .primary) }
+                Text(value ?? "–").font(.title3.weight(.semibold)).lineLimit(2).minimumScaleFactor(0.7)
+            }
             if let detail { Text(detail).font(.caption2).foregroundStyle(.secondary) }
         }
         .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
         .padding(12)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+/// Sensor generation: Guardian 4 has a separate transmitter (with battery), Simplera Sync
+/// is an all-in-one sensor without one.
+enum SensorType: String, CaseIterable, Identifiable {
+    case unknown = ""
+    case simplera
+    case guardian
+
+    var id: String { rawValue }
+    static let key = "sensorType"
+    static var current: SensorType { SensorType(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .unknown }
+    var hasTransmitter: Bool { self != .simplera }
+
+    var label: String {
+        switch self {
+        case .unknown: "Nicht festgelegt"
+        case .simplera: "Simplera Sync (ohne Transmitter)"
+        case .guardian: "Guardian 4 (mit Transmitter)"
+        }
+    }
+}
+
+/// Asked once after pairing; also changeable in the settings.
+struct SensorTypeCard: View {
+    @AppStorage(SensorType.key) private var sensorType = ""
+    @EnvironmentObject private var link: PumpLink
+    @EnvironmentObject private var store: DataStore
+
+    var body: some View {
+        if sensorType.isEmpty, link.isPaired || store.lastDataAt != nil {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Welchen Sensor verwendest du?").font(.headline)
+                Text("Damit nur passende Werte angezeigt werden. Später änderbar in den Einstellungen.")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                ForEach([SensorType.simplera, .guardian]) { type in
+                    Button { sensorType = type.rawValue } label: {
+                        Text(type.label).frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+            .padding()
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        }
     }
 }

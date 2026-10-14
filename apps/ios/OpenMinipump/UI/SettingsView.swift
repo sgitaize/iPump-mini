@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
@@ -7,6 +8,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var uploader: NightscoutUploader
     @State private var watchdog = Watchdog.enabled
+    @AppStorage(SensorType.key) private var sensorType = ""
     @State private var testResult: String?
     @State private var testing = false
 
@@ -47,7 +49,18 @@ struct SettingsView: View {
 
                 Section {
                     LabeledContent("Status", value: model.apiState)
-                    LabeledContent("Adresse", value: "http://127.0.0.1:\(LocalAPIServer.port)")
+                    URLRow(title: "Auf diesem iPhone", url: "http://127.0.0.1:\(LocalAPIServer.port)/status.html")
+                    if model.apiAllowLAN && !model.apiSecret.isEmpty {
+                        TimelineView(.periodic(from: .now, by: 10)) { _ in
+                            if let ip = NetworkInfo.wifiIPv4() {
+                                URLRow(title: "Im WLAN", url: "http://\(ip):\(LocalAPIServer.port)/status.html")
+                                URLRow(title: "Pebble / Nightscout-Clients", url: "http://\(ip):\(LocalAPIServer.port)")
+                            } else {
+                                Text("Kein WLAN verbunden – im WLAN nicht erreichbar.").font(.caption).foregroundStyle(.orange)
+                            }
+                        }
+                        Text("Startseite: Benutzername beliebig, Passwort = API-Secret.").font(.caption).foregroundStyle(.secondary)
+                    }
                     Toggle("Im WLAN freigeben", isOn: $model.apiAllowLAN)
                         .onChange(of: model.apiAllowLAN) { _, _ in model.restartAPI() }
                     if model.apiAllowLAN {
@@ -70,6 +83,12 @@ struct SettingsView: View {
                     Text("Benachrichtigungen")
                 } footer: {
                     Text("Kommen 20 Minuten lang keine Pumpendaten (z. B. weil die App weggewischt wurde), erscheint eine Mitteilung zum erneuten Öffnen.")
+                }
+
+                Section("Sensor") {
+                    Picker("Sensor", selection: $sensorType) {
+                        ForEach(SensorType.allCases) { Text($0.label).tag($0.rawValue) }
+                    }
                 }
 
                 Section("Pumpe") {
@@ -112,6 +131,26 @@ struct LogView: View {
         .toolbar {
             ShareLink(item: EventLog.fileURL) { Image(systemName: "square.and.arrow.up") }
                 .accessibilityLabel("Protokolldatei teilen")
+        }
+    }
+}
+
+private struct URLRow: View {
+    let title: String
+    let url: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title).font(.caption).foregroundStyle(.secondary)
+            HStack {
+                Text(url).font(.callout.monospaced()).textSelection(.enabled).lineLimit(1).minimumScaleFactor(0.6)
+                Spacer()
+                Button {
+                    UIPasteboard.general.string = url
+                } label: { Image(systemName: "doc.on.doc") }
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel("URL kopieren")
+            }
         }
     }
 }

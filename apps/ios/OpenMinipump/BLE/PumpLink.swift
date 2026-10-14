@@ -44,6 +44,12 @@ final class PumpLink: NSObject, ObservableObject {
     @Published private(set) var pairingMode = false
     @Published private(set) var pumpSerial: String?
     @Published private(set) var pumpFirmware: String?
+    /// True once a pump was paired with this app (survives updates). The UI then shows
+    /// "waiting for connection" instead of asking to pair again.
+    @Published private(set) var isPaired = UserDefaults.standard.bool(forKey: "isPaired")
+    /// Set when we are waiting for the pump to reconnect without a session; the UI shows
+    /// the Bluetooth off/on hint after a while.
+    @Published private(set) var waitingSince: Date?
 
     let advertisedName: String
 
@@ -240,6 +246,9 @@ final class PumpLink: NSObject, ObservableObject {
                 decryptFailures = 0
                 if let crypt { SessionStore.save(crypt) }
                 if let id = pumpCentral?.identifier { UserDefaults.standard.set(id.uuidString, forKey: "pumpID") }
+                UserDefaults.standard.set(true, forKey: "isPaired")
+                isPaired = true
+                waitingSince = nil
                 if pairingMode { setPairingMode(false) }
                 connectAsGattClient()
             }
@@ -295,7 +304,11 @@ final class PumpLink: NSObject, ObservableObject {
     /// After iOS relaunched the app in the background, the pump may still be connected
     /// with the old SAKE session. Continue with the saved cipher instead of losing data.
     private func resumeSavedSession() {
-        guard crypt == nil, sake == nil, let saved = SessionStore.load() else { return }
+        guard crypt == nil, sake == nil else { return }
+        guard let saved = SessionStore.load() else {
+            requestNewHandshakeIfLinked()
+            return
+        }
         guard let idString = UserDefaults.standard.string(forKey: "pumpID"), let id = UUID(uuidString: idString) else { return }
         let peripheral = pump ?? centralManager.retrievePeripherals(withIdentifiers: [id]).first
         guard let peripheral else { return }
@@ -309,6 +322,27 @@ final class PumpLink: NSObject, ObservableObject {
         } else {
             centralManager.connect(peripheral)
         }
+    }
+
+    /// The pump is linked (restored by iOS) but we have no session, e.g. after an app update.
+    /// Re-registering our GATT services makes iOS send "Service Changed"; the pump then
+    /// rediscovers and subscribes to the SAKE port again, which starts a new handshake.
+    /// This only changes our own GATT table, never anything on the pump.
+    private var didRequestHandshake = false
+    private func requestNewHandshakeIfLinked() {
+        guard !didRequestHandshake, isPaired || store.lastDataAt != nil else { return }
+        if !isPaired {
+            // Paired with an older build that did not store the flag yet.
+            UserDefaults.standard.set(true, forKey: "isPaired")
+            isPaired = true
+        }
+        waitingSince = Date()
+        guard let pump, pump.state == .connected || peripheralManager.state == .poweredOn else { return }
+        didRequestHandshake = true
+        log.add("Keine gespeicherte Sitzung, fordere neuen Handshake an (GATT-Dienste neu registrieren)")
+        sakePort = nil
+        UserDefaults.standard.set(0, forKey: "gattVersion")
+        if peripheralManager.state == .poweredOn { setUpServices() }
     }
 
     private func resetClientState() {
@@ -349,6 +383,7 @@ final class PumpLink: NSObject, ObservableObject {
             return
         }
         serialVerified = true
+        waitingSince = nil
         log.add("Pumpe verifiziert (\(config.devGuard.devMode ? "Testpumpe" : "DEV_MODE aus"))")
         phase = .connected
         updateAdvertising()
@@ -448,7 +483,7 @@ final class PumpLink: NSObject, ObservableObject {
             .statusReader(.getActiveBasalRateDelivery),
             .statusReader(.getTimeInRange),
             .read(service: PumpUUID.batteryService, characteristic: PumpUUID.batteryLevel),
-            .read(service: PumpUUID.iddService, characteristic: PumpUUID.gstBatteryLevel),
+            // GST Battery Level (0x0400) is notify-only on the 780G ("Reading is not permitted").
         ]
         if sessionStart == nil {
             operations.append(.read(service: PumpUUID.cgmService, characteristic: PumpUUID.cgmSessionStartTime))
@@ -466,10 +501,15 @@ final class PumpLink: NSObject, ObservableObject {
         backfilledSession = start
         let nowOffset = max(0, Int(Date().timeIntervalSince(start) / 60))
         var from = max(0, nowOffset - 24 * 60)
+        // Only fetch after the newest known value if the last 24 h are (nearly) complete;
+        // otherwise fetch the whole window, duplicates are merged by the store.
+        let dayAgo = Date().addingTimeInterval(-24 * 3600)
+        let recentCount = store.readings.filter { $0.date >= max(start, dayAgo) }.count
+        let expected = min(288, nowOffset / 5)
         let known = store.readings
             .filter { $0.date >= start && $0.sessionOffsetMinutes != nil }
             .compactMap(\.sessionOffsetMinutes).max()
-        if let known { from = max(from, Int(known) + 1) }
+        if let known, recentCount >= expected - 3 { from = max(from, Int(known) + 1) }
         guard nowOffset - from > 6, from <= Int(UInt16.max) else { return }
         log.add("Lade Sensorwerte der letzten \((nowOffset - from) / 60) h \((nowOffset - from) % 60) min nach")
         operations.append(.cgmBackfill(fromOffset: UInt16(from)))

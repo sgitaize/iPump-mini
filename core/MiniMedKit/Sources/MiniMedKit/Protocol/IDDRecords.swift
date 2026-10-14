@@ -57,10 +57,14 @@ public struct PumpStatus: Equatable, Sendable, Codable {
     public var isSuspended: Bool { therapyControlState == .pause || therapyControlState == .stop }
     public var sensorOn: Bool { sensorConnectivity & 0x01 != 0 }
     public var sensorSignalLost: Bool { sensorConnectivity & 0x04 != 0 }
+    /// No sensor message pending and a signal is there.
+    public var sensorOK: Bool {
+        (sensorMessageState == 0x00 || sensorMessageState == 0x0C) && sensorOn && !sensorSignalLost
+    }
 
     public var sensorMessage: String {
         switch sensorMessageState {
-        case 0x00: "Keine Meldung"
+        case 0x00: "Sensor ok"
         case 0x01: "Warten auf Kalibrierung"
         case 0x02: "Nicht kalibrieren"
         case 0x03: "Kalibrierung erforderlich"

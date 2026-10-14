@@ -58,8 +58,10 @@ enum StatusPage {
             if m <= 0 { return "abgelaufen" }
             return m >= 1440 ? "noch \(m / 1440) T \(m % 1440 / 60) h" : "noch \(m / 60) h \(m % 60) min"
         }
-        tiles.append(("Sensor", s.status?.sensorMessage ?? "–", sensorDetail))
-        tiles.append(("Transmitter", s.transmitterBatteryPercent.map { "\($0) %" } ?? "–", nil))
+        tiles.append(("Sensor", s.status.map { $0.sensorOK ? "✓ Sensor ok" : "⚠︎ \($0.sensorMessage)" } ?? "–", sensorDetail))
+        if UserDefaults.standard.string(forKey: "sensorType") != "simplera" {
+            tiles.append(("Transmitter", s.transmitterBatteryPercent.map { "\($0) %" } ?? "–", nil))
+        }
         tiles.append(("iPhone-Akku", uploaderBattery.map { "\($0) %" } ?? "–", nil))
 
         let tileHTML = tiles.map { t in
