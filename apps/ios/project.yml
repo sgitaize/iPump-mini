@@ -14,8 +14,12 @@ targets:
     platform: iOS
     sources:
       - OpenMinipump
+      - Shared
     dependencies:
       - package: MiniMedKit
+      - target: OpenMinipumpWidgets
+    entitlements:
+      path: OpenMinipump/OpenMinipump.entitlements
     configFiles:
       Debug: Config/Base.xcconfig
       Release: Config/Base.xcconfig
@@ -48,3 +52,32 @@ targets:
       - name: Embed local config (.env, key database)
         script: "\"${SRCROOT}/Scripts/embed-local-config.sh\""
         basedOnDependencyAnalysis: false
+  OpenMinipumpWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Widgets
+      - Shared
+    dependencies:
+      - package: MiniMedKit
+    entitlements:
+      path: Widgets/Widgets.entitlements
+    configFiles:
+      Debug: Config/Base.xcconfig
+      Release: Config/Base.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(OMP_BUNDLE_ID).widgets
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+    info:
+      path: Widgets/Info.plist
+      properties:
+        CFBundleDisplayName: openMinipump
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension

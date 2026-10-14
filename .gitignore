@@ -56,3 +56,4 @@ apps/ios/Config/Local.xcconfig
 # SwiftPM build output
 .build/
 .swiftpm/
+apps/ios/Widgets/Info.plist

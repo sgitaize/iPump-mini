@@ -228,46 +228,52 @@ struct GlucoseChart: View {
 }
 
 /// Insulin per time block, stacked by kind, so many small SmartGuard deliveries stay readable.
+/// Drawn as rectangles: bar widths relative to a date axis would collapse to zero.
 struct InsulinChart: View {
     let from: Date
     let hours: Int
     let events: [Treatment]
 
-    private struct Bin: Identifiable {
+    private struct Segment: Identifiable {
         let id: String
         let start: Date
-        let kind: String
-        let units: Double
+        let end: Date
+        let low: Double
+        let high: Double
+        let color: Color
     }
 
-    private var bins: [Bin] {
+    private var segments: [Segment] {
         let minutes = hours <= 3 ? 15 : hours <= 6 ? 30 : 60
         let size = Double(minutes * 60)
-        var sums: [String: (Date, String, Double)] = [:]
-        for t in events {
-            let kind: String
-            switch t.kind {
-            case .bolus: kind = "Bolus"
-            case .autoCorrection: kind = "Autokorrektur"
-            case .autoBasal: kind = "Auto-Basal"
-            default: continue
-            }
-            let start = Date(timeIntervalSince1970: (t.date.timeIntervalSince1970 / size).rounded(.down) * size)
-            let key = "\(start.timeIntervalSince1970)-\(kind)"
-            sums[key] = (start, kind, (sums[key]?.2 ?? 0) + (t.value ?? 0))
+        let order: [(Treatment.Kind, Color)] = [(.autoBasal, .teal), (.autoCorrection, .purple), (.bolus, .blue)]
+        var sums: [Double: [Treatment.Kind: Double]] = [:]
+        for t in events where order.contains(where: { $0.0 == t.kind }) {
+            let bin = (t.date.timeIntervalSince1970 / size).rounded(.down) * size
+            sums[bin, default: [:]][t.kind, default: 0] += t.value ?? 0
         }
-        return sums.map { Bin(id: $0.key, start: $0.value.0, kind: $0.value.1, units: $0.value.2) }
+        var out: [Segment] = []
+        for (bin, perKind) in sums {
+            var base = 0.0
+            for (kind, color) in order {
+                guard let units = perKind[kind], units > 0 else { continue }
+                out.append(Segment(id: "\(bin)-\(kind)", start: Date(timeIntervalSince1970: bin + size * 0.1),
+                                   end: Date(timeIntervalSince1970: bin + size * 0.9),
+                                   low: base, high: base + units, color: color))
+                base += units
+            }
+        }
+        return out
     }
 
     var body: some View {
-        let data = bins
+        let data = segments
         if !data.isEmpty {
-            Chart(data) { b in
-                BarMark(x: .value("Zeit", b.start), y: .value("IE", b.units), width: .ratio(0.8))
-                    .foregroundStyle(by: .value("Art", b.kind))
+            Chart(data) { s in
+                RectangleMark(xStart: .value("Von", s.start), xEnd: .value("Bis", s.end),
+                              yStart: .value("IE", s.low), yEnd: .value("IE", s.high))
+                    .foregroundStyle(s.color)
             }
-            .chartForegroundStyleScale(["Bolus": Color.blue, "Autokorrektur": Color.purple, "Auto-Basal": Color.teal])
-            .chartLegend(.hidden)
             .chartXScale(domain: from...Date())
             .chartYAxis { AxisMarks(position: .trailing, values: .automatic(desiredCount: 2)) }
             .chartXAxis(.hidden)
