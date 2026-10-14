@@ -72,7 +72,7 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - [ ] Insulin-Band im Glukose-Graph (gleiche Zeitachse, Antippen für Details): von Simon auf dem Gerät bestätigen lassen
 
 ## Ideen (Simon 15.10.)
-- [ ] Im CGM-Graph auf einen 5-Minuten-Wert tippen: Uhrzeit, genauer SG-Wert, aktives Insulin (IOB) zu diesem Zeitpunkt und das in diesem 5-Minuten-Fenster abgegebene Insulin anzeigen (IOB-Verlauf müsste dafür gespeichert werden, bisher nur aktueller Wert)
+- [x] Im CGM-Graph auf einen 5-Minuten-Wert tippen: Uhrzeit, SG-Wert (mg/dL + mmol/L), Trend, IOB zu diesem Zeitpunkt, Insulin und KH im 5-Minuten-Fenster (Branch `feature/alarms-widgets`; der IOB-Verlauf wird ab dieser Version gespeichert)
 
 ## Phase 6 – Veröffentlichung (nächste Schritte, Simon 15.10.)
 - [ ] **Umbenennen in „iPump-mini“** (Anzeigename, Bundle-ID/Repo-Name prüfen), App-Icon und Designsprache passend dazu entwickeln
