@@ -198,7 +198,10 @@ final class LocalAPIServer: @unchecked Sendable {
             let hasData = snapshot.updatedAt > .distantPast
             send(connection, json: hasData ? [Nightscout.deviceStatus(snapshot, uploaderBattery: uploaderBattery)] : [])
         case "/api/v1/treatments.json", "/api/v1/treatments":
-            send(connection, json: [[String: Any]]())
+            let count = Int(query["count"] ?? "") ?? 100
+            let list = shared.treatments.sorted { $0.date > $1.date }
+                .compactMap { Nightscout.treatment($0, includeAutoBasal: true) }
+            send(connection, json: Array(list.prefix(max(0, count))))
         case "/api/v1/status.json", "/api/v1/status":
             send(connection, json: Nightscout.status(version: version))
         case "/pebble":

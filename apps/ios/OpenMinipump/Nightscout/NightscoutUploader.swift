@@ -51,6 +51,14 @@ final class NightscoutUploader: ObservableObject {
     @Published var uploadDeviceStatus = UserDefaults.standard.object(forKey: "nsDeviceStatus") as? Bool ?? true {
         didSet { UserDefaults.standard.set(uploadDeviceStatus, forKey: "nsDeviceStatus") }
     }
+    @Published var uploadTreatments = UserDefaults.standard.object(forKey: "nsTreatments") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(uploadTreatments, forKey: "nsTreatments") }
+    }
+    /// SmartGuard micro boluses (one every 5 min) – off by default to keep Nightscout tidy.
+    @Published var uploadAutoBasal = UserDefaults.standard.bool(forKey: "nsAutoBasal") {
+        didSet { UserDefaults.standard.set(uploadAutoBasal, forKey: "nsAutoBasal") }
+    }
+    @Published private(set) var lastPull: String?
     @Published private(set) var status = "aus"
     @Published private(set) var lastSuccess: Date?
     @Published private(set) var lastError: String?
@@ -62,11 +70,25 @@ final class NightscoutUploader: ObservableObject {
         set { UserDefaults.standard.set(newValue.timeIntervalSince1970, forKey: "nsLastEntry") }
     }
     private var lastDeviceStatus: Date = .distantPast
+    private var lastTreatmentUploaded: UInt32 {
+        get { UInt32(UserDefaults.standard.integer(forKey: "nsLastTreatment")) }
+        set { UserDefaults.standard.set(Int(newValue), forKey: "nsLastTreatment") }
+    }
     private var running = false
 
     init(store: DataStore, log: EventLog) {
         self.store = store
         self.log = log
+    }
+
+    /// Pump history added values/treatments: older sensor values must be uploaded too
+    /// (Nightscout deduplicates entries by date and type).
+    func historyAdded(oldestReading: Date?) {
+        guard enabled else { return }
+        if let oldest = oldestReading, oldest <= lastEntryUploaded {
+            lastEntryUploaded = oldest.addingTimeInterval(-1)
+        }
+        Task { [weak self] in await self?.sync() }
     }
 
     /// Uploads only when a new sensor value arrived, then immediately (saves battery).
@@ -89,6 +111,15 @@ final class NightscoutUploader: ObservableObject {
                 try await post(base, path: "api/v1/entries", json: body)
                 lastEntryUploaded = newReadings.last!.date
                 log.add("Nightscout: \(newReadings.count) Wert(e) hochgeladen")
+            }
+            if uploadTreatments {
+                let pending = store.treatments.filter { $0.id > lastTreatmentUploaded }
+                let body = pending.compactMap { Nightscout.treatment($0, includeAutoBasal: uploadAutoBasal) }
+                if !body.isEmpty {
+                    try await post(base, path: "api/v1/treatments", json: body)
+                    log.add("Nightscout: \(body.count) Behandlung(en) hochgeladen")
+                }
+                if let maxID = pending.map(\.id).max() { lastTreatmentUploaded = maxID }
             }
             let snap = store.snapshot
             if uploadDeviceStatus, snap.updatedAt > lastDeviceStatus {
@@ -131,6 +162,62 @@ final class NightscoutUploader: ObservableObject {
     func resetUploadMarker() {
         lastEntryUploaded = Date().addingTimeInterval(-24 * 3600)
         lastDeviceStatus = .distantPast
+        let dayAgo = Date().addingTimeInterval(-24 * 3600)
+        lastTreatmentUploaded = (store.treatments.last { $0.date < dayAgo }?.id) ?? 0
+    }
+
+    /// Loads sensor values from Nightscout into the local history (read-only request).
+    func pullHistory(hours: Int = 24) async {
+        guard let base = baseURL else { lastPull = "Keine gültige URL"; return }
+        let since = Nightscout.millis(Date().addingTimeInterval(-Double(hours) * 3600))
+        var c = URLComponents(url: base.appendingPathComponent("api/v1/entries/sgv.json"), resolvingAgainstBaseURL: false)!
+        c.queryItems = [URLQueryItem(name: "count", value: String(hours * 12 + 20)),
+                        URLQueryItem(name: "find[date][$gte]", value: String(since))]
+        var request = URLRequest(url: c.url!)
+        request.timeoutInterval = 30
+        authorize(&request)
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+            guard code == 200 else { lastPull = "HTTP \(code)"; return }
+            let entries = (try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]) ?? []
+            let readings = entries.compactMap { e -> GlucoseReading? in
+                guard let sgv = (e["sgv"] as? NSNumber)?.intValue, sgv >= 40, sgv <= 400,
+                      let ms = (e["date"] as? NSNumber)?.doubleValue else { return nil }
+                return GlucoseReading(date: Date(timeIntervalSince1970: ms / 1000), mgdl: sgv,
+                                      trendMgdlPerMin: Self.rate(fromDirection: e["direction"] as? String),
+                                      sessionOffsetMinutes: nil)
+            }
+            let added = store.merge(readings)
+            lastPull = "\(entries.count) Werte geladen, \(added.count) neu"
+            UserDefaults.standard.set(Date(), forKey: "nsLastPull")
+            log.add("Nightscout-Historie: \(lastPull!)")
+        } catch {
+            lastPull = error.localizedDescription
+        }
+    }
+
+    /// On app start: fill gaps of the last 24 h from Nightscout, at most every 30 min.
+    func pullIfGaps() {
+        guard enabled, baseURL != nil else { return }
+        if let last = UserDefaults.standard.object(forKey: "nsLastPull") as? Date, Date().timeIntervalSince(last) < 30 * 60 { return }
+        let dayAgo = Date().addingTimeInterval(-24 * 3600)
+        guard store.readings.filter({ $0.date >= dayAgo }).count < 270 else { return }
+        Task { await pullHistory() }
+    }
+
+    /// Approximate rate for the trend arrow (Nightscout only sends the direction).
+    private static func rate(fromDirection d: String?) -> Double? {
+        switch d {
+        case "DoubleUp", "TripleUp": 2.5
+        case "SingleUp": 1.5
+        case "FortyFiveUp": 1.0
+        case "Flat": 0
+        case "FortyFiveDown": -1.0
+        case "SingleDown": -1.5
+        case "DoubleDown", "TripleDown": -2.5
+        default: nil
+        }
     }
 
     private var baseURL: URL? {

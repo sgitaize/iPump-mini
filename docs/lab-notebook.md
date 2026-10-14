@@ -99,3 +99,12 @@ Folge: Unsere Allowlist ist eine echte Teilmenge dessen, was die offizielle App 
 - **Ohne Sitzung:** Das Neu-Registrieren der eigenen GATT-Dienste lässt die Pumpe die Verbindung nach ~7 s per Timeout trennen und ~25 s später mit neuem Handshake zurückkommen (verifiziert). Ändert nichts an der Pumpe.
 - **CGM RACP „≥ Zeit-Offset“** (`01 03 01 <u16>`) beantwortet die 780G mit `06 00 01 04` (Operator not supported). Die Historie muss über die IDD-History (RACP `33 5a 0f <Seq-Bereich>`, wie die offizielle App) geholt werden → nächster Ausbauschritt, braucht den History-Parser.
 - **GST Battery Level (0x0400)** ist auf der 780G nur per Notification verfügbar, Lesen liefert „Reading is not permitted“.
+
+## 2026-10-15 – Pumpenhistorie (IDD RACP) läuft
+
+- **Allowlist erweitert** (Simons Freigabe 15.10.): IDD RACP nur „Report Stored Records“ (Last `33 69 0f`, First `33 66 0f`, Bereich `33 5a 0f <u32> <u32>`) und „Report Number“ (`5a 33 0f`). Delete (`3c …`) und Abort (`55`) bleiben blockiert, Tests vorhanden. Den von der Pumpe nicht unterstützten CGM-RACP-Befehl „≥ Offset“ wieder entfernt.
+- **Ablauf:** Letzten Eintrag holen (liefert die neueste Sequenznummer), dann Bereiche in 200er-Blöcken. Erste Synchronisation: 2000 Einträge (~2 Tage, 13.10. 03:01 bis 15.10.), Dauer ~2,5 min im Vordergrund.
+- **Zeit:** Relative Offsets (Sekunden) zählen ab dem letzten „NGP Reference Time“-Ereignis (Pumpenuhr, Ortszeit). Plausibilitätsprüfung: Mahlzeiten mit Bolus kurz danach, tägliche Pause um 07:47; passt zu Simons Tagesablauf.
+- **Ergebnis:** 395 Behandlungen (291 Auto-Basal-Mikroboli, 108 Boli, 12 KH, 24 Basaländerungen, 3 Pausen/Fortsetzungen), 257 Sensorwerte nachgetragen. Upload zu Nightscout: 288 Werte, 109 Behandlungen.
+- **Offen:** Ein 200er-Block fehlte (1800 von 2000). Die vielen kleinen Boli (0,3–0,8 IE) sind SmartGuard-Autokorrekturen; sie lassen sich über „Bolus Programmed P2“ (Aktivierungsart) von manuellen Boli unterscheiden, das ist noch nicht ausgewertet.
+- **Nightscout-Historie** nachladen: 284 Werte gelesen, 274 neu (`/api/v1/entries/sgv.json` mit `find[date][$gte]`).

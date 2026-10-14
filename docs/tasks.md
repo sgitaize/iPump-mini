@@ -34,7 +34,12 @@
 - [x] Hardwaretest: GATT-Client-Zugriff, Handshake, Werte ✅
 - [x] Hintergrund-Aktualisierung robuster (Trigger GST/Status Changed, Hänger-Erkennung, Sitzung persistiert)
 - [ ] Hintergrund über mehrere Stunden prüfen (Protokolldatei vom iPhone ziehen)
-- [ ] Backfill: CGM RACP „≥ Offset“ wird von der 780G nicht unterstützt → über IDD-History (Seq-Bereich) nachladen
+- [x] Pumpenhistorie über IDD RACP (Allowlist erweitert, Simons Freigabe 15.10.): Behandlungen + Sensorwerte
+- [x] Behandlungen im Graph (Bolus, KH, BZ/Kalibrierung, Pausen) + Insulin-Graph (Bolus, Auto-Basal)
+- [x] Nightscout: Behandlungen hochladen, Historie aus Nightscout nachladen, lokale API /api/v1/treatments
+- [x] Einstellungen in einklappbaren Bereichen
+- [ ] SmartGuard-Autokorrekturen von manuellen Boli unterscheiden (Bolus Programmed P2)
+- [ ] Fehlenden History-Block untersuchen (1800 von 2000)
 - [ ] Treatments (Bolus, Kohlenhydrate) aus IDD-History
 
 ## Phase 4 – Nightscout-Upload und Pebble
@@ -42,6 +47,6 @@
 - [x] /pebble mit count und units=mmol
 - [ ] Upload gegen Simons echtes Nightscout prüfen (Simon trägt URL/Secret in der App ein)
 - [x] casiocgm 2.4.0 (Test): Datenquelle „openMinipump lokal“, Branch feature/openminipump-source, Config docs/config-beta (VPS-Projekt)
-- [ ] Simon: casiocgm-Testversion auf der Uhr testen
+- [ ] casiocgm-Test auf der Uhr klappt noch nicht (Simon 15.10.) → später debuggen (ATS/HTTP in der Pebble-App? App im Hintergrund pausiert?)
 - [x] Nightscout-Upload nur bei neuem Sensorwert, dann sofort
 - [x] App-Icon (Tropfen mit CGM-Kurve, Scripts/render-icon.swift)

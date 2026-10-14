@@ -30,9 +30,11 @@ final class AppModel: ObservableObject {
         api = LocalAPIServer(shared: store.shared)
         uploader = NightscoutUploader(store: store, log: log)
         let uploader = uploader
-        link = PumpLink(config: config, store: store, log: log) {
+        link = PumpLink(config: config, store: store, log: log, onData: {
             Watchdog.arm()
-        }
+        }, onHistory: { oldest in
+            uploader.historyAdded(oldestReading: oldest)
+        })
         store.onNewReading = { uploader.newReading() }
         api.onStateChange = { [weak self] text in
             Task { @MainActor in self?.apiState = text }
@@ -43,6 +45,7 @@ final class AppModel: ObservableObject {
         }
         restartAPI()
         Watchdog.requestAuthorization()
+        uploader.pullIfGaps()
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-demoData") { store.loadDemoData() }
         if let url = ProcessInfo.processInfo.environment["OMP_NS_URL"] {

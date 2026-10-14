@@ -57,6 +57,8 @@ final class PumpLink: NSObject, ObservableObject {
     private let store: DataStore
     private let log: EventLog
     private let onData: () -> Void
+    /// New history data was merged; argument is the oldest newly added sensor value.
+    private let onHistory: (Date?) -> Void
 
     private var peripheralManager: CBPeripheralManager!
     private var centralManager: CBCentralManager!
@@ -81,7 +83,10 @@ final class PumpLink: NSObject, ObservableObject {
     private var decryptFailures = 0
     private var currentStartedAt: Date?
     private var refreshPending = false
-    private var backfilledSession: Date?
+    /// Pump history (IDD RACP): records collected during one sync run.
+    private var historyBuffer: [HistoryRecord] = []
+    private var historyNewestSeq: UInt32?
+    private var lastHistorySync: Date = .distantPast
 
     /// Characteristics whose values are SAKE-encrypted (OpenMinimed pump-services.md).
     private static let encrypted: Set<String> = Set([
@@ -94,23 +99,27 @@ final class PumpLink: NSObject, ObservableObject {
         case read(service: String, characteristic: String)
         case statusReader(StatusReaderOpcode)
         case cgmLastRecord
-        case cgmBackfill(fromOffset: UInt16)
+        case historyLast
+        case historyRange(from: UInt32, to: UInt32)
 
         var description: String {
             switch self {
             case .read(_, let c): "Lesen \(c)"
             case .statusReader(let op): "SRCP \(op)"
             case .cgmLastRecord: "CGM letzter Wert"
-            case .cgmBackfill(let o): "CGM-Historie ab Offset \(o)"
+            case .historyLast: "History: letzter Eintrag"
+            case .historyRange(let a, let b): "History \(a)…\(b)"
             }
         }
     }
 
-    init(config: AppConfig, store: DataStore, log: EventLog, onData: @escaping () -> Void) {
+    init(config: AppConfig, store: DataStore, log: EventLog,
+         onData: @escaping () -> Void, onHistory: @escaping (Date?) -> Void = { _ in }) {
         self.config = config
         self.store = store
         self.log = log
         self.onData = onData
+        self.onHistory = onHistory
         let defaults = UserDefaults.standard
         if let name = defaults.string(forKey: "advertisedName") {
             advertisedName = name
@@ -353,7 +362,8 @@ final class PumpLink: NSObject, ObservableObject {
         operationTimer?.invalidate()
         sessionStart = nil
         sensorRunHours = nil
-        backfilledSession = nil
+        historyBuffer = []
+        historyNewestSeq = nil
     }
 
     private func key(_ service: CBUUID, _ characteristic: CBUUID) -> String {
@@ -392,6 +402,8 @@ final class PumpLink: NSObject, ObservableObject {
             (PumpUUID.cgmService, PumpUUID.recordAccessCP),
             (PumpUUID.iddService, PumpUUID.iddStatusReaderCP),
             (PumpUUID.iddService, PumpUUID.iddStatusChanged),
+            (PumpUUID.iddService, PumpUUID.iddHistoryData),
+            (PumpUUID.iddService, PumpUUID.recordAccessCP),
             (PumpUUID.iddService, PumpUUID.gstBatteryLevel),
             (PumpUUID.batteryService, PumpUUID.batteryLevel),
         ] {
@@ -492,30 +504,74 @@ final class PumpLink: NSObject, ObservableObject {
             operations.append(.read(service: PumpUUID.cgmService, characteristic: PumpUUID.cgmSessionRunTime))
         }
         operations.append(.cgmLastRecord)
+        // Pump history (boluses, carbs, BG, auto basal, sensor values) every ~5 min.
+        if Date().timeIntervalSince(lastHistorySync) > 4 * 60 {
+            lastHistorySync = Date()
+            historyBuffer = []
+            operations.append(.historyLast)
+        }
         nextOperation()
     }
 
-    /// After a (re)connect: fetch missed sensor values of the running session, at most 24 h.
-    private func scheduleBackfillIfNeeded() {
-        // The 780G answers "operator not supported" (06 00 01 04) to ">= time offset".
-        guard !UserDefaults.standard.bool(forKey: "cgmBackfillUnsupported") else { return }
-        guard let start = sessionStart, backfilledSession != start else { return }
-        backfilledSession = start
-        let nowOffset = max(0, Int(Date().timeIntervalSince(start) / 60))
-        var from = max(0, nowOffset - 24 * 60)
-        // Only fetch after the newest known value if the last 24 h are (nearly) complete;
-        // otherwise fetch the whole window, duplicates are merged by the store.
-        let dayAgo = Date().addingTimeInterval(-24 * 3600)
-        let recentCount = store.readings.filter { $0.date >= max(start, dayAgo) }.count
-        let expected = min(288, nowOffset / 5)
-        let known = store.readings
-            .filter { $0.date >= start && $0.sessionOffsetMinutes != nil }
-            .compactMap(\.sessionOffsetMinutes).max()
-        if let known, recentCount >= expected - 3 { from = max(from, Int(known) + 1) }
-        guard nowOffset - from > 6, from <= Int(UInt16.max) else { return }
-        log.add("Lade Sensorwerte der letzten \((nowOffset - from) / 60) h \((nowOffset - from) % 60) min nach")
-        operations.append(.cgmBackfill(fromOffset: UInt16(from)))
-        if current == nil { nextOperation() }
+    // MARK: - Pump history
+
+    private static let historyChunk: UInt32 = 200
+    /// First sync: about three days of history (~700 records per day).
+    private static let historyInitialWindow: UInt32 = 2_000
+
+    private var historyLastSeq: UInt32? {
+        get { (UserDefaults.standard.object(forKey: "historyLastSeq") as? NSNumber)?.uint32Value }
+        set { UserDefaults.standard.set(newValue.map { NSNumber(value: $0) }, forKey: "historyLastSeq") }
+    }
+
+    private var historyReference: (sequence: UInt32, date: Date)? {
+        get {
+            guard let seq = (UserDefaults.standard.object(forKey: "historyRefSeq") as? NSNumber)?.uint32Value,
+                  let date = UserDefaults.standard.object(forKey: "historyRefDate") as? Date else { return nil }
+            return (seq, date)
+        }
+        set {
+            UserDefaults.standard.set(newValue.map { NSNumber(value: $0.sequence) }, forKey: "historyRefSeq")
+            UserDefaults.standard.set(newValue?.date, forKey: "historyRefDate")
+        }
+    }
+
+    /// After "last record" told us the newest sequence number: queue the missing ranges.
+    private func queueHistoryRanges() {
+        guard let newest = historyNewestSeq else { return }
+        let lower = newest > Self.historyInitialWindow ? newest - Self.historyInitialWindow : 0
+        var from = max(lower, (historyLastSeq ?? lower) &+ 1)
+        if let last = historyLastSeq, last >= newest { return }
+        if from > newest { from = lower }
+        log.add("History: lade \(newest - from + 1) Einträge (\(from)…\(newest))")
+        var chunks: [Operation] = []
+        while from <= newest {
+            let to = min(newest, from + Self.historyChunk - 1)
+            chunks.append(.historyRange(from: from, to: to))
+            from = to + 1
+        }
+        operations.insert(contentsOf: chunks, at: 0)
+    }
+
+    /// Converts the collected records into treatments and sensor values.
+    private func processHistory() {
+        guard !historyBuffer.isEmpty else { return }
+        let records = historyBuffer
+        historyBuffer = []
+        let (events, reference) = HistoryTimeline.resolve(records, reference: historyReference)
+        historyReference = reference
+        if let maxSeq = records.map(\.sequence).max() { historyLastSeq = max(historyLastSeq ?? 0, maxSeq) }
+
+        let treatments = events.compactMap(Treatment.init)
+        let sgv = events.compactMap { e -> GlucoseReading? in
+            guard case .sensorGlucose(let mgdl?) = e.event else { return nil }
+            return GlucoseReading(date: e.date, mgdl: mgdl, trendMgdlPerMin: nil, sessionOffsetMinutes: nil)
+        }
+        let newTreatments = store.addTreatments(treatments)
+        let newReadings = store.merge(sgv)
+        log.add("History: \(records.count) Einträge, \(newTreatments.count) neue Behandlungen, \(newReadings.count) Sensorwerte nachgetragen"
+                + (reference == nil ? " (noch keine Zeitreferenz)" : ""))
+        if !newTreatments.isEmpty || !newReadings.isEmpty { onHistory(newReadings.map(\.date).min()) }
     }
 
     private func nextOperation() {
@@ -527,7 +583,7 @@ final class PumpLink: NSObject, ObservableObject {
             if start(op) {
                 current = op
                 currentStartedAt = Date()
-                let timeout: TimeInterval = if case .cgmBackfill = op { 60 } else { 6 }
+                let timeout: TimeInterval = if case .historyRange = op { 45 } else { 8 }
                 operationTimer = Timer.scheduledTimer(withTimeInterval: timeout, repeats: false) { [weak self] _ in
                     Task { @MainActor in
                         guard let self, let op = self.current else { return }
@@ -538,7 +594,9 @@ final class PumpLink: NSObject, ObservableObject {
                 return
             }
         }
-        // Queue drained: run a refresh that was requested while busy.
+        // Queue drained (also after a timed-out history range): process collected history.
+        if !historyBuffer.isEmpty { processHistory() }
+        // Run a refresh that was requested while busy.
         if refreshPending { scheduleRefresh() }
     }
 
@@ -554,10 +612,13 @@ final class PumpLink: NSObject, ObservableObject {
         case .cgmLastRecord:
             return guardedWrite(service: PumpUUID.cgmService, characteristic: PumpUUID.recordAccessCP,
                                 plaintext: [0x01, 0x06])
-        case .cgmBackfill(let offset):
-            // Report Stored Records, operator >=, filter type time offset.
-            return guardedWrite(service: PumpUUID.cgmService, characteristic: PumpUUID.recordAccessCP,
-                                plaintext: [0x01, 0x03, 0x01, UInt8(offset & 0xFF), UInt8(offset >> 8)])
+        case .historyLast:
+            return guardedWrite(service: PumpUUID.iddService, characteristic: PumpUUID.recordAccessCP,
+                                plaintext: [0x33, 0x69, 0x0F])
+        case .historyRange(let from, let to):
+            func le(_ v: UInt32) -> [UInt8] { (0..<4).map { UInt8((v >> (8 * UInt32($0))) & 0xFF) } }
+            return guardedWrite(service: PumpUUID.iddService, characteristic: PumpUUID.recordAccessCP,
+                                plaintext: [0x33, 0x5A, 0x0F] + le(from) + le(to))
         }
     }
 
@@ -622,27 +683,43 @@ final class PumpLink: NSObject, ObservableObject {
                                              trendMgdlPerMin: m.trendMgdlPerMin, sessionOffsetMinutes: m.timeOffsetMinutes))
                     onData()
                 }
-                if case .cgmBackfill = current {} else {
-                    log.add("SG \(Int(m.glucoseMgdl)) mg/dL, Trend \(m.trendMgdlPerMin.map { String($0) } ?? "–")")
-                }
+                log.add("SG \(Int(m.glucoseMgdl)) mg/dL, Trend \(m.trendMgdlPerMin.map { String($0) } ?? "–")")
             } catch {
                 log.add("CGM-Messung nicht lesbar: \(error) \(plain.hex)", .warning)
             }
 
         case PumpUUID.recordAccessCP:
-            log.add("RACP-Antwort \(plain.hex)")
-            if service == PumpUUID.cgmService, case .cgmBackfill = current, plain == [0x06, 0x00, 0x01, 0x04] {
-                log.add("Pumpe unterstützt CGM-Abruf ab Zeitpunkt nicht, Nachladen deaktiviert", .warning)
-                UserDefaults.standard.set(true, forKey: "cgmBackfillUnsupported")
-            }
             if service == PumpUUID.cgmService {
-                finish {
-                    switch $0 {
-                    case .cgmLastRecord, .cgmBackfill: true
-                    default: false
+                log.add("CGM-RACP-Antwort \(plain.hex)")
+                finish { if case .cgmLastRecord = $0 { true } else { false } }
+            } else if service == PumpUUID.iddService.uppercased() {
+                // IDS RACP response: 0F 0F <request opcode> <code>; F0 = success, 06 = no records.
+                let ok = plain.count >= 4 && plain[3] == 0xF0
+                if !ok { log.add("History-RACP-Antwort \(plain.hex)", .warning) }
+                switch current {
+                case .historyLast?:
+                    queueHistoryRanges()
+                    finish { _ in true }
+                case .historyRange?:
+                    finish { _ in true }
+                    if !operations.contains(where: { if case .historyRange = $0 { true } else { false } }) {
+                        processHistory()
                     }
+                default:
+                    break
                 }
-                scheduleBackfillIfNeeded()
+            }
+
+        case PumpUUID.iddHistoryData.uppercased():
+            do {
+                let record = try HistoryRecord(plain)
+                if case .historyLast = current {
+                    historyNewestSeq = record.sequence
+                } else {
+                    historyBuffer.append(record)
+                }
+            } catch {
+                log.add("History-Eintrag nicht lesbar: \(plain.hex)", .warning)
             }
 
         case PumpUUID.iddStatusReaderCP.uppercased():

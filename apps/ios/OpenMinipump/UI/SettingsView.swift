@@ -12,10 +12,32 @@ struct SettingsView: View {
     @State private var testResult: String?
     @State private var testing = false
 
+    @AppStorage("settings.pump") private var openPump = true
+    @AppStorage("settings.sensor") private var openSensor = false
+    @AppStorage("settings.ns") private var openNS = false
+    @AppStorage("settings.api") private var openAPI = false
+    @AppStorage("settings.notify") private var openNotify = false
+    @AppStorage("settings.info") private var openInfo = false
+    @State private var pulling = false
+
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
+            List {
+                Section("Pumpe", isExpanded: $openPump) {
+                    LabeledContent("Name in der Pumpe", value: "Mobile \(link.advertisedName)")
+                    LabeledContent("Seriennummer", value: link.pumpSerial ?? "–")
+                    LabeledContent("Firmware", value: link.pumpFirmware ?? "–")
+                    LabeledContent("Verbindung", value: link.phase.label)
+                    LabeledContent("Entwicklermodus", value: model.config.devGuard.devMode ? "an (nur Testpumpe)" : "aus")
+                }
+
+                Section("Sensor", isExpanded: $openSensor) {
+                    Picker("Sensor", selection: $sensorType) {
+                        ForEach(SensorType.allCases) { Text($0.label).tag($0.rawValue) }
+                    }
+                }
+
+                Section("Nightscout", isExpanded: $openNS) {
                     Toggle("Zu Nightscout hochladen", isOn: $uploader.enabled)
                     if uploader.enabled {
                         TextField("https://dein-nightscout.example", text: $uploader.url)
@@ -23,7 +45,11 @@ struct SettingsView: View {
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                         SecureField("API-Secret (oder token=…)", text: $uploader.secret)
-                        Toggle("Pumpenstatus (devicestatus) senden", isOn: $uploader.uploadDeviceStatus)
+                        Toggle("Pumpenstatus (devicestatus)", isOn: $uploader.uploadDeviceStatus)
+                        Toggle("Behandlungen (Bolus, KH, BZ)", isOn: $uploader.uploadTreatments)
+                        if uploader.uploadTreatments {
+                            Toggle("Auch Auto-Basal-Mikroboli", isOn: $uploader.uploadAutoBasal)
+                        }
                         Button(testing ? "Teste…" : "Verbindung testen") {
                             testing = true
                             Task {
@@ -40,27 +66,23 @@ struct SettingsView: View {
                             uploader.resetUploadMarker()
                             Task { await uploader.sync() }
                         }
-                    }
-                } header: {
-                    Text("Nightscout-Upload")
-                } footer: {
-                    Text("Sendet Sensorwerte und Pumpenstatus an dein eigenes Nightscout. Funktioniert auch im Hintergrund, weil die Pumpe die App alle 5 Minuten weckt. Das Secret liegt im Schlüsselbund.")
-                }
-
-                Section {
-                    LabeledContent("Status", value: model.apiState)
-                    URLRow(title: "Auf diesem iPhone", url: "http://127.0.0.1:\(LocalAPIServer.port)/status.html")
-                    if model.apiAllowLAN && !model.apiSecret.isEmpty {
-                        TimelineView(.periodic(from: .now, by: 10)) { _ in
-                            if let ip = NetworkInfo.wifiIPv4() {
-                                URLRow(title: "Im WLAN", url: "http://\(ip):\(LocalAPIServer.port)/status.html")
-                                URLRow(title: "Pebble / Nightscout-Clients", url: "http://\(ip):\(LocalAPIServer.port)")
-                            } else {
-                                Text("Kein WLAN verbunden – im WLAN nicht erreichbar.").font(.caption).foregroundStyle(.orange)
+                        Button(pulling ? "Lade…" : "Historie aus Nightscout laden (24 h)") {
+                            pulling = true
+                            Task {
+                                await uploader.pullHistory(hours: 24)
+                                pulling = false
                             }
                         }
-                        Text("Startseite: Benutzername beliebig, Passwort = API-Secret.").font(.caption).foregroundStyle(.secondary)
+                        .disabled(pulling)
+                        if let pull = uploader.lastPull { Text(pull).font(.caption) }
                     }
+                    Text("Lädt neue Sensorwerte sofort hoch, dazu Pumpenstatus und Behandlungen aus der Pumpenhistorie. Funktioniert auch im Hintergrund, weil die Pumpe die App alle 5 Minuten weckt. Fehlen beim Start Werte der letzten 24 h, werden sie aus Nightscout nachgeladen. Das Secret liegt im Schlüsselbund.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+
+                Section("Lokale API", isExpanded: $openAPI) {
+                    LabeledContent("Status", value: model.apiState)
+                    URLRow(title: "Auf diesem iPhone", url: "http://127.0.0.1:\(LocalAPIServer.port)/status.html")
                     Toggle("Im WLAN freigeben", isOn: $model.apiAllowLAN)
                         .onChange(of: model.apiAllowLAN) { _, _ in model.restartAPI() }
                     if model.apiAllowLAN {
@@ -68,42 +90,35 @@ struct SettingsView: View {
                             .onSubmit { model.restartAPI() }
                         if model.apiSecret.isEmpty {
                             Text("Ohne API-Secret bleibt die API auf dieses iPhone beschränkt.").font(.caption).foregroundStyle(.orange)
+                        } else {
+                            TimelineView(.periodic(from: .now, by: 10)) { _ in
+                                if let ip = NetworkInfo.wifiIPv4() {
+                                    URLRow(title: "Im WLAN", url: "http://\(ip):\(LocalAPIServer.port)/status.html")
+                                    URLRow(title: "Pebble / Nightscout-Clients", url: "http://\(ip):\(LocalAPIServer.port)")
+                                } else {
+                                    Text("Kein WLAN verbunden – im WLAN nicht erreichbar.").font(.caption).foregroundStyle(.orange)
+                                }
+                            }
+                            Text("Startseite: Benutzername beliebig, Passwort = API-Secret.").font(.caption).foregroundStyle(.secondary)
                         }
                     }
-                } header: {
-                    Text("Lokale API (Nightscout-kompatibel)")
-                } footer: {
-                    Text("Endpunkte wie Nightscout: /api/v1/entries.json, /api/v1/devicestatus.json, /pebble?count=N&units=mmol. iOS pausiert die App im Hintergrund zwischen den Bluetooth-Ereignissen; dann antwortet die API nicht. Für Uhren und andere Geräte ist der Nightscout-Upload zuverlässiger.")
+                    Text("Endpunkte wie Nightscout: /api/v1/entries.json, /api/v1/treatments.json, /api/v1/devicestatus.json, /pebble?count=N&units=mmol. iOS pausiert die App im Hintergrund zwischen den Bluetooth-Ereignissen; dann antwortet die API nicht.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
 
-                Section {
+                Section("Benachrichtigungen", isExpanded: $openNotify) {
                     Toggle("Erinnern, wenn keine Daten kommen", isOn: $watchdog)
                         .onChange(of: watchdog) { _, on in Watchdog.enabled = on }
-                } header: {
-                    Text("Benachrichtigungen")
-                } footer: {
                     Text("Kommen 20 Minuten lang keine Pumpendaten (z. B. weil die App weggewischt wurde), erscheint eine Mitteilung zum erneuten Öffnen.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
 
-                Section("Sensor") {
-                    Picker("Sensor", selection: $sensorType) {
-                        ForEach(SensorType.allCases) { Text($0.label).tag($0.rawValue) }
-                    }
-                }
-
-                Section("Pumpe") {
-                    LabeledContent("Name in der Pumpe", value: "Mobile \(link.advertisedName)")
-                    LabeledContent("Seriennummer", value: link.pumpSerial ?? "–")
-                    LabeledContent("Firmware", value: link.pumpFirmware ?? "–")
-                    LabeledContent("Verbindung", value: link.phase.label)
-                    LabeledContent("Entwicklermodus", value: model.config.devGuard.devMode ? "an (nur Testpumpe)" : "aus")
-                }
-
-                Section {
+                Section("Info", isExpanded: $openInfo) {
                     NavigationLink("Protokoll") { LogView() }
                     NavigationLink("Über & Impressum") { AboutView() }
                 }
             }
+            .listStyle(.sidebar)
             .navigationTitle("Einstellungen")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

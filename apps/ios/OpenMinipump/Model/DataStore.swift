@@ -10,6 +10,7 @@ final class DataStore: ObservableObject {
     @Published private(set) var readings: [GlucoseReading] = []
     @Published private(set) var snapshot = PumpSnapshot()
     @Published private(set) var lastDataAt: Date?
+    @Published private(set) var treatments: [Treatment] = []
 
     /// Thread-safe view for the API server (runs on its own queue).
     let shared = SharedData()
@@ -28,6 +29,7 @@ final class DataStore: ObservableObject {
         var readings: [GlucoseReading]
         var snapshot: PumpSnapshot
         var lastDataAt: Date?
+        var treatments: [Treatment]?
     }
 
     init() {
@@ -37,6 +39,7 @@ final class DataStore: ObservableObject {
             readings = p.readings
             snapshot = p.snapshot
             lastDataAt = p.lastDataAt
+            treatments = p.treatments ?? []
         }
         publish()
     }
@@ -58,6 +61,14 @@ final class DataStore: ObservableObject {
         s.transmitterBatteryPercent = 100
         s.sensorEnd = now.addingTimeInterval(3 * 86400 + 5 * 3600)
         snapshot = s
+        treatments = [
+            Treatment(id: 1, date: now.addingTimeInterval(-150 * 60), kind: .carbs, value: 45),
+            Treatment(id: 2, date: now.addingTimeInterval(-148 * 60), kind: .bolus, value: 3.5),
+            Treatment(id: 3, date: now.addingTimeInterval(-60 * 60), kind: .calibration, value: 152),
+        ] + (0..<36).map { i in
+            Treatment(id: UInt32(10 + i), date: now.addingTimeInterval(-Double(i) * 300), kind: .autoBasal,
+                      value: [0.05, 0.1, 0.0, 0.15, 0.05][i % 5])
+        }.filter { ($0.value ?? 0) > 0 }
         touched()
     }
     #endif
@@ -82,6 +93,37 @@ final class DataStore: ObservableObject {
         touched()
     }
 
+    /// Merges values from the pump history or from Nightscout. Does not trigger the
+    /// "new reading" upload; returns the values that were actually new.
+    @discardableResult
+    func merge(_ incoming: [GlucoseReading]) -> [GlucoseReading] {
+        var added: [GlucoseReading] = []
+        let cutoff = Date().addingTimeInterval(-retention)
+        for r in incoming where r.date >= cutoff && r.date <= Date().addingTimeInterval(300) {
+            if readings.contains(where: { abs($0.date.timeIntervalSince(r.date)) < 120 }) { continue }
+            readings.append(r)
+            added.append(r)
+        }
+        guard !added.isEmpty else { return [] }
+        readings.sort { $0.date < $1.date }
+        touched()
+        return added
+    }
+
+    /// Adds pump history treatments (deduplicated by sequence number); returns the new ones.
+    @discardableResult
+    func addTreatments(_ incoming: [Treatment]) -> [Treatment] {
+        let known = Set(treatments.map(\.id))
+        let new = incoming.filter { !known.contains($0.id) }
+        guard !new.isEmpty else { return [] }
+        treatments.append(contentsOf: new)
+        treatments.sort { $0.date < $1.date }
+        let cutoff = Date().addingTimeInterval(-retention)
+        treatments.removeAll { $0.date < cutoff }
+        touched()
+        return new
+    }
+
     func update(_ change: (inout PumpSnapshot) -> Void) {
         change(&snapshot)
         snapshot.updatedAt = Date()
@@ -96,12 +138,12 @@ final class DataStore: ObservableObject {
 
     private func publish() {
         let level = UIDevice.current.batteryLevel
-        shared.set(readings: readings, snapshot: snapshot,
+        shared.set(readings: readings, snapshot: snapshot, treatments: treatments,
                    uploaderBattery: level >= 0 ? Int((level * 100).rounded()) : nil)
     }
 
     private func save() {
-        let p = Persisted(readings: readings, snapshot: snapshot, lastDataAt: lastDataAt)
+        let p = Persisted(readings: readings, snapshot: snapshot, lastDataAt: lastDataAt, treatments: treatments)
         if let data = try? JSONEncoder().encode(p) {
             try? data.write(to: fileURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
         }
@@ -113,12 +155,19 @@ final class SharedData: @unchecked Sendable {
     private var _readings: [GlucoseReading] = []
     private var _snapshot = PumpSnapshot()
     private var _uploaderBattery: Int?
+    private var _treatments: [Treatment] = []
 
-    func set(readings: [GlucoseReading], snapshot: PumpSnapshot, uploaderBattery: Int?) {
+    func set(readings: [GlucoseReading], snapshot: PumpSnapshot, treatments: [Treatment], uploaderBattery: Int?) {
         lock.lock(); defer { lock.unlock() }
         _readings = readings
         _snapshot = snapshot
+        _treatments = treatments
         _uploaderBattery = uploaderBattery
+    }
+
+    var treatments: [Treatment] {
+        lock.lock(); defer { lock.unlock() }
+        return _treatments
     }
 
     func get() -> (readings: [GlucoseReading], snapshot: PumpSnapshot, uploaderBattery: Int?) {

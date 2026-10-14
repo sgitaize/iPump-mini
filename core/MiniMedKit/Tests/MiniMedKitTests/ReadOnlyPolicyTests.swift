@@ -9,7 +9,10 @@ final class ReadOnlyPolicyTests: XCTestCase {
 
     func testAllowsOnlyReadingCommands() {
         XCTAssertTrue(check(PumpUUID.cgmService, PumpUUID.recordAccessCP, "0106").isAllowed)
-        XCTAssertTrue(check(PumpUUID.cgmService, PumpUUID.recordAccessCP, "0103011000").isAllowed)
+        XCTAssertTrue(check(PumpUUID.iddService, PumpUUID.recordAccessCP, "33690f").isAllowed)
+        XCTAssertTrue(check(PumpUUID.iddService, PumpUUID.recordAccessCP, "33660f").isAllowed)
+        XCTAssertTrue(check(PumpUUID.iddService, PumpUUID.recordAccessCP, "5a330f").isAllowed)
+        XCTAssertTrue(check(PumpUUID.iddService, PumpUUID.recordAccessCP, "335a0f0f410700364107 00".replacingOccurrences(of: " ", with: "")).isAllowed)
         for op in StatusReaderOpcode.allCases {
             XCTAssertTrue(check(PumpUUID.iddService, PumpUUID.iddStatusReaderCP, op.request.hex).isAllowed, "\(op)")
         }
@@ -25,8 +28,16 @@ final class ReadOnlyPolicyTests: XCTestCase {
         XCTAssertFalse(check(PumpUUID.iddService, PumpUUID.iddStatusReaderCP, "3003").isAllowed)
         // Command CP (bolus, basal, suspend, settings) – always blocked, even with a "read" opcode
         XCTAssertFalse(check(PumpUUID.iddService, PumpUUID.iddCommandCP, "8e14").isAllowed)
-        // IDD RACP incl. delete
+        // IDD RACP: delete (all / range), abort, other filters, truncated range
         XCTAssertFalse(check(PumpUUID.iddService, PumpUUID.recordAccessCP, "3c33").isAllowed)
+        XCTAssertFalse(check(PumpUUID.iddService, PumpUUID.recordAccessCP, "3c330f").isAllowed)
+        XCTAssertFalse(check(PumpUUID.iddService, PumpUUID.recordAccessCP, "3c5a0f0f41070036410700").isAllowed)
+        XCTAssertFalse(check(PumpUUID.iddService, PumpUUID.recordAccessCP, "550f").isAllowed)
+        XCTAssertFalse(check(PumpUUID.iddService, PumpUUID.recordAccessCP, "33693c").isAllowed)
+        XCTAssertFalse(check(PumpUUID.iddService, PumpUUID.recordAccessCP, "335a0f0f410700").isAllowed)
+        // CGM RACP: only "last record"
+        XCTAssertFalse(check(PumpUUID.cgmService, PumpUUID.recordAccessCP, "0101").isAllowed)
+        XCTAssertFalse(check(PumpUUID.cgmService, PumpUUID.recordAccessCP, "0103011000").isAllowed)
         // CGM specific ops (calibration, session start/stop), session start time write
         XCTAssertFalse(check(PumpUUID.cgmService, PumpUUID.cgmSpecificOpsCP, "1a").isAllowed)
         XCTAssertFalse(check(PumpUUID.cgmService, PumpUUID.cgmSessionStartTime, "00").isAllowed)

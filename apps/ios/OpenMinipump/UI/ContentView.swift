@@ -171,6 +171,8 @@ struct GlucoseChart: View {
     var body: some View {
         let from = Date().addingTimeInterval(-Double(hours) * 3600)
         let points = store.readings.filter { $0.date >= from }
+        let events = store.treatments.filter { $0.date >= from }
+        let yMax = max(250, (points.map(\.mgdl).max() ?? 0) + 40)
         Picker("Zeitraum", selection: $hours) {
             ForEach([3, 6, 12, 24], id: \.self) { Text("\($0) h").tag($0) }
         }
@@ -183,13 +185,81 @@ struct GlucoseChart: View {
                     .symbolSize(hours > 6 ? 10 : 24)
                     .foregroundStyle(r.mgdl < 70 ? .red : r.mgdl > 180 ? .orange : .primary)
             }
+            ForEach(events.filter { $0.kind == .suspend || $0.kind == .resume }) { t in
+                RuleMark(x: .value("Zeit", t.date))
+                    .foregroundStyle(.gray.opacity(0.6))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+            }
+            ForEach(events.filter { $0.kind == .carbs }) { t in
+                PointMark(x: .value("Zeit", t.date), y: .value("mg/dL", yMax - 15))
+                    .symbol(.circle)
+                    .symbolSize(70)
+                    .foregroundStyle(.orange)
+                    .annotation(position: .bottom, spacing: 2) {
+                        Text("\(Int(t.value ?? 0)) g").font(.system(size: 9)).foregroundStyle(.orange)
+                    }
+            }
+            ForEach(events.filter { $0.kind == .bolus }) { t in
+                PointMark(x: .value("Zeit", t.date), y: .value("mg/dL", yMax - 45))
+                    .symbol(.triangle)
+                    .symbolSize(70)
+                    .foregroundStyle(.blue)
+                    .annotation(position: .bottom, spacing: 2) {
+                        Text(String(format: "%.1f", t.value ?? 0)).font(.system(size: 9)).foregroundStyle(.blue)
+                    }
+            }
+            ForEach(events.filter { $0.kind == .bgCheck || $0.kind == .calibration }) { t in
+                PointMark(x: .value("Zeit", t.date), y: .value("mg/dL", t.value ?? 0))
+                    .symbol(.diamond)
+                    .symbolSize(60)
+                    .foregroundStyle(.red)
+            }
         }
-        .chartYScale(domain: 40...max(250, (points.map(\.mgdl).max() ?? 0) + 20))
+        .chartYScale(domain: 40...yMax)
         .chartXScale(domain: from...Date())
-        .frame(height: 180)
+        .frame(height: 200)
         .overlay {
             if points.isEmpty { Text("Keine Werte in diesem Zeitraum").font(.caption).foregroundStyle(.secondary) }
         }
+        InsulinChart(from: from, events: events)
+        ChartLegend()
+    }
+}
+
+/// Bolus and SmartGuard auto basal (micro boluses) per event.
+struct InsulinChart: View {
+    let from: Date
+    let events: [Treatment]
+
+    var body: some View {
+        let insulin = events.filter { $0.kind == .bolus || $0.kind == .autoBasal }
+        if !insulin.isEmpty {
+            Chart(insulin) { t in
+                BarMark(x: .value("Zeit", t.date), y: .value("IE", t.value ?? 0), width: .fixed(t.kind == .bolus ? 4 : 2))
+                    .foregroundStyle(t.kind == .bolus ? Color.blue : Color.teal)
+            }
+            .chartXScale(domain: from...Date())
+            .chartYAxis { AxisMarks(position: .trailing, values: .automatic(desiredCount: 2)) }
+            .chartXAxis(.hidden)
+            .frame(height: 60)
+        }
+    }
+}
+
+struct ChartLegend: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            legend("triangle.fill", .blue, "Bolus")
+            legend("circle.fill", .orange, "KH")
+            legend("diamond.fill", .red, "BZ/Kalibr.")
+            legend("square.fill", .teal, "Auto-Basal")
+        }
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+    }
+
+    private func legend(_ symbol: String, _ color: Color, _ text: String) -> some View {
+        HStack(spacing: 3) { Image(systemName: symbol).foregroundStyle(color); Text(text) }
     }
 }
 

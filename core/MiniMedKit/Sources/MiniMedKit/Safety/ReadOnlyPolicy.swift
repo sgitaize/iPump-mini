@@ -35,7 +35,7 @@ public enum ReadOnlyPolicy {
     public static let subscribable: Set<String> = Set([
         PumpUUID.cgmMeasurement, PumpUUID.recordAccessCP,
         PumpUUID.iddStatusReaderCP, PumpUUID.iddStatusChanged,
-        PumpUUID.gstBatteryLevel, PumpUUID.batteryLevel,
+        PumpUUID.gstBatteryLevel, PumpUUID.batteryLevel, PumpUUID.iddHistoryData,
     ].map { $0.uppercased() })
 
     /// Characteristics we may read.
@@ -51,15 +51,24 @@ public enum ReadOnlyPolicy {
         switch (request.service, request.characteristic) {
 
         // CGM Record Access Control Point: only "Report Stored Records" (0x01) with
-        // operator All (0x01), >= (0x03, filter time offset 0x01 + u16) or Last (0x06).
+        // operator Last (0x06). The 780G does not support ">= time offset" (lab notebook).
         // Delete (0x02) and everything else is blocked.
         case (PumpUUID.cgmService, PumpUUID.recordAccessCP):
             if p == [0x01, 0x06] { return .allowed("CGM RACP: letzter Datensatz") }
-            if p == [0x01, 0x01] { return .allowed("CGM RACP: alle Datensätze") }
-            if p.count == 5, p[0] == 0x01, p[1] == 0x03, p[2] == 0x01 {
-                return .allowed("CGM RACP: Datensätze ab Zeit-Offset")
-            }
             return .blocked("CGM RACP: nicht erlaubter Befehl \(p.hex)")
+
+        // IDD Record Access Control Point (pump history, IDS opcodes). Allowed are only
+        // the reporting commands with filter type "sequence number" (0x0F), as used by
+        // the official app (capture 2): Report Stored Records (0x33) with Last (0x69),
+        // First (0x66) or Within Range (0x5A + two u32), and Report Number of Stored
+        // Records (0x5A) for All (0x33). Delete Stored Records (0x3C) and Abort (0x55)
+        // are blocked. Approved by Simon on 2026-10-15.
+        case (PumpUUID.iddService.uppercased(), PumpUUID.recordAccessCP):
+            if p == [0x33, 0x69, 0x0F] { return .allowed("IDD RACP: letzter History-Eintrag") }
+            if p == [0x33, 0x66, 0x0F] { return .allowed("IDD RACP: erster History-Eintrag") }
+            if p == [0x5A, 0x33, 0x0F] { return .allowed("IDD RACP: Anzahl History-Einträge") }
+            if p.count == 11, p[0] == 0x33, p[1] == 0x5A, p[2] == 0x0F { return .allowed("IDD RACP: History-Bereich") }
+            return .blocked("IDD RACP: nicht erlaubter Befehl \(p.hex)")
 
         // IDD Status Reader Control Point: only the read-only "Get …" opcodes of
         // StatusReaderOpcode, without parameters. Reset Status (0x030C) is blocked.
