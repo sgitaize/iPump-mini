@@ -27,8 +27,8 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 - Der iOS-Simulator hat kein Bluetooth, deshalb braucht es einen Replay-Transport aus echten Mitschnitten.
 
 ## Aktueller Stand
-- Phase 0–2 ✅ (Recherche, ADR 0003, GPL-3.0, Mitschnitte der offiziellen App). Phase 3 läuft: erste iOS-App gebaut, **Hardwaretest steht aus**.
-- `core/MiniMedKit` (Swift-Paket): SAKE-Port, Parser, `ReadOnlyPolicy` (die Allowlist, Änderungen nur mit Simon), `DevModeGuard`, Nightscout-Mapping. `swift test` prüft den Handshake gegen den echten 780G-Trace (Key-DB aus `_vendor/keys/`, sonst Skip).
-- `apps/ios`: XcodeGen (`project.yml`), Setup in `docs/setup-ios.md`. Alle Schreibzugriffe auf die Pumpe laufen über `PumpLink.guardedWrite`. API: `docs/api.md`.
-- Kernwissen: `docs/landscape.md`, Laborbuch. Die Pumpe ist Central und SAKE-Client, das Telefon Peripheral und SAKE-Server und zusätzlich GATT-Client auf derselben Verbindung. Dauerverbindung, Reconnect über den Bond.
-- Offene Risiken: GATT-Client-Zugriff unter iOS (`retrievePeripherals`/`retrieveConnectedPeripherals`) noch unbewiesen. API unter iOS im Hintergrund nicht erreichbar, daher Nightscout-Upload als Phase 4.
+- Phase 3/4: Die iOS-App läuft auf Simons iPhone mit der Testpumpe. Werte, Pumpenstatus, Pumpenhistorie (Behandlungen), Hintergrundbetrieb, Nightscout-Upload/-Nachladen, lokale API mit Statusseite. Offene Punkte: `docs/tasks.md`.
+- `core/MiniMedKit` (Swift-Paket): SAKE-Port, Parser inkl. History, `ReadOnlyPolicy` (Allowlist, Änderungen nur mit Simon; letzte Freigabe 15.10.: IDD-RACP-Report-Befehle), `DevModeGuard`, Nightscout-Mapping. `swift test` prüft den Handshake gegen den echten 780G-Trace.
+- `apps/ios`: XcodeGen, Setup `docs/setup-ios.md`, Signing lokal in `Config/Local.xcconfig`. Alle Schreibzugriffe auf die Pumpe laufen über `PumpLink.guardedWrite`. Protokolldatei auf dem iPhone: `Application Support/openminipump.log` (per `xcrun devicectl device copy from … --domain-type appDataContainer`).
+- Erkenntnisse im Laborbuch: DIS-Werte wie die offizielle App, 5-min-Trigger (GST Battery + IDD Status Changed), Sitzung wird gespeichert, ohne Sitzung GATT-Dienste neu registrieren, CGM-RACP „≥ Offset“ nicht unterstützt.
+- casiocgm-Testversion mit Datenquelle openMinipump: VPS-Projekt `casiocgm`, Branch `feature/openminipump-source`; auf der echten Uhr noch nicht funktionsfähig.
