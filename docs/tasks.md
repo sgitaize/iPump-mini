@@ -102,6 +102,14 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - **Morgen 15.10. erledigt:** Simon hat geprüft: das kostenlose Team bietet App Groups (App und Widget), aber **keine** zeitkritischen Mitteilungen. Standard-Entitlements jetzt nur App Group, `OpenMinipump-paid.entitlements` mit Time Sensitive für bezahlte Teams. Alarme kommen beim kostenlosen Team als normale Mitteilungen (Hinweis in den Alarm-Einstellungen). Icon Variante A umgesetzt, Anzeigename „iPump-mini“ (Bundle-ID unverändert).
   - Offen: neues Profil mit App Group braucht einmal **Run in Xcode** (Kommandozeile hat keinen Account), danach Test von Alarmen, Widgets, Dynamic Island auf dem iPhone, dann Merge nach main.
 
+## 15.10.2026, später Vormittag
+- Nutzungsbedingungen von Simon freigegeben; `feature/onboarding-l10n` nach main gemergt (`53e3a56`), main ist auf Simons iPhone.
+- Impressum in der App wie auf simongutjahr.de (Simon Gutjahr, Anschrift, Mail, Telefon, Link zu /impressum/ und /dev/).
+- GitHub-Repo umbenannt: **sgitaize/iPump-mini** (privat, alte URLs leiten weiter; Remote auf HTTPS). Beschreibung, Website, Topics gesetzt. Lokaler Ordner bleibt `~/Dev/openMinipump`, Xcode-Target/Bundle-ID bleiben.
+- README neu (Englisch, `README.de.md` Deutsch) mit Screenshots aus Demo-Daten (`docs/images/`, Debug `-screenshot`), Bauanleitung `docs/building.md` (en) / `docs/setup-ios.md` (de).
+- Website live: Karte „Aktuelles Projekt“ ganz oben auf simongutjahr.de/dev/ und Projektseite /dev/ipump-mini/ (DE/EN, Bilder, Get started, Hinweis); Impressum-Geltungsbereich um die App ergänzt. **Ohne GitHub-Link**, solange das Repo privat ist.
+- Offen für die Veröffentlichung: `allow_any_pump`/DEV_MODE, Kompatibilitäts-Kennung, Git-Historie bereinigen, Repo öffentlich, Probelauf Workflow → dann GitHub-Links auf Website und in der App-Karte ergänzen.
+
 ## Vormittag 15.10.2026 (Simon testet mit)
 - Alarme, Widgets, Test-Alarm auf dem iPhone von Simon bestätigt → `feature/alarms-widgets` nach main gemergt (`051e6ad`).
 - Branch **`feature/onboarding-l10n`** (gepusht, auf Simons iPhone installiert, App Group aktiv):

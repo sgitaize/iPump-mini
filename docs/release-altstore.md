@@ -22,8 +22,9 @@ Die Quelle könnte später über GitHub Pages ausgeliefert werden (`https://<use
 
 ## Offene Entscheidungen vor einer Veröffentlichung
 - [x] **Schlüsseldatenbank:** nicht im Repo und nicht in der IPA. Die App lädt sie auf Knopfdruck von der öffentlichen OpenMinimed-Dokumentation (Einstellungen › Pumpe › Schlüsseldatenbank, auch in der Ersteinrichtung), alternativ von einer eigenen URL oder per Einfügen. Prüfung: CRC und richtiger Gerätetyp; Speicherung im Schlüsselbund.
-- [x] **Name:** „iPump-mini“ als Anzeigename, Bundle-ID bleibt `de.sgitaize.openminipump`.
-- [x] **Nutzungsbedingungen:** müssen beim ersten Start akzeptiert werden (`TermsView.swift`, versioniert). Text ist ein Entwurf, keine Rechtsberatung.
+- [x] **Name:** „iPump-mini“ als Anzeigename und Repo-Name (`sgitaize/iPump-mini`), Bundle-ID bleibt `de.sgitaize.openminipump`.
+- [x] **Website:** simongutjahr.de/dev/ipump-mini/ ist live (ohne GitHub-Link bis zur Veröffentlichung).
+- [x] **Nutzungsbedingungen:** müssen beim ersten Start akzeptiert werden (`TermsView.swift`, versioniert). Text von Simon freigegeben (15.10.).
 - [ ] **DEV_MODE:** Öffentliche Builds müssen jede (vom Nutzer gekoppelte) Pumpe akzeptieren, also `allow_any_pump`. Regel 2 des Projekt-Briefs gilt für die Entwicklung; Freigabe durch Simon nötig.
 - [ ] **Kompatibilitäts-Kennung:** Die App meldet sich gegenüber der Pumpe mit den Geräteinfos der offiziellen App (`PumpLink.compatSoftwareRevision`). Rechtliche Einschätzung vor Veröffentlichung.
 - [ ] **Repo öffentlich:** vorher Git-Historie von den Build-Artefakten bereinigen (siehe `docs/tasks.md`).
