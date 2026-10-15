@@ -36,7 +36,7 @@ targets:
     info:
       path: OpenMinipump/Info.plist
       properties:
-        CFBundleDisplayName: openMinipump
+        CFBundleDisplayName: iPump-mini
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
@@ -45,7 +45,7 @@ targets:
         UIBackgroundModes: [bluetooth-central, bluetooth-peripheral]
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
-        NSBluetoothAlwaysUsageDescription: "openMinipump verbindet sich per Bluetooth mit deiner MiniMed-Pumpe und liest Werte aus (nur lesend)."
+        NSBluetoothAlwaysUsageDescription: "iPump-mini verbindet sich per Bluetooth mit deiner MiniMed-Pumpe und liest Werte aus (nur lesend)."
         NSLocalNetworkUsageDescription: "Optional: Die lokale API kann im WLAN freigegeben werden."
         NSSupportsLiveActivities: true
         OMPAppGroup: group.$(OMP_BUNDLE_ID)
@@ -76,7 +76,7 @@ targets:
     info:
       path: Widgets/Info.plist
       properties:
-        CFBundleDisplayName: openMinipump
+        CFBundleDisplayName: iPump-mini
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         OMPAppGroup: group.$(OMP_BUNDLE_ID)

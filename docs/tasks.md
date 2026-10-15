@@ -99,6 +99,8 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
   2. Branch `feature/alarms-widgets` gemeinsam aufs iPhone spielen und testen (Alarme, Widgets, Dynamic Island), dann nach main mergen.
   3. Icon-Variante und Namen entscheiden.
   4. Freigabe für die Website-Karte und den Zeitpunkt „Repo öffentlich“.
+- **Morgen 15.10. erledigt:** Simon hat geprüft: das kostenlose Team bietet App Groups (App und Widget), aber **keine** zeitkritischen Mitteilungen. Standard-Entitlements jetzt nur App Group, `OpenMinipump-paid.entitlements` mit Time Sensitive für bezahlte Teams. Alarme kommen beim kostenlosen Team als normale Mitteilungen (Hinweis in den Alarm-Einstellungen). Icon Variante A umgesetzt, Anzeigename „iPump-mini“ (Bundle-ID unverändert).
+  - Offen: neues Profil mit App Group braucht einmal **Run in Xcode** (Kommandozeile hat keinen Account), danach Test von Alarmen, Widgets, Dynamic Island auf dem iPhone, dann Merge nach main.
 
 ## Stand am Ende der Sitzung (15.10.2026, ~00:50)
 - main (`bb71a98`) ist auf Simons iPhone installiert und läuft: Werte, Historie, Behandlungen, Nightscout, API, antippbarer Insulin-Graph.

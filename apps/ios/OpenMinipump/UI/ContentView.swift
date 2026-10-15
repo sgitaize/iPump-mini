@@ -45,7 +45,7 @@ struct ContentView: View {
                 }
             }
             #endif
-            .navigationTitle("openMinipump")
+            .navigationTitle("iPump-mini")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: { Image(systemName: "gearshape") }

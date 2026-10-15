@@ -98,6 +98,8 @@ final class AlarmEngine: ObservableObject {
     @Published private(set) var mutedUntil: Date?
     @Published private(set) var snoozedUntil: [String: Date] = [:]
     @Published private(set) var criticalAvailable = false
+    /// Needs the time-sensitive entitlement (not offered to free personal teams).
+    @Published private(set) var timeSensitiveAvailable = false
 
     private var lastFired: [String: Date] = [:]
     private var seenPumpAlarms: [UInt16] = []
@@ -123,7 +125,11 @@ final class AlarmEngine: ObservableObject {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .criticalAlert]) { _, _ in
             UNUserNotificationCenter.current().getNotificationSettings { settings in
                 let critical = settings.criticalAlertSetting == .enabled
-                Task { @MainActor in self.criticalAvailable = critical }
+                let timeSensitive = settings.timeSensitiveSetting == .enabled
+                Task { @MainActor in
+                    self.criticalAvailable = critical
+                    self.timeSensitiveAvailable = timeSensitive
+                }
             }
         }
     }
@@ -184,7 +190,7 @@ final class AlarmEngine: ObservableObject {
     }
 
     func sendTest() {
-        post(id: "alarm.test", key: "test", title: "Test-Alarm", body: "So sieht ein Alarm von openMinipump aus.", urgent: true, critical: true)
+        post(id: "alarm.test", key: "test", title: "Test-Alarm", body: "So sieht ein Alarm von iPump-mini aus.", urgent: true, critical: true)
     }
 
     // MARK: Internals

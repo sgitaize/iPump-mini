@@ -20,7 +20,7 @@ struct AboutView: View {
     var body: some View {
         List {
             Section {
-                LabeledContent("App", value: "openMinipump")
+                LabeledContent("App", value: "iPump-mini")
                 LabeledContent("Version", value: version)
                 LabeledContent("Lizenz", value: "GPL-3.0")
                 Link(destination: Publisher.repository) { Label("Quellcode auf GitHub", systemImage: "chevron.left.forwardslash.chevron.right") }
@@ -35,7 +35,7 @@ struct AboutView: View {
             }
 
             Section("Wichtiger Hinweis") {
-                Text("openMinipump ist kein Medizinprodukt und nicht für Therapieentscheidungen bestimmt. Maßgeblich sind immer die Anzeigen und Alarme der Pumpe. Die App liest die Pumpe ausschließlich aus und kann keine Einstellungen ändern oder Insulin abgeben. Nutzung auf eigene Verantwortung.")
+                Text("iPump-mini (Projekt openMinipump) ist kein Medizinprodukt und nicht für Therapieentscheidungen bestimmt. Maßgeblich sind immer die Anzeigen und Alarme der Pumpe. Die App liest die Pumpe ausschließlich aus und kann keine Einstellungen ändern oder Insulin abgeben. Nutzung auf eigene Verantwortung.")
                     .font(.footnote)
             }
 

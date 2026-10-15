@@ -78,7 +78,9 @@ struct AlarmSettingsView: View {
             } footer: {
                 Text(engine.criticalAvailable
                      ? "„Dringend niedrig“ und dringende Pumpenmeldungen kommen auch bei Stummschalter und Fokus."
-                     : "Kritische Alarme (durch Stummschalter) braucht eine Freigabe von Apple. Bis dahin kommen dringende Alarme als „zeitkritisch“: Sie durchbrechen Fokus-Modi, folgen aber dem Stummschalter. In den iPhone-Einstellungen › Mitteilungen › openMinipump „Zeitkritische Mitteilungen“ aktiviert lassen.")
+                     : engine.timeSensitiveAvailable
+                     ? "Kritische Alarme (durch Stummschalter) brauchen eine Freigabe von Apple. Bis dahin kommen dringende Alarme als „zeitkritisch“: Sie durchbrechen Fokus-Modi, folgen aber dem Stummschalter. In den iPhone-Einstellungen › Mitteilungen › iPump-mini „Zeitkritische Mitteilungen“ aktiviert lassen."
+                     : "Kritische und zeitkritische Alarme sind in diesem Build nicht verfügbar (kostenloses Entwickler-Team). Alarme kommen als normale Mitteilungen: mit Ton, aber nicht durch Stummschalter oder Fokus-Modi. Für die Nacht den Fokus so einstellen, dass iPump-mini durchkommt.")
             }
         }
         .navigationTitle("Alarme")

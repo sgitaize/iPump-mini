@@ -41,7 +41,7 @@ enum Watchdog {
         let content = UNMutableNotificationContent()
         content.title = "Keine Pumpendaten seit \(Int(delay / 60)) Minuten"
         content.interruptionLevel = .timeSensitive
-        content.body = "Ist openMinipump noch geöffnet und die Pumpe in Reichweite? Tippe hier, um die App zu öffnen."
+        content.body = "Ist iPump-mini noch geöffnet und die Pumpe in Reichweite? Tippe hier, um die App zu öffnen."
         content.sound = .default
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
         let center = UNUserNotificationCenter.current()
@@ -53,7 +53,7 @@ enum Watchdog {
     static func appTerminated() {
         guard enabled else { return }
         let content = UNMutableNotificationContent()
-        content.title = "openMinipump wurde beendet"
+        content.title = "iPump-mini wurde beendet"
         content.body = "Ohne laufende App kommen keine Werte von der Pumpe. Tippe hier, um sie wieder zu öffnen."
         content.sound = .default
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 2, repeats: false)
