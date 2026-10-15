@@ -3,6 +3,7 @@
 import ActivityKit
 import Foundation
 import MiniMedKit
+import UIKit
 import WidgetKit
 
 @MainActor
@@ -21,8 +22,39 @@ enum WidgetBridge {
     static func update(store: DataStore) {
         let snapshot = makeSnapshot(store: store)
         SharedStore.write(snapshot)
-        WidgetCenter.shared.reloadAllTimelines()
+        if let latest = snapshot.latest, shouldReloadWidgets(latest) {
+            WidgetCenter.shared.reloadTimelines(ofKind: "glucose")
+            lastWidgetReload = (latest.mgdl, Date())
+        }
         updateLiveActivity(snapshot)
+    }
+
+    /// Home and lock screen widgets get only ~40–70 background reloads per day; reloading
+    /// on every 5-minute value (288/day) used the budget up by midday and the widget then
+    /// updated only sporadically. So in the background a reload is spent only when it
+    /// matters: lows always, range changes, changes of ≥ 10 mg/dL, otherwise every 20 min.
+    /// In the foreground reloads are free. The Live Activity has no such budget.
+    private static var lastWidgetReload: (mgdl: Int, at: Date)? {
+        get {
+            let d = UserDefaults.standard
+            guard let at = d.object(forKey: "widgetReloadAt") as? Date else { return nil }
+            return (d.integer(forKey: "widgetReloadMgdl"), at)
+        }
+        set {
+            UserDefaults.standard.set(newValue?.mgdl, forKey: "widgetReloadMgdl")
+            UserDefaults.standard.set(newValue?.at, forKey: "widgetReloadAt")
+        }
+    }
+
+    private static func shouldReloadWidgets(_ latest: WidgetSnapshot.Point) -> Bool {
+        if UIApplication.shared.applicationState == .active { return true }
+        guard let last = lastWidgetReload else { return true }
+        let low = Prefs.low, high = Prefs.high
+        func range(_ v: Int) -> Int { v < low ? 0 : v > high ? 2 : 1 }
+        if latest.mgdl < low { return true }
+        if range(latest.mgdl) != range(last.mgdl) { return true }
+        if abs(latest.mgdl - last.mgdl) >= 10 { return true }
+        return Date().timeIntervalSince(last.at) >= 20 * 60
     }
 
     static func makeSnapshot(store: DataStore) -> WidgetSnapshot {
@@ -44,6 +76,8 @@ enum WidgetBridge {
 
     /// Live Activities can only be started while the app is in the foreground.
     static func appBecameActive(store: DataStore) {
+        SharedStore.write(makeSnapshot(store: store))
+        WidgetCenter.shared.reloadTimelines(ofKind: "glucose")   // free while in the foreground
         guard liveActivityEnabled, ActivityAuthorizationInfo().areActivitiesEnabled,
               let state = state(for: store) else { return }
         if Activity<GlucoseActivityAttributes>.activities.isEmpty {
