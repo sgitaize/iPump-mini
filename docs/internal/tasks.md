@@ -102,6 +102,11 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - **Morgen 15.10. erledigt:** Simon hat geprüft: das kostenlose Team bietet App Groups (App und Widget), aber **keine** zeitkritischen Mitteilungen. Standard-Entitlements jetzt nur App Group, `OpenMinipump-paid.entitlements` mit Time Sensitive für bezahlte Teams. Alarme kommen beim kostenlosen Team als normale Mitteilungen (Hinweis in den Alarm-Einstellungen). Icon Variante A umgesetzt, Anzeigename „iPump-mini“ (Bundle-ID unverändert).
   - Offen: neues Profil mit App Group braucht einmal **Run in Xcode** (Kommandozeile hat keinen Account), danach Test von Alarmen, Widgets, Dynamic Island auf dem iPhone, dann Merge nach main.
 
+## To-do Veröffentlichung (Simon 15.10.: App Store, TestFlight, AltStore Classic und PAL – alles probieren)
+- Texte und Anträge: `docs/internal/store-application.md` (Beschreibungen DE/EN, Review-Notes, TestFlight, kritische Alarme, AltStore, Rückfragen).
+- Code sauber dokumentieren: Kommentare sind bereits englisch (1 Zeile deutsch); fehlt: Doku-Kommentare öffentlicher Typen (MiniMedKit, App-Kerne), `docs/en/architecture.md`, Protokollmeldungen und API-Statusseite englisch bzw. lokalisiert.
+- Demo-Modus für App Review in Release-Builds, Datenschutzerklärung für die App, Store-Screenshots, Export-Compliance.
+
 ## 15.10.2026, Pebble und Widgets
 - Lokale API im Hintergrund: iOS nimmt dem pausierten Server den Socket (Listener bleibt „ready“, Verbindungen abgelehnt) → `revive()` startet ihn bei jedem Pumpen-Wecken neu, Hintergrund-Task hält ihn ~25 s offen (gemessen: 30 s Fenster alle 5:00). `/pebble` liefert `ompSync` (Weckplan). Pebble-App (ktor-client) erreicht den Server, ATS ist kein Problem. Anstupsen von der Uhr aus geht nicht zuverlässig (nur stille Pushes).
 - casiocgm 2.4.2 (VPS, Branch feature/openminipump-source): fragt nach Weckplan ab, letzter Wert bleibt über Neustarts. Im Emulator geprüft; Simon testet auf der Uhr (`~/Downloads/casiocgm-2.4.2-openminipump-beta.pbw`).
