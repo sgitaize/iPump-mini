@@ -86,6 +86,7 @@ final class AppModel: ObservableObject {
         store.onNewReading = { [weak self] in
             store.shared.recordWake()
             self?.keepAPIAwake()
+            PebbleMonitor.check()
             uploader.newReading()
             if let latest = store.latest { AlarmEngine.shared.evaluate(latest) }
             WidgetBridge.update(store: store)
@@ -102,6 +103,9 @@ final class AppModel: ObservableObject {
         }
         api.onRequest = { text in
             Task { @MainActor in log.add(text) }
+        }
+        api.onPebbleRequest = {
+            Task { @MainActor in PebbleMonitor.pebbleRequested() }
         }
         restartAPI()
         #if DEBUG

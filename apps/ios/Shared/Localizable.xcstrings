@@ -37,6 +37,17 @@
         }
       }
     },
+    "%d min ohne Abruf" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d min without a fetch"
+          }
+        }
+      }
+    },
     "%d T %d h" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2145,6 +2156,16 @@
         }
       }
     },
+    "Letzter Abruf der Pebble" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last Pebble fetch"
+          }
+        }
+      }
+    },
     "Letzter Upload" : {
       "localizations" : {
         "en" : {
@@ -2331,6 +2352,16 @@
         }
       }
     },
+    "Meldet sich, wenn deine Pebble so lange keinen Wert abgerufen hat, etwa weil die Pebble-App beendet wurde. Geprüft wird bei jedem Pumpen-Update, auch im Hintergrund." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifies you when your Pebble has not fetched a value for this long, for example because the Pebble app was closed. Checked on every pump update, also in the background."
+          }
+        }
+      }
+    },
     "Meldet sich, wenn so lange keine Pumpendaten kamen – auch wenn die App weggewischt wurde." : {
       "localizations" : {
         "en" : {
@@ -2378,6 +2409,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "With a paid developer account, urgent alarms arrive as “time sensitive” and break through Focus modes. Not with the free account."
+          }
+        }
+      }
+    },
+    "Mitteilung nach" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notify after"
           }
         }
       }
@@ -2705,6 +2746,27 @@
         }
       }
     },
+    "Pebble bekommt keine Werte" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pebble gets no values"
+          }
+        }
+      }
+    },
+    "Pebble nutzt die lokale API" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pebble uses the local API"
+          }
+        }
+      }
+    },
     "Persönliche Erinnerung" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3019,6 +3081,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Very low SG"
+          }
+        }
+      }
+    },
+    "Seit %d Minuten hat deine Pebble keine Werte von iPump-mini abgerufen. Pebble-App und Bluetooth prüfen, ggf. iPump-mini einmal öffnen." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Pebble has not fetched values from iPump-mini for %d minutes. Check the Pebble app and Bluetooth, and open iPump-mini once if needed."
           }
         }
       }

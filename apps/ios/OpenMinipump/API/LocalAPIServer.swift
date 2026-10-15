@@ -34,6 +34,8 @@ final class LocalAPIServer: @unchecked Sendable {
     var onLog: ((String) -> Void)?
     /// Request diagnostics (path and client), throttled: one entry per path and client per 10 min.
     var onRequest: ((String) -> Void)?
+    /// Every /pebble request (watch faces), for the optional Pebble monitor.
+    var onPebbleRequest: (() -> Void)?
     private var lastRequestLog: [String: Date] = [:]
 
     init(shared: SharedData) {
@@ -223,6 +225,7 @@ final class LocalAPIServer: @unchecked Sendable {
         case "/api/v1/status.json", "/api/v1/status":
             send(connection, json: Nightscout.status(version: version))
         case "/pebble":
+            onPebbleRequest?()
             let count = Int(query["count"] ?? "") ?? 1
             let mmol = (query["units"] ?? "").lowercased().hasPrefix("mmol")
             var body = Nightscout.pebble(readings: readings, snapshot: snapshot, uploaderBattery: uploaderBattery,

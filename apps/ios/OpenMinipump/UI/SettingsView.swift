@@ -29,6 +29,8 @@ struct SettingsView: View {
     @AppStorage(Prefs.widgetShowIOBKey, store: Prefs.defaults) private var widgetShowIOB = true
     @AppStorage(Prefs.widgetHoursKey, store: Prefs.defaults) private var widgetHours = 3
     @State private var liveActivity = WidgetBridge.liveActivityEnabled
+    @State private var pebbleMonitor = PebbleMonitor.enabled
+    @State private var pebbleMinutes = PebbleMonitor.minutes
 
     var body: some View {
         NavigationStack {
@@ -103,6 +105,18 @@ struct SettingsView: View {
                             }
                             Text("Startseite: Benutzername beliebig, Passwort = API-Secret.").font(.caption).foregroundStyle(.secondary)
                         }
+                    }
+                    Toggle("Pebble nutzt die lokale API", isOn: $pebbleMonitor)
+                        .onChange(of: pebbleMonitor) { _, on in PebbleMonitor.enabled = on }
+                    if pebbleMonitor {
+                        Stepper(value: $pebbleMinutes, in: 10...60, step: 5) {
+                            LabeledContent("Mitteilung nach", value: L10n.tr("%d min ohne Abruf", pebbleMinutes))
+                        }
+                        .onChange(of: pebbleMinutes) { _, m in PebbleMonitor.minutes = m }
+                        Text("Meldet sich, wenn deine Pebble so lange keinen Wert abgerufen hat, etwa weil die Pebble-App beendet wurde. Geprüft wird bei jedem Pumpen-Update, auch im Hintergrund.")
+                            .font(.caption).foregroundStyle(.secondary)
+                        LabeledContent("Letzter Abruf der Pebble",
+                                       value: PebbleMonitor.lastRequest.map { $0.formatted(date: .omitted, time: .shortened) } ?? "–")
                     }
                     Text("Endpunkte wie Nightscout: /api/v1/entries.json, /api/v1/treatments.json, /api/v1/devicestatus.json, /pebble?count=N&units=mmol. iOS pausiert die App im Hintergrund zwischen den Bluetooth-Ereignissen; dann antwortet die API nicht.")
                         .font(.caption).foregroundStyle(.secondary)
