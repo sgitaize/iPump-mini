@@ -102,6 +102,14 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - **Morgen 15.10. erledigt:** Simon hat geprüft: das kostenlose Team bietet App Groups (App und Widget), aber **keine** zeitkritischen Mitteilungen. Standard-Entitlements jetzt nur App Group, `OpenMinipump-paid.entitlements` mit Time Sensitive für bezahlte Teams. Alarme kommen beim kostenlosen Team als normale Mitteilungen (Hinweis in den Alarm-Einstellungen). Icon Variante A umgesetzt, Anzeigename „iPump-mini“ (Bundle-ID unverändert).
   - Offen: neues Profil mit App Group braucht einmal **Run in Xcode** (Kommandozeile hat keinen Account), danach Test von Alarmen, Widgets, Dynamic Island auf dem iPhone, dann Merge nach main.
 
+## 15.10.2026, Veröffentlichung Repo
+- Simon: Freigabe öffentliche Builds für alle 780G (`allow_any_pump`, Standard an). Doku nach Sprachen getrennt (`docs/en`, `docs/de`, `docs/internal`).
+- Historie bereinigt (git filter-repo): Build-Artefakte entfernt (76 → 2 MB), Pumpen-Seriennummer im Kommentar ersetzt; Prüfung aller Commits: keine Schlüssel, Secrets, Hosts, Adressen. Backup: `~/Dev/openMinipump-backup-20261015-0859.bundle`.
+- GitHub-Repo gelöscht und neu angelegt (Simons Wahl), bereinigte Historie gepusht, **öffentlich**: https://github.com/sgitaize/iPump-mini. Secret Scanning + Push Protection an. Weiterleitung vom alten Namen openMinipump entfällt.
+- Website: GitHub-Links auf /dev/ und /dev/ipump-mini/ ergänzt, deployt.
+- AltStore: Empfehlung Classic (kostenlos, weltweit, ohne Apple-Prüfung). PAL bräuchte bezahlten Account + Notarisierung (nur EU/JP/BR). Entscheidung Simon offen.
+- Nächster Schritt: Probelauf des Release-Workflows (Entwurf), IPA per AltStore installieren, dann `altstore/source.json` veröffentlichen (z. B. GitHub Pages) und Release freigeben.
+
 ## 15.10.2026, später Vormittag
 - Nutzungsbedingungen von Simon freigegeben; `feature/onboarding-l10n` nach main gemergt (`53e3a56`), main ist auf Simons iPhone.
 - Impressum in der App wie auf simongutjahr.de (Simon Gutjahr, Anschrift, Mail, Telefon, Link zu /impressum/ und /dev/).
