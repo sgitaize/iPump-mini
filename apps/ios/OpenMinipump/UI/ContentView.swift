@@ -89,11 +89,11 @@ struct StatusBanner: View {
                 if let serial = link.pumpSerial { Text(serial).font(.caption).foregroundStyle(.secondary) }
             }
             if let last = store.lastDataAt {
-                Text("Letzte Daten \(last.formatted(.relative(presentation: .named)))")
+                Text("Letzte Daten \(last.formatted(.relative(presentation: .named).locale(L10n.locale)))")
                     .font(.caption).foregroundStyle(.secondary)
             }
             if uploader.enabled {
-                Label(uploader.lastError ?? "Nightscout \(uploader.lastSuccess.map { "ok, \($0.formatted(date: .omitted, time: .shortened))" } ?? "wartet")",
+                Label(uploader.lastError ?? uploader.lastSuccess.map { L10n.tr("Nightscout ok, %@", $0.formatted(date: .omitted, time: .shortened)) } ?? L10n.tr("Nightscout wartet"),
                       systemImage: uploader.lastError == nil ? "icloud.and.arrow.up" : "exclamationmark.icloud")
                     .font(.caption)
                     .foregroundStyle(uploader.lastError == nil ? Color.secondary : Color.red)
@@ -422,7 +422,7 @@ struct InsulinBlockDetail: View {
             HStack {
                 Text(time).font(.subheadline.weight(.semibold))
                 Spacer()
-                Text(String(format: "%.2f IE", items.reduce(0) { $0 + ($1.value ?? 0) })).font(.subheadline.monospacedDigit())
+                Text(insulinUnits(items.reduce(0) { $0 + ($1.value ?? 0) }, 2)).font(.subheadline.monospacedDigit())
             }
             if items.isEmpty {
                 Text("Keine Abgaben in diesem Zeitraum").font(.caption).foregroundStyle(.secondary)
@@ -439,7 +439,7 @@ struct InsulinBlockDetail: View {
                         Text(t.date.formatted(date: .omitted, time: .shortened)).monospacedDigit()
                         Text(label(t.kind)).foregroundStyle(.secondary)
                         Spacer()
-                        Text(String(format: "%.3f IE", t.value ?? 0)).monospacedDigit()
+                        Text(insulinUnits(t.value ?? 0, 3)).monospacedDigit()
                     }
                     .font(.caption)
                 }
@@ -449,17 +449,18 @@ struct InsulinBlockDetail: View {
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
     }
 
-    private func sum(_ kind: Treatment.Kind, _ title: String, _ c: Color) -> some View {
+    private func sum(_ kind: Treatment.Kind, _ title: LocalizedStringKey, _ c: Color) -> some View {
         let total = items.filter { $0.kind == kind }.reduce(0) { $0 + ($1.value ?? 0) }
         return HStack(spacing: 4) {
             Circle().fill(c).frame(width: 7, height: 7)
-            Text("\(title) \(String(format: "%.2f", total))")
+            Text(title)
+            Text(verbatim: String(format: "%.2f", total))
         }
         .opacity(total > 0 ? 1 : 0.4)
     }
 
     private func color(_ k: Treatment.Kind) -> Color { k == .bolus ? .blue : k == .autoCorrection ? .purple : .teal }
-    private func label(_ k: Treatment.Kind) -> String { k == .bolus ? "Bolus" : k == .autoCorrection ? "Autokorrektur" : "Auto-Basal" }
+    private func label(_ k: Treatment.Kind) -> String { k == .bolus ? L10n.tr("Bolus") : k == .autoCorrection ? L10n.tr("Autokorrektur") : L10n.tr("Auto-Basal") }
 }
 
 struct ChartLegend: View {
@@ -475,7 +476,7 @@ struct ChartLegend: View {
         .foregroundStyle(.secondary)
     }
 
-    private func legend(_ symbol: String, _ color: Color, _ text: String) -> some View {
+    private func legend(_ symbol: String, _ color: Color, _ text: LocalizedStringKey) -> some View {
         HStack(spacing: 3) { Image(systemName: symbol).foregroundStyle(color); Text(text) }
     }
 }
@@ -487,16 +488,16 @@ struct ValueGrid: View {
     var body: some View {
         let s = store.snapshot
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            Tile(title: "Aktives Insulin", value: s.iob.map { String(format: "%.2f IE", $0.units) })
-            Tile(title: "Reservoir", value: s.status.map { String(format: "%.0f IE", $0.reservoirUnits) })
-            Tile(title: "Modus", value: s.algorithm?.modeDescription,
-                 detail: s.status.map { $0.isSuspended ? "Abgabe angehalten" : "Abgabe läuft" })
+            Tile(title: "Aktives Insulin", value: s.iob.map { insulinUnits($0.units, 2) })
+            Tile(title: "Reservoir", value: s.status.map { insulinUnits($0.reservoirUnits, 0) })
+            Tile(title: "Modus", value: s.algorithm.map { L10n.tr($0.modeDescription) },
+                 detail: s.status.map { $0.isSuspended ? L10n.tr("Abgabe angehalten") : L10n.tr("Abgabe läuft") })
             Tile(title: "Basalrate", value: basalText(s),
-                 detail: s.basal?.tempBasalUnitsPerHour != nil ? "temporär" : s.algorithm?.shieldState == .autoBasal ? "von SmartGuard gesteuert" : nil)
+                 detail: s.basal?.tempBasalUnitsPerHour != nil ? L10n.tr("temporär") : s.algorithm?.shieldState == .autoBasal ? L10n.tr("von SmartGuard gesteuert") : nil)
             Tile(title: "Zeit im Zielbereich", value: s.timeInRange.map { "\($0.inRangePercent) %" },
                  detail: s.timeInRange.map { "↑ \($0.abovePercent) %  ↓ \($0.belowPercent) %" })
             Tile(title: "Pumpenbatterie", value: s.pumpBatteryPercent.map { "\($0) %" })
-            Tile(title: "Sensor", value: s.status.map { $0.sensorOK ? "Sensor ok" : $0.sensorMessage },
+            Tile(title: "Sensor", value: s.status.map { $0.sensorOK ? L10n.tr("Sensor ok") : L10n.tr($0.sensorMessage) },
                  detail: s.sensorEnd.map { expiry(Int($0.timeIntervalSinceNow / 60)) },
                  systemImage: s.status.map { $0.sensorOK ? "checkmark.circle.fill" : "exclamationmark.triangle.fill" },
                  tint: s.status.map { $0.sensorOK ? .green : .orange })
@@ -513,20 +514,20 @@ struct ValueGrid: View {
 
     private func basalText(_ s: PumpSnapshot) -> String? {
         guard let basal = s.basal else { return nil }
-        if let temp = basal.tempBasalUnitsPerHour { return String(format: "%.3f IE/h", temp) }
-        if s.algorithm?.shieldState == .autoBasal { return "Auto" }
-        return String(format: "%.3f IE/h", basal.unitsPerHour)
+        if let temp = basal.tempBasalUnitsPerHour { return insulinUnits(temp, 3) + "/h" }
+        if s.algorithm?.shieldState == .autoBasal { return L10n.tr("Auto") }
+        return insulinUnits(basal.unitsPerHour, 3) + "/h"
     }
 
     private func expiry(_ minutes: Int) -> String {
-        if minutes <= 0 { return "abgelaufen" }
+        if minutes <= 0 { return L10n.tr("abgelaufen") }
         let h = minutes / 60
-        return h >= 24 ? "noch \(h / 24) T \(h % 24) h" : "noch \(h) h \(minutes % 60) min"
+        return h >= 24 ? L10n.tr("noch %d T %d h", h / 24, h % 24) : L10n.tr("noch %d h %d min", h, minutes % 60)
     }
 }
 
 struct Tile: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String?
     var detail: String?
     var systemImage: String?
@@ -634,7 +635,7 @@ struct GlucosePointDetail: View {
                 if let rate = reading.trendMgdlPerMin {
                     Label(String(format: "%+.1f/min", rate), systemImage: "arrow.up.right")
                 }
-                Label(iob.map { String(format: "IOB %.2f IE", $0) } ?? "IOB –", systemImage: "syringe")
+                Label(iob.map { "IOB " + insulinUnits($0, 2) } ?? "IOB –", systemImage: "syringe")
             }
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -645,9 +646,9 @@ struct GlucosePointDetail: View {
                 ForEach(insulin.sorted { $0.date < $1.date }) { t in
                     HStack {
                         Text(t.date.formatted(date: .omitted, time: .shortened)).monospacedDigit()
-                        Text(t.kind == .bolus ? "Bolus" : t.kind == .autoCorrection ? "Autokorrektur" : "Auto-Basal").foregroundStyle(.secondary)
+                        Text(t.kind == .bolus ? L10n.tr("Bolus") : t.kind == .autoCorrection ? L10n.tr("Autokorrektur") : L10n.tr("Auto-Basal")).foregroundStyle(.secondary)
                         Spacer()
-                        Text(String(format: "%.3f IE", t.value ?? 0)).monospacedDigit()
+                        Text(insulinUnits(t.value ?? 0, 3)).monospacedDigit()
                     }
                     .font(.caption)
                 }
@@ -661,7 +662,7 @@ struct GlucosePointDetail: View {
                     .font(.caption)
                 }
                 if insulin.count > 1 {
-                    Text(String(format: "Summe %.3f IE", total)).font(.caption.weight(.semibold))
+                    Text(L10n.tr("Summe %@", insulinUnits(total, 3))).font(.caption.weight(.semibold))
                 }
             }
         }

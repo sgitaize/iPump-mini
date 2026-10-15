@@ -26,12 +26,12 @@ struct AppConfig {
         var source = KeySource.missing
         if let url = bundle.url(forResource: "mobile-pump.keydb", withExtension: "hex"),
            let hex = try? String(contentsOf: url, encoding: .utf8) {
-            do { db = try KeyDatabase(hex: hex); source = .bundle } catch { dbError = "Schlüsseldatenbank ungültig: \(error)" }
+            do { db = try KeyDatabase(hex: hex); source = .bundle } catch { dbError = L10n.tr("Schlüsseldatenbank ungültig: %@", "\(error)") }
         } else if let hex = KeyImport.stored(), let imported = try? KeyImport.validate(hex) {
             db = imported
             source = .imported
         } else {
-            dbError = "Schlüsseldatenbank fehlt. Einstellungen › Pumpe › Schlüsseldatenbank."
+            dbError = L10n.tr("Schlüsseldatenbank fehlt. Einstellungen › Pumpe › Schlüsseldatenbank.")
         }
         return AppConfig(devGuard: DevModeGuard(devMode: devMode, testPumpSerial: serial),
                          keyDatabase: db, keyDatabaseError: dbError, keyDatabaseSource: source)

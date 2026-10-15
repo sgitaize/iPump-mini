@@ -14,7 +14,7 @@ struct AlarmSettingsView: View {
                     } label: {
                         VStack(alignment: .leading, spacing: 2) {
                             HStack {
-                                Text(preset.title).foregroundStyle(.primary)
+                                Text(verbatim: preset.title).foregroundStyle(.primary)
                                 Spacer()
                                 if engine.config == AlarmConfig.preset(preset) {
                                     Image(systemName: "checkmark").foregroundStyle(.tint)
@@ -53,7 +53,7 @@ struct AlarmSettingsView: View {
             Section {
                 Toggle("Keine Daten", isOn: $engine.config.noDataEnabled)
                 if engine.config.noDataEnabled {
-                    Stepper("nach \(engine.config.noDataMinutes) min", value: $engine.config.noDataMinutes, in: 10...60, step: 5)
+                    Stepper(L10n.tr("nach %d min", engine.config.noDataMinutes), value: $engine.config.noDataMinutes, in: 10...60, step: 5)
                 }
             } footer: {
                 Text("Meldet sich, wenn so lange keine Pumpendaten kamen – auch wenn die App weggewischt wurde.")
@@ -61,7 +61,7 @@ struct AlarmSettingsView: View {
 
             Section {
                 ForEach(PumpAlarmCategory.allCases) { category in
-                    Toggle(category.title, isOn: Binding(
+                    Toggle(L10n.tr(category.title), isOn: Binding(
                         get: { engine.config.pump[category] ?? false },
                         set: { engine.config.pump[category] = $0 }
                     ))
@@ -77,10 +77,10 @@ struct AlarmSettingsView: View {
                 LabeledContent("Kritische Alarme", value: engine.criticalAvailable ? "verfügbar" : "nicht verfügbar")
             } footer: {
                 Text(engine.criticalAvailable
-                     ? "„Dringend niedrig“ und dringende Pumpenmeldungen kommen auch bei Stummschalter und Fokus."
+                     ? L10n.tr("„Dringend niedrig“ und dringende Pumpenmeldungen kommen auch bei Stummschalter und Fokus.")
                      : engine.timeSensitiveAvailable
-                     ? "Kritische Alarme (durch Stummschalter) brauchen eine Freigabe von Apple. Bis dahin kommen dringende Alarme als „zeitkritisch“: Sie durchbrechen Fokus-Modi, folgen aber dem Stummschalter. In den iPhone-Einstellungen › Mitteilungen › iPump-mini „Zeitkritische Mitteilungen“ aktiviert lassen."
-                     : "Kritische und zeitkritische Alarme sind in diesem Build nicht verfügbar (kostenloses Entwickler-Team). Alarme kommen als normale Mitteilungen: mit Ton, aber nicht durch Stummschalter oder Fokus-Modi. Für die Nacht den Fokus so einstellen, dass iPump-mini durchkommt.")
+                     ? L10n.tr("Kritische Alarme (durch Stummschalter) brauchen eine Freigabe von Apple. Bis dahin kommen dringende Alarme als „zeitkritisch“: Sie durchbrechen Fokus-Modi, folgen aber dem Stummschalter. In den iPhone-Einstellungen › Mitteilungen › iPump-mini „Zeitkritische Mitteilungen“ aktiviert lassen.")
+                     : L10n.tr("Kritische und zeitkritische Alarme sind in diesem Build nicht verfügbar (kostenloses Entwickler-Team). Alarme kommen als normale Mitteilungen: mit Ton, aber nicht durch Stummschalter oder Fokus-Modi. Für die Nacht den Fokus so einstellen, dass iPump-mini durchkommt."))
             }
         }
         .navigationTitle("Alarme")
@@ -104,7 +104,7 @@ private struct GlucoseRuleEditor: View {
             Toggle(kind.title, isOn: $rule.enabled)
             if rule.enabled {
                 if kind.isRate {
-                    Stepper(String(format: "ab %.1f mg/dL pro Minute", rule.threshold), value: $rule.threshold, in: 1...4, step: 0.5)
+                    Stepper(L10n.tr("ab %@ mg/dL pro Minute", String(format: "%.1f", rule.threshold)), value: $rule.threshold, in: 1...4, step: 0.5)
                 } else {
                     Stepper(thresholdText, value: $rule.threshold, in: range, step: 5)
                 }
@@ -125,7 +125,8 @@ private struct GlucoseRuleEditor: View {
     }
 
     private var thresholdText: String {
-        let prefix = kind == .high ? "ab" : "unter"
-        return "\(prefix) \(Int(rule.threshold)) mg/dL (\(String(format: "%.1f", rule.threshold / 18)) mmol/L)"
+        let mmol = String(format: "%.1f", rule.threshold / 18.0182)
+        return kind == .high ? L10n.tr("ab %d mg/dL (%@ mmol/L)", Int(rule.threshold), mmol)
+                             : L10n.tr("unter %d mg/dL (%@ mmol/L)", Int(rule.threshold), mmol)
     }
 }

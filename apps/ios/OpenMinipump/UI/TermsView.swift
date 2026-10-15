@@ -67,7 +67,7 @@ struct TermsView: View {
             VStack(alignment: .leading, spacing: 16) {
                 TermsText()
                 if let at = Terms.acceptedAt {
-                    Text("Zugestimmt am \(at.formatted(date: .long, time: .shortened)) (Version \(Terms.version)).")
+                    Text("Zugestimmt am \(at.formatted(Date.FormatStyle(date: .long, time: .shortened).locale(L10n.locale))) (Version \(Terms.version)).")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }

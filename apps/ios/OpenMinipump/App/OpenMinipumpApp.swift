@@ -44,7 +44,7 @@ final class AppModel: ObservableObject {
     private(set) var link: PumpLink!
     let uploader: NightscoutUploader
 
-    @Published var apiState = "gestartet"
+    @Published var apiState = L10n.tr("gestartet")
     @Published var apiAllowLAN = UserDefaults.standard.bool(forKey: "apiAllowLAN") {
         didSet { UserDefaults.standard.set(apiAllowLAN, forKey: "apiAllowLAN") }
     }

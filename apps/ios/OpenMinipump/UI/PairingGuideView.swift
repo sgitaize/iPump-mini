@@ -16,7 +16,7 @@ struct PairingGuideView: View {
                             .font(.title2.monospaced().weight(.bold))
                         HStack {
                             Circle().fill(link.pairingMode ? .green : .gray).frame(width: 8, height: 8)
-                            Text(link.pairingMode ? "Kopplungsmodus aktiv" : link.phase.label)
+                            Text(link.pairingMode ? L10n.tr("Kopplungsmodus aktiv") : link.phase.label)
                                 .font(.subheadline)
                         }
                     }

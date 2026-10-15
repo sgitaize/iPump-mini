@@ -146,7 +146,7 @@ struct GlucoseWidgetView: View {
                 Text(verbatim: unit.label).font(.caption2.weight(.medium)).foregroundStyle(.secondary)
                 Spacer()
                 if showIOB, let iob = snapshot?.iob {
-                    Text(verbatim: String(format: "%.1f IE", iob)).font(.caption2.weight(.medium)).foregroundStyle(.secondary)
+                    Text(verbatim: insulinUnits(iob, 1)).font(.caption2.weight(.medium)).foregroundStyle(.secondary)
                 }
             }
             header
@@ -189,8 +189,8 @@ struct GlucoseWidgetView: View {
 
     private func statusLines(compact: Bool) -> some View {
         let items: [(String, String, String)] = [
-            showIOB ? snapshot?.iob.map { ("syringe", L10n.tr("IOB"), String(format: "%.2f IE", $0)) } : nil,
-            snapshot?.reservoir.map { ("cylinder", L10n.tr("Reservoir"), String(format: "%.0f IE", $0)) },
+            showIOB ? snapshot?.iob.map { ("syringe", L10n.tr("IOB"), insulinUnits($0, 2)) } : nil,
+            snapshot?.reservoir.map { ("cylinder", L10n.tr("Reservoir"), insulinUnits($0, 0)) },
             snapshot?.pumpBattery.map { ("battery.75percent", L10n.tr("Akku"), "\($0) %") },
             snapshot?.sensorEnd.map { ("sensor", L10n.tr("Sensor"), sensorLeft($0)) },
         ].compactMap { $0 }
@@ -346,7 +346,7 @@ struct LiveActivityView: View {
             if let iob = state.iob {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("IOB").font(.caption2).foregroundStyle(.secondary)
-                    Text(verbatim: String(format: "%.2f IE", iob)).font(.subheadline.weight(.semibold))
+                    Text(verbatim: insulinUnits(iob, 2)).font(.subheadline.weight(.semibold))
                 }
             }
         }

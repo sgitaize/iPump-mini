@@ -139,7 +139,7 @@ final class NightscoutUploader: ObservableObject {
 
     /// Checks URL and secret with GET /api/v1/verifyauth (read-only request).
     func test() async -> String {
-        guard let base = baseURL else { return "Ungültige URL" }
+        guard let base = baseURL else { return L10n.tr("Ungültige URL") }
         do {
             var request = URLRequest(url: base.appendingPathComponent("api/v1/verifyauth"))
             authorize(&request)
@@ -148,11 +148,11 @@ final class NightscoutUploader: ObservableObject {
             guard code == 200 else { return "HTTP \(code)" }
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
             if let message = json?["message"] as? [String: Any] {
-                if message["canWrite"] as? Bool == true { return "Verbunden, Schreibrecht ok" }
-                return "Verbunden, aber kein Schreibrecht – API-Secret prüfen"
+                if message["canWrite"] as? Bool == true { return L10n.tr("Verbunden, Schreibrecht ok") }
+                return L10n.tr("Verbunden, aber kein Schreibrecht – API-Secret prüfen")
             }
-            if json?["message"] as? String == "OK" { return "Verbunden, API-Secret ok" }
-            return "Verbunden, API-Secret nicht bestätigt"
+            if json?["message"] as? String == "OK" { return L10n.tr("Verbunden, API-Secret ok") }
+            return L10n.tr("Verbunden, API-Secret nicht bestätigt")
         } catch {
             return error.localizedDescription
         }

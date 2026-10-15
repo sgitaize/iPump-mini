@@ -14,11 +14,11 @@ enum GlucoseAlarmKind: String, CaseIterable, Codable, Identifiable {
 
     var title: String {
         switch self {
-        case .urgentLow: "Dringend niedrig"
-        case .low: "Niedrig"
-        case .high: "Hoch"
-        case .fallingFast: "Schnell fallend"
-        case .risingFast: "Schnell steigend"
+        case .urgentLow: L10n.tr("Dringend niedrig")
+        case .low: L10n.tr("Niedrig")
+        case .high: L10n.tr("Hoch")
+        case .fallingFast: L10n.tr("Schnell fallend")
+        case .risingFast: L10n.tr("Schnell steigend")
         }
     }
 
@@ -44,16 +44,16 @@ struct AlarmConfig: Codable, Equatable {
         var id: String { rawValue }
         var title: String {
             switch self {
-            case .standard: "Standard"
-            case .urgentOnly: "Nur dringend"
-            case .all: "Alle"
+            case .standard: L10n.tr("Standard")
+            case .urgentOnly: L10n.tr("Nur dringend")
+            case .all: L10n.tr("Alle")
             }
         }
         var detail: String {
             switch self {
-            case .standard: "Dringend niedrig, niedrig, hoch, keine Daten; Pumpe: Abgabe, Reservoir/Batterie, Sensor, Kalibrierung, SmartGuard"
-            case .urgentOnly: "Nur dringend niedrig, keine Daten und Probleme mit der Insulinabgabe"
-            case .all: "Alle Glukose-Alarme inkl. schneller Änderungen und alle Pumpenmeldungen"
+            case .standard: L10n.tr("Dringend niedrig, niedrig, hoch, keine Daten; Pumpe: Abgabe, Reservoir/Batterie, Sensor, Kalibrierung, SmartGuard")
+            case .urgentOnly: L10n.tr("Nur dringend niedrig, keine Daten und Probleme mit der Insulinabgabe")
+            case .all: L10n.tr("Alle Glukose-Alarme inkl. schneller Änderungen und alle Pumpenmeldungen")
             }
         }
     }
@@ -88,7 +88,7 @@ final class AlarmEngine: ObservableObject {
 
     static let categoryID = "OMP_ALARM"
     static let snoozeActions: [(id: String, minutes: Int, title: String)] = [
-        ("SNOOZE_15", 15, "15 min stumm"), ("SNOOZE_30", 30, "30 min stumm"), ("SNOOZE_60", 60, "1 h stumm"),
+        ("SNOOZE_15", 15, L10n.tr("15 min stumm")), ("SNOOZE_30", 30, L10n.tr("30 min stumm")), ("SNOOZE_60", 60, L10n.tr("1 h stumm")),
     ]
 
     @Published var config: AlarmConfig {
@@ -155,8 +155,8 @@ final class AlarmEngine: ObservableObject {
                 continue
             }
             let body: String = kind.isRate
-                ? "\(reading.mgdl) mg/dL, \(String(format: "%+.1f", reading.trendMgdlPerMin ?? 0)) mg/dL pro Minute"
-                : "\(reading.mgdl) mg/dL (\(String(format: "%.1f", g / 18)) mmol/L)"
+                ? L10n.tr("%d mg/dL, %@ mg/dL pro Minute", reading.mgdl, String(format: "%+.1f", reading.trendMgdlPerMin ?? 0))
+                : L10n.tr("%d mg/dL (%@ mmol/L)", reading.mgdl, String(format: "%.1f", g / 18.0182))
             fire(key: kind.rawValue, title: kind.title, body: body, urgent: kind == .urgentLow || kind == .low,
                  critical: kind == .urgentLow, repeatMinutes: rule.repeatMinutes, now: now)
         }
@@ -172,7 +172,8 @@ final class AlarmEngine: ObservableObject {
         let info = PumpAlarms.info(for: type)
         log?.add("Pumpenmeldung: \(info.title) (\(info.category.title))")
         guard config.pump[info.category] == true else { return }
-        fire(key: "pump.\(id)", title: "Pumpe: \(info.title)", body: "Meldung der Pumpe um \(date.formatted(date: .omitted, time: .shortened)). Bitte an der Pumpe prüfen.",
+        fire(key: "pump.\(id)", title: L10n.tr("Pumpe: %@", L10n.tr(info.title)),
+             body: L10n.tr("Meldung der Pumpe um %@. Bitte an der Pumpe prüfen.", date.formatted(date: .omitted, time: .shortened)),
              urgent: info.urgent, critical: info.urgent, repeatMinutes: 0, now: now)
     }
 
@@ -190,7 +191,7 @@ final class AlarmEngine: ObservableObject {
     }
 
     func sendTest() {
-        post(id: "alarm.test", key: "test", title: "Test-Alarm", body: "So sieht ein Alarm von iPump-mini aus.", urgent: true, critical: true)
+        post(id: "alarm.test", key: "test", title: L10n.tr("Test-Alarm"), body: L10n.tr("So sieht ein Alarm von iPump-mini aus."), urgent: true, critical: true)
     }
 
     // MARK: Internals

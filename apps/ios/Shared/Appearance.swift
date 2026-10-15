@@ -27,14 +27,14 @@ enum GlucoseUnit: String, CaseIterable, Identifiable {
     var label: String { self == .mgdl ? "mg/dL" : "mmol/L" }
 
     func format(_ mgdl: Int) -> String {
-        self == .mgdl ? "\(mgdl)" : String(format: "%.1f", Double(mgdl) / 18.0182)
+        self == .mgdl ? "\(mgdl)" : String(format: "%.1f", locale: L10n.locale, Double(mgdl) / 18.0182)
     }
 
     func formatDelta(_ d: Int?) -> String {
         guard let d else { return "" }
         if self == .mgdl { return d > 0 ? "+\(d)" : d == 0 ? "±0" : "\(d)" }
         let v = Double(d) / 18.0182
-        return abs(v) < 0.05 ? "±0,0" : String(format: "%+.1f", v)
+        return abs(v) < 0.05 ? "±" + String(format: "%.1f", locale: L10n.locale, 0.0) : String(format: "%+.1f", locale: L10n.locale, v)
     }
 }
 
@@ -122,4 +122,9 @@ extension View {
             .preferredColorScheme(AppTheme(rawValue: theme)?.colorScheme)
             .id(language)
     }
+}
+
+/// Insulin amount with unit: "1.25 IE" in German, "1.25 U" in English.
+func insulinUnits(_ value: Double, _ digits: Int) -> String {
+    String(format: "%.\(digits)f", locale: L10n.locale, value) + " " + L10n.tr("IE")
 }

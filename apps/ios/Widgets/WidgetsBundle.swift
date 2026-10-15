@@ -88,7 +88,7 @@ struct GlucoseLiveActivity: Widget {
                     HStack {
                         Text(s.date, style: .relative)
                         Spacer()
-                        if let iob = s.iob { Text(verbatim: String(format: "IOB %.2f IE", iob)) }
+                        if let iob = s.iob { Text(verbatim: "IOB " + insulinUnits(iob, 2)) }
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)

@@ -58,7 +58,7 @@ struct AboutView: View {
             }
 
             Section("Datenschutz") {
-                Text("Alle Daten bleiben auf diesem iPhone. Die App sendet nichts an Medtronic, CareLink oder andere Server. Die lokale API ist standardmäßig nur auf diesem Gerät erreichbar; eine Freigabe im WLAN ist optional und durch ein API-Secret geschützt.")
+                Text("Alle Daten bleiben auf diesem iPhone. Die App sendet nichts an Medtronic oder CareLink und nichts an die Entwickler. Ins Internet verbindet sie sich nur, wenn du den Nightscout-Upload einschaltest oder die Schlüsseldatenbank lädst (GitHub). Die lokale API ist standardmäßig nur auf diesem Gerät erreichbar; eine Freigabe im WLAN ist optional und durch ein API-Secret geschützt.")
                     .font(.footnote)
             }
         }
@@ -69,12 +69,12 @@ struct AboutView: View {
 
 private struct Source: View {
     let title: String
-    let detail: String
+    let detail: LocalizedStringKey
     let url: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Link(title, destination: URL(string: url)!).font(.body.weight(.semibold))
+            Link(destination: URL(string: url)!) { Text(verbatim: title) }.font(.body.weight(.semibold))
             Text(detail).font(.caption).foregroundStyle(.secondary)
         }
         .padding(.vertical, 2)

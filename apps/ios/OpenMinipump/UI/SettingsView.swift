@@ -38,7 +38,7 @@ struct SettingsView: View {
                     LabeledContent("Seriennummer", value: link.pumpSerial ?? "–")
                     LabeledContent("Firmware", value: link.pumpFirmware ?? "–")
                     LabeledContent("Verbindung", value: link.phase.label)
-                    LabeledContent("Entwicklermodus", value: model.config.devGuard.devMode ? "an (nur Testpumpe)" : "aus")
+                    LabeledContent("Entwicklermodus", value: model.config.devGuard.devMode ? L10n.tr("an (nur Testpumpe)") : L10n.tr("aus"))
                     NavigationLink("Schlüsseldatenbank") { KeyImportView() }
                 }
 
@@ -61,7 +61,7 @@ struct SettingsView: View {
                         if uploader.uploadTreatments {
                             Toggle("Auch Auto-Basal-Mikroboli", isOn: $uploader.uploadAutoBasal)
                         }
-                        Button(testing ? "Teste…" : "Verbindung testen") {
+                        Button(testing ? L10n.tr("Teste…") : L10n.tr("Verbindung testen")) {
                             testing = true
                             Task {
                                 testResult = await uploader.test()
@@ -205,7 +205,7 @@ struct LogView: View {
 }
 
 private struct URLRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let url: String
 
     var body: some View {
