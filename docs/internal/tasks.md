@@ -102,6 +102,11 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - **Morgen 15.10. erledigt:** Simon hat geprüft: das kostenlose Team bietet App Groups (App und Widget), aber **keine** zeitkritischen Mitteilungen. Standard-Entitlements jetzt nur App Group, `OpenMinipump-paid.entitlements` mit Time Sensitive für bezahlte Teams. Alarme kommen beim kostenlosen Team als normale Mitteilungen (Hinweis in den Alarm-Einstellungen). Icon Variante A umgesetzt, Anzeigename „iPump-mini“ (Bundle-ID unverändert).
   - Offen: neues Profil mit App Group braucht einmal **Run in Xcode** (Kommandozeile hat keinen Account), danach Test von Alarmen, Widgets, Dynamic Island auf dem iPhone, dann Merge nach main.
 
+## 15.10.2026, Pebble und Widgets
+- Lokale API im Hintergrund: iOS nimmt dem pausierten Server den Socket (Listener bleibt „ready“, Verbindungen abgelehnt) → `revive()` startet ihn bei jedem Pumpen-Wecken neu, Hintergrund-Task hält ihn ~25 s offen (gemessen: 30 s Fenster alle 5:00). `/pebble` liefert `ompSync` (Weckplan). Pebble-App (ktor-client) erreicht den Server, ATS ist kein Problem. Anstupsen von der Uhr aus geht nicht zuverlässig (nur stille Pushes).
+- casiocgm 2.4.2 (VPS, Branch feature/openminipump-source): fragt nach Weckplan ab, letzter Wert bleibt über Neustarts. Im Emulator geprüft; Simon testet auf der Uhr (`~/Downloads/casiocgm-2.4.2-openminipump-beta.pbw`).
+- Home-Widget: Budget ~40–70 Reloads/Tag → im Hintergrund nur noch bei Tiefs, Bereichswechsel, ≥ 10 mg/dL oder alle 20 min; im Vordergrund immer.
+
 ## 15.10.2026, bezahlter Apple-Developer-Account
 - Simon ist (wieder) im Apple Developer Program, gleiche Team-ID `V7GQKCH73F`. `Local.xcconfig` nutzt jetzt `OpenMinipump-paid.entitlements` (zeitkritische Mitteilungen + App Group). Profil gültig bis 15.10.2027, Bundle-ID unverändert, Sitzung zur Pumpe blieb bestehen.
 - Offen: kritische Alarme bei Apple beantragen (Formular „Critical Alerts Entitlement“), danach Entitlement ergänzen. TestFlight, AltStore PAL (Notarisierung) als nächste Wege; App Store für iPump-mini erst nach rechtlicher Einschätzung (MDR).
