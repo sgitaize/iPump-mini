@@ -27,15 +27,15 @@ final class PumpLink: NSObject, ObservableObject {
 
         var label: String {
             switch self {
-            case .bluetoothOff: "Bluetooth aus"
-            case .waitingForPump: "Warte auf Pumpe"
-            case .pairing: "Kopplungsmodus"
-            case .handshake: "Handshake läuft"
-            case .connecting: "Verbinde"
-            case .verifying: "Prüfe Pumpe"
-            case .connected: "Verbunden"
-            case .blocked: "Blockiert"
-            case .failed: "Fehler"
+            case .bluetoothOff: L10n.tr("Bluetooth aus")
+            case .waitingForPump: L10n.tr("Warte auf Pumpe")
+            case .pairing: L10n.tr("Kopplungsmodus")
+            case .handshake: L10n.tr("Handshake läuft")
+            case .connecting: L10n.tr("Verbinde")
+            case .verifying: L10n.tr("Prüfe Pumpe")
+            case .connected: L10n.tr("Verbunden")
+            case .blocked: L10n.tr("Blockiert")
+            case .failed: L10n.tr("Fehler")
             }
         }
     }

@@ -12,12 +12,31 @@ struct ContentView: View {
     @State private var insulinSelection: Date?
     /// Selected sensor value (its timestamp).
     @State private var glucoseSelection: Date?
+    @State private var showOnboarding = Terms.needsOnboarding
+    /// Debug: `-screenshot` hides the status card (the simulator has no Bluetooth).
+    #if DEBUG
+    private static let screenshotMode = ProcessInfo.processInfo.arguments.contains("-screenshot")
+    #else
+    private static let screenshotMode = false
+    #endif
 
     var body: some View {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-widgetGallery") {
+            WidgetGallery()
+        } else {
+            main
+        }
+        #else
+        main
+        #endif
+    }
+
+    private var main: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    StatusBanner(showPairing: $showPairing)
+                    if !Self.screenshotMode { StatusBanner(showPairing: $showPairing) }
                     MuteBanner()
                     SensorTypeCard()
                     GlucoseHeader()
@@ -54,6 +73,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showPairing) { PairingGuideView() }
             .sheet(isPresented: $showSettings) { SettingsView() }
+            .fullScreenCover(isPresented: $showOnboarding) {
+                OnboardingView { showOnboarding = false }
+            }
         }
     }
 }
@@ -73,11 +95,11 @@ struct StatusBanner: View {
                 if let serial = link.pumpSerial { Text(serial).font(.caption).foregroundStyle(.secondary) }
             }
             if let last = store.lastDataAt {
-                Text("Letzte Daten \(last.formatted(.relative(presentation: .named)))")
+                Text("Letzte Daten \(last.formatted(.relative(presentation: .named).locale(L10n.locale)))")
                     .font(.caption).foregroundStyle(.secondary)
             }
             if uploader.enabled {
-                Label(uploader.lastError ?? "Nightscout \(uploader.lastSuccess.map { "ok, \($0.formatted(date: .omitted, time: .shortened))" } ?? "wartet")",
+                Label(uploader.lastError ?? uploader.lastSuccess.map { L10n.tr("Nightscout ok, %@", $0.formatted(date: .omitted, time: .shortened)) } ?? L10n.tr("Nightscout wartet"),
                       systemImage: uploader.lastError == nil ? "icloud.and.arrow.up" : "exclamationmark.icloud")
                     .font(.caption)
                     .foregroundStyle(uploader.lastError == nil ? Color.secondary : Color.red)
@@ -131,6 +153,10 @@ struct StatusBanner: View {
 
 struct GlucoseHeader: View {
     @EnvironmentObject private var store: DataStore
+    @AppStorage(Prefs.unitKey, store: Prefs.defaults) private var unitRaw = GlucoseUnit.mgdl.rawValue
+    @AppStorage(Prefs.lowKey, store: Prefs.defaults) private var low = 70
+    @AppStorage(Prefs.highKey, store: Prefs.defaults) private var high = 180
+    private var unit: GlucoseUnit { GlucoseUnit(rawValue: unitRaw) ?? .mgdl }
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
@@ -138,15 +164,16 @@ struct GlucoseHeader: View {
                 if let r = store.latest {
                     let age = context.date.timeIntervalSince(r.date)
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text("\(r.mgdl)")
+                        Text(verbatim: unit.format(r.mgdl))
                             .font(.system(size: 72, weight: .bold, design: .rounded))
-                            .foregroundStyle(age > 15 * 60 ? .secondary : .primary)
+                            .monospacedDigit()
+                            .foregroundStyle(age > 15 * 60 ? Color.secondary : RangeColor.color(r.mgdl, low: low, high: high, neutral: .primary))
                             .strikethrough(age > 15 * 60)
                         Text(arrow(r.trendMgdlPerMin)).font(.system(size: 40))
                     }
                     HStack(spacing: 12) {
-                        Text("mg/dL")
-                        if let d = delta { Text(d > 0 ? "+\(d)" : "\(d)") }
+                        Text(verbatim: unit.label)
+                        if let d = delta { Text(verbatim: unit.formatDelta(d)) }
                         Text(ageText(age))
                     }
                     .font(.subheadline)
@@ -169,7 +196,7 @@ struct GlucoseHeader: View {
 
     private func ageText(_ age: TimeInterval) -> String {
         let minutes = Int(age / 60)
-        return minutes < 1 ? "gerade eben" : "vor \(minutes) min"
+        return minutes < 1 ? L10n.tr("gerade eben") : L10n.tr("vor %d min", minutes)
     }
 
     /// Medtronic arrows: 1 from 1 mg/dL/min, 2 from 2, 3 from 3.
@@ -184,8 +211,15 @@ struct GlucoseHeader: View {
 struct GlucoseChart: View {
     @EnvironmentObject private var store: DataStore
     @AppStorage("chartHours") private var hours = 3
+    @AppStorage(Prefs.unitKey, store: Prefs.defaults) private var unitRaw = GlucoseUnit.mgdl.rawValue
+    @AppStorage(Prefs.lowKey, store: Prefs.defaults) private var low = 70
+    @AppStorage(Prefs.highKey, store: Prefs.defaults) private var high = 180
+    private var unit: GlucoseUnit { GlucoseUnit(rawValue: unitRaw) ?? .mgdl }
     @Binding var insulinSelection: Date?
     @Binding var glucoseSelection: Date?
+    /// What a running drag scrubs through; decided by its first movement.
+    @State private var scrub: Scrub?
+    private enum Scrub { case glucose, insulin, ignore }
 
     /// Height of the insulin band below the glucose values, in chart units (mg/dL scale).
     private static let band: Double = 36
@@ -229,6 +263,27 @@ struct GlucoseChart: View {
         return out
     }
 
+    /// Date and y value (mg/dL scale) under a point of the overlay.
+    private func chartValue(at location: CGPoint, proxy: ChartProxy, geo: GeometryProxy) -> (Date, Double)? {
+        guard let frame = proxy.plotFrame else { return nil }
+        let origin = geo[frame].origin
+        guard let date: Date = proxy.value(atX: location.x - origin.x),
+              let y: Double = proxy.value(atY: location.y - origin.y) else { return nil }
+        return (date, y)
+    }
+
+    /// Nearest sensor value; for taps only if it is close enough to count as "on" it.
+    private func nearestPoint(to date: Date, in points: [GlucoseReading], anyDistance: Bool = false) -> GlucoseReading? {
+        guard let nearest = points.min(by: { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }) else { return nil }
+        return anyDistance || abs(nearest.date.timeIntervalSince(date)) < Double(hours) * 90 ? nearest : nil
+    }
+
+    /// Axis lines every 50 mg/dL, or at whole mmol/L steps (3, 6, 9 …) in mmol mode.
+    private func axisValues(_ yMax: Int) -> [Double] {
+        if unit == .mgdl { return stride(from: 50, through: Double(yMax), by: 50).map { $0 } }
+        return stride(from: 3.0, through: Double(yMax) / 18.0182, by: 3).map { $0 * 18.0182 }
+    }
+
     private func block(for date: Date) -> (start: Date, end: Date) {
         let start = (date.timeIntervalSince1970 / binSize).rounded(.down) * binSize
         return (Date(timeIntervalSince1970: start), Date(timeIntervalSince1970: start + binSize))
@@ -246,7 +301,7 @@ struct GlucoseChart: View {
         }
         .pickerStyle(.segmented)
         Chart {
-            RectangleMark(yStart: .value("", 70), yEnd: .value("", 180))
+            RectangleMark(yStart: .value("", low), yEnd: .value("", high))
                 .foregroundStyle(.green.opacity(0.12))
             RuleMark(y: .value("", Self.bandTop))
                 .foregroundStyle(.secondary.opacity(0.3))
@@ -269,7 +324,7 @@ struct GlucoseChart: View {
             ForEach(points, id: \.date) { r in
                 PointMark(x: .value("Zeit", r.date), y: .value("mg/dL", r.mgdl))
                     .symbolSize(r.date == glucoseSelection ? 90 : hours > 6 ? 10 : 24)
-                    .foregroundStyle(r.mgdl < 70 ? .red : r.mgdl > 180 ? .orange : .primary)
+                    .foregroundStyle(RangeColor.color(r.mgdl, low: low, high: high, neutral: .primary))
             }
             ForEach(events.filter { $0.kind == .suspend || $0.kind == .resume }) { t in
                 RuleMark(x: .value("Zeit", t.date))
@@ -304,7 +359,14 @@ struct GlucoseChart: View {
         }
         .chartYScale(domain: 0...yMax)
         .chartYAxis {
-            AxisMarks(position: .trailing, values: Array(stride(from: 50, through: yMax, by: 50)))
+            AxisMarks(position: .trailing, values: axisValues(yMax)) { value in
+                AxisGridLine()
+                AxisValueLabel {
+                    if let v = value.as(Double.self) {
+                        Text(verbatim: unit == .mgdl ? "\(Int(v))" : String(format: "%.0f", v / 18.0182))
+                    }
+                }
+            }
         }
         .chartXScale(domain: from...Date())
         .chartXAxis {
@@ -322,12 +384,9 @@ struct GlucoseChart: View {
             GeometryReader { geo in
                 Rectangle().fill(.clear).contentShape(Rectangle())
                     .onTapGesture { location in
-                        guard let frame = proxy.plotFrame else { return }
-                        let origin = geo[frame].origin
-                        guard let date: Date = proxy.value(atX: location.x - origin.x),
-                              let y: Double = proxy.value(atY: location.y - origin.y) else { return }
+                        guard let (date, y) = chartValue(at: location, proxy: proxy, geo: geo) else { return }
                         // Taps in the insulin band select a block, taps above select the
-                        // nearest sensor value; anywhere else clears the selection.
+                        // nearest sensor value; tapping the selection again or anywhere else clears it.
                         if y <= Self.bandTop, segments.contains(where: { block(for: $0.start).start == block(for: date).start }) {
                             glucoseSelection = nil
                             if let current = insulinSelection, block(for: current).start == block(for: date).start {
@@ -335,9 +394,7 @@ struct GlucoseChart: View {
                             } else {
                                 insulinSelection = date
                             }
-                        } else if y > Self.bandTop,
-                                  let nearest = points.min(by: { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }),
-                                  abs(nearest.date.timeIntervalSince(date)) < Double(hours) * 90 {
+                        } else if y > Self.bandTop, let nearest = nearestPoint(to: date, in: points) {
                             insulinSelection = nil
                             glucoseSelection = glucoseSelection == nearest.date ? nil : nearest.date
                         } else {
@@ -345,14 +402,45 @@ struct GlucoseChart: View {
                             glucoseSelection = nil
                         }
                     }
+                    // Sliding the finger sideways moves the selection along the values (or the
+                    // insulin blocks if the drag starts in the band); the last one stays selected.
+                    // Vertical drags are left to the page scroll.
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 8)
+                            .onChanged { drag in
+                                if scrub == nil {
+                                    let horizontal = abs(drag.translation.width) > abs(drag.translation.height)
+                                    let startY = chartValue(at: drag.startLocation, proxy: proxy, geo: geo)?.1 ?? 0
+                                    scrub = !horizontal ? .ignore : startY <= Self.bandTop ? .insulin : .glucose
+                                }
+                                guard let (date, _) = chartValue(at: drag.location, proxy: proxy, geo: geo) else { return }
+                                switch scrub {
+                                case .glucose:
+                                    if let nearest = nearestPoint(to: date, in: points, anyDistance: true) {
+                                        insulinSelection = nil
+                                        glucoseSelection = nearest.date
+                                    }
+                                case .insulin:
+                                    if segments.contains(where: { block(for: $0.start).start == block(for: date).start }) {
+                                        glucoseSelection = nil
+                                        insulinSelection = date
+                                    }
+                                default:
+                                    break
+                                }
+                            }
+                            .onEnded { _ in scrub = nil }
+                    )
             }
         }
+        .sensoryFeedback(.selection, trigger: glucoseSelection)
+        .sensoryFeedback(.selection, trigger: insulinSelection.map { block(for: $0).start })
         .frame(height: 240)
         .overlay {
             if points.isEmpty { Text("Keine Werte in diesem Zeitraum").font(.caption).foregroundStyle(.secondary) }
         }
         if let g = glucoseSelection, let r = store.readings.first(where: { $0.date == g }) {
-            GlucosePointDetail(reading: r, iob: store.iob(at: r.date),
+            GlucosePointDetail(reading: r, unit: unit, iob: store.iob(at: r.date),
                                insulin: store.treatments.filter {
                                    [.autoBasal, .autoCorrection, .bolus].contains($0.kind)
                                        && $0.date > r.date.addingTimeInterval(-300) && $0.date <= r.date
@@ -384,7 +472,7 @@ struct InsulinBlockDetail: View {
             HStack {
                 Text(time).font(.subheadline.weight(.semibold))
                 Spacer()
-                Text(String(format: "%.2f IE", items.reduce(0) { $0 + ($1.value ?? 0) })).font(.subheadline.monospacedDigit())
+                Text(insulinUnits(items.reduce(0) { $0 + ($1.value ?? 0) }, 2)).font(.subheadline.monospacedDigit())
             }
             if items.isEmpty {
                 Text("Keine Abgaben in diesem Zeitraum").font(.caption).foregroundStyle(.secondary)
@@ -401,7 +489,7 @@ struct InsulinBlockDetail: View {
                         Text(t.date.formatted(date: .omitted, time: .shortened)).monospacedDigit()
                         Text(label(t.kind)).foregroundStyle(.secondary)
                         Spacer()
-                        Text(String(format: "%.3f IE", t.value ?? 0)).monospacedDigit()
+                        Text(insulinUnits(t.value ?? 0, 3)).monospacedDigit()
                     }
                     .font(.caption)
                 }
@@ -411,17 +499,18 @@ struct InsulinBlockDetail: View {
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
     }
 
-    private func sum(_ kind: Treatment.Kind, _ title: String, _ c: Color) -> some View {
+    private func sum(_ kind: Treatment.Kind, _ title: LocalizedStringKey, _ c: Color) -> some View {
         let total = items.filter { $0.kind == kind }.reduce(0) { $0 + ($1.value ?? 0) }
         return HStack(spacing: 4) {
             Circle().fill(c).frame(width: 7, height: 7)
-            Text("\(title) \(String(format: "%.2f", total))")
+            Text(title)
+            Text(verbatim: String(format: "%.2f", total))
         }
         .opacity(total > 0 ? 1 : 0.4)
     }
 
     private func color(_ k: Treatment.Kind) -> Color { k == .bolus ? .blue : k == .autoCorrection ? .purple : .teal }
-    private func label(_ k: Treatment.Kind) -> String { k == .bolus ? "Bolus" : k == .autoCorrection ? "Autokorrektur" : "Auto-Basal" }
+    private func label(_ k: Treatment.Kind) -> String { k == .bolus ? L10n.tr("Bolus") : k == .autoCorrection ? L10n.tr("Autokorrektur") : L10n.tr("Auto-Basal") }
 }
 
 struct ChartLegend: View {
@@ -437,7 +526,7 @@ struct ChartLegend: View {
         .foregroundStyle(.secondary)
     }
 
-    private func legend(_ symbol: String, _ color: Color, _ text: String) -> some View {
+    private func legend(_ symbol: String, _ color: Color, _ text: LocalizedStringKey) -> some View {
         HStack(spacing: 3) { Image(systemName: symbol).foregroundStyle(color); Text(text) }
     }
 }
@@ -449,16 +538,16 @@ struct ValueGrid: View {
     var body: some View {
         let s = store.snapshot
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            Tile(title: "Aktives Insulin", value: s.iob.map { String(format: "%.2f IE", $0.units) })
-            Tile(title: "Reservoir", value: s.status.map { String(format: "%.0f IE", $0.reservoirUnits) })
-            Tile(title: "Modus", value: s.algorithm?.modeDescription,
-                 detail: s.status.map { $0.isSuspended ? "Abgabe angehalten" : "Abgabe läuft" })
+            Tile(title: "Aktives Insulin", value: s.iob.map { insulinUnits($0.units, 2) })
+            Tile(title: "Reservoir", value: s.status.map { insulinUnits($0.reservoirUnits, 0) })
+            Tile(title: "Modus", value: s.algorithm.map { L10n.tr($0.modeDescription) },
+                 detail: s.status.map { $0.isSuspended ? L10n.tr("Abgabe angehalten") : L10n.tr("Abgabe läuft") })
             Tile(title: "Basalrate", value: basalText(s),
-                 detail: s.basal?.tempBasalUnitsPerHour != nil ? "temporär" : s.algorithm?.shieldState == .autoBasal ? "von SmartGuard gesteuert" : nil)
+                 detail: s.basal?.tempBasalUnitsPerHour != nil ? L10n.tr("temporär") : s.algorithm?.shieldState == .autoBasal ? L10n.tr("von SmartGuard gesteuert") : nil)
             Tile(title: "Zeit im Zielbereich", value: s.timeInRange.map { "\($0.inRangePercent) %" },
                  detail: s.timeInRange.map { "↑ \($0.abovePercent) %  ↓ \($0.belowPercent) %" })
             Tile(title: "Pumpenbatterie", value: s.pumpBatteryPercent.map { "\($0) %" })
-            Tile(title: "Sensor", value: s.status.map { $0.sensorOK ? "Sensor ok" : $0.sensorMessage },
+            Tile(title: "Sensor", value: s.status.map { $0.sensorOK ? L10n.tr("Sensor ok") : L10n.tr($0.sensorMessage) },
                  detail: s.sensorEnd.map { expiry(Int($0.timeIntervalSinceNow / 60)) },
                  systemImage: s.status.map { $0.sensorOK ? "checkmark.circle.fill" : "exclamationmark.triangle.fill" },
                  tint: s.status.map { $0.sensorOK ? .green : .orange })
@@ -475,20 +564,20 @@ struct ValueGrid: View {
 
     private func basalText(_ s: PumpSnapshot) -> String? {
         guard let basal = s.basal else { return nil }
-        if let temp = basal.tempBasalUnitsPerHour { return String(format: "%.3f IE/h", temp) }
-        if s.algorithm?.shieldState == .autoBasal { return "Auto" }
-        return String(format: "%.3f IE/h", basal.unitsPerHour)
+        if let temp = basal.tempBasalUnitsPerHour { return insulinUnits(temp, 3) + "/h" }
+        if s.algorithm?.shieldState == .autoBasal { return L10n.tr("Auto") }
+        return insulinUnits(basal.unitsPerHour, 3) + "/h"
     }
 
     private func expiry(_ minutes: Int) -> String {
-        if minutes <= 0 { return "abgelaufen" }
+        if minutes <= 0 { return L10n.tr("abgelaufen") }
         let h = minutes / 60
-        return h >= 24 ? "noch \(h / 24) T \(h % 24) h" : "noch \(h) h \(minutes % 60) min"
+        return h >= 24 ? L10n.tr("noch %d T %d h", h / 24, h % 24) : L10n.tr("noch %d h %d min", h, minutes % 60)
     }
 }
 
 struct Tile: View {
-    let title: String
+    let title: LocalizedStringKey
     let value: String?
     var detail: String?
     var systemImage: String?
@@ -523,9 +612,9 @@ enum SensorType: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .unknown: "Nicht festgelegt"
-        case .simplera: "Simplera Sync (ohne Transmitter)"
-        case .guardian: "Guardian 4 (mit Transmitter)"
+        case .unknown: L10n.tr("Nicht festgelegt")
+        case .simplera: L10n.tr("Simplera Sync (ohne Transmitter)")
+        case .guardian: L10n.tr("Guardian 4 (mit Transmitter)")
         }
     }
 }
@@ -578,6 +667,7 @@ struct MuteBanner: View {
 /// delivered in its 5-minute window.
 struct GlucosePointDetail: View {
     let reading: GlucoseReading
+    let unit: GlucoseUnit
     let iob: Double?
     let insulin: [Treatment]
     let carbs: [Treatment]
@@ -587,15 +677,15 @@ struct GlucosePointDetail: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(reading.date.formatted(date: .omitted, time: .shortened)).font(.subheadline.weight(.semibold))
                 Spacer()
-                Text("\(reading.mgdl) mg/dL").font(.title3.weight(.semibold)).monospacedDigit()
+                Text(verbatim: "\(unit.format(reading.mgdl)) \(unit.label)").font(.title3.weight(.semibold)).monospacedDigit()
                 Text(TrendArrow.text(reading.trendMgdlPerMin))
             }
             HStack(spacing: 14) {
-                Label(String(format: "%.1f mmol/L", Double(reading.mgdl) / 18), systemImage: "drop")
+                Label(unit == .mgdl ? String(format: "%.1f mmol/L", Double(reading.mgdl) / 18.0182) : "\(reading.mgdl) mg/dL", systemImage: "drop")
                 if let rate = reading.trendMgdlPerMin {
                     Label(String(format: "%+.1f/min", rate), systemImage: "arrow.up.right")
                 }
-                Label(iob.map { String(format: "IOB %.2f IE", $0) } ?? "IOB –", systemImage: "syringe")
+                Label(iob.map { "IOB " + insulinUnits($0, 2) } ?? "IOB –", systemImage: "syringe")
             }
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -606,9 +696,9 @@ struct GlucosePointDetail: View {
                 ForEach(insulin.sorted { $0.date < $1.date }) { t in
                     HStack {
                         Text(t.date.formatted(date: .omitted, time: .shortened)).monospacedDigit()
-                        Text(t.kind == .bolus ? "Bolus" : t.kind == .autoCorrection ? "Autokorrektur" : "Auto-Basal").foregroundStyle(.secondary)
+                        Text(t.kind == .bolus ? L10n.tr("Bolus") : t.kind == .autoCorrection ? L10n.tr("Autokorrektur") : L10n.tr("Auto-Basal")).foregroundStyle(.secondary)
                         Spacer()
-                        Text(String(format: "%.3f IE", t.value ?? 0)).monospacedDigit()
+                        Text(insulinUnits(t.value ?? 0, 3)).monospacedDigit()
                     }
                     .font(.caption)
                 }
@@ -622,7 +712,7 @@ struct GlucosePointDetail: View {
                     .font(.caption)
                 }
                 if insulin.count > 1 {
-                    Text(String(format: "Summe %.3f IE", total)).font(.caption.weight(.semibold))
+                    Text(L10n.tr("Summe %@", insulinUnits(total, 3))).font(.caption.weight(.semibold))
                 }
             }
         }

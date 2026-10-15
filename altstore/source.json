@@ -1,25 +1,27 @@
 {
-  "name": "openMinipump",
-  "identifier": "de.sgitaize.openminipump.source",
-  "subtitle": "MiniMed 780G lesen, ohne Cloud",
-  "website": "https://github.com/sgitaize/openMinipump",
+  "name": "iPump-mini",
+  "identifier": "de.sgitaize.ipumpmini.source",
+  "subtitle": "MiniMed 780G – read-only, no cloud",
+  "website": "https://simongutjahr.de/dev/",
   "apps": [
     {
-      "name": "openMinipump",
+      "name": "iPump-mini",
       "bundleIdentifier": "de.sgitaize.openminipump",
-      "developerName": "Simon",
-      "subtitle": "Liest die MiniMed 780G per Bluetooth – nur lesend.",
-      "localizedDescription": "Open-Source-App, die eine MiniMed 780G ausschließlich lesend per Bluetooth ausliest: Sensorwert, Trend, aktives Insulin, Reservoir, SmartGuard-Status und Pumpenhistorie. Optionaler Nightscout-Upload und lokale Nightscout-kompatible API. Kein Medizinprodukt, nicht für Therapieentscheidungen, nicht mit Medtronic verbunden.",
-      "iconURL": "https://raw.githubusercontent.com/sgitaize/openMinipump/main/apps/ios/OpenMinipump/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
-      "tintColor": "#14B8A6",
+      "developerName": "Simon Gutjahr",
+      "subtitle": "Reads the MiniMed 780G via Bluetooth – read-only.",
+      "localizedDescription": "Open-source app that reads a MiniMed 780G strictly read-only via Bluetooth: sensor glucose, trend, active insulin, reservoir, SmartGuard state and pump history, with alarms, widgets and Live Activity. Optional Nightscout upload and a local Nightscout-compatible API. German and English. Not a medical device, not for treatment decisions, not affiliated with Medtronic. On first start the app loads the SAKE key database from the public OpenMinimed documentation.",
+      "iconURL": "https://raw.githubusercontent.com/sgitaize/iPump-mini/main/apps/ios/OpenMinipump/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+      "tintColor": "#0F766E",
       "category": "utilities",
       "screenshots": [],
       "versions": [],
       "appPermissions": {
-        "entitlements": [],
+        "entitlements": [
+          "com.apple.security.application-groups"
+        ],
         "privacy": {
-          "NSBluetoothAlwaysUsageDescription": "openMinipump verbindet sich per Bluetooth mit deiner MiniMed-Pumpe und liest Werte aus (nur lesend).",
-          "NSLocalNetworkUsageDescription": "Optional: Die lokale API kann im WLAN freigegeben werden."
+          "NSBluetoothAlwaysUsageDescription": "iPump-mini connects to your MiniMed pump via Bluetooth and reads its values (read-only).",
+          "NSLocalNetworkUsageDescription": "Optional: the local API can be shared on Wi-Fi."
         }
       }
     }

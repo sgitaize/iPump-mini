@@ -9,10 +9,16 @@ struct WidgetSnapshot: Codable, Equatable {
         let mgdl: Int
     }
 
-    var points: [Point]           // last 3 h, oldest first
+    var points: [Point]           // last 6 h, oldest first
     var trendRate: Double?
     var iob: Double?
     var updatedAt: Date
+    // Pump status for the larger widgets (optional: older files lack them).
+    var reservoir: Double?
+    var pumpBattery: Int?
+    /// "smartguard", "safe" or "manual".
+    var mode: String?
+    var sensorEnd: Date?
 
     var latest: Point? { points.last }
 
@@ -26,12 +32,28 @@ struct WidgetSnapshot: Codable, Equatable {
 
     static let placeholder = WidgetSnapshot(
         points: (0..<36).map { Point(date: Date().addingTimeInterval(Double($0 - 35) * 300), mgdl: 120 + Int(30 * sin(Double($0) / 6))) },
-        trendRate: 0.4, iob: 1.2, updatedAt: Date())
+        trendRate: 0.4, iob: 1.2, updatedAt: Date(), reservoir: 142, pumpBattery: 80, mode: "smartguard",
+        sensorEnd: Date().addingTimeInterval(3 * 86400))
 }
 
 enum SharedStore {
-    /// "group.<bundle id of the app>", set in both Info.plists.
-    static var groupID: String? { Bundle.main.object(forInfoDictionaryKey: "OMPAppGroup") as? String }
+    /// The App Group shared by app and widgets. Normally "group.<bundle id of the app>" from
+    /// the Info.plist. Sideloading tools such as AltStore re-sign with changed identifiers
+    /// (bundle id and group get a team suffix), so the group derived from the current bundle
+    /// id is tried as well. The first group with an accessible container wins.
+    static let groupID: String? = {
+        var candidates: [String] = []
+        if let configured = Bundle.main.object(forInfoDictionaryKey: "OMPAppGroup") as? String {
+            candidates.append(configured)
+        }
+        if var bundleID = Bundle.main.bundleIdentifier {
+            if bundleID.hasSuffix(".widgets") { bundleID.removeLast(".widgets".count) }
+            candidates.append("group.\(bundleID)")
+        }
+        return candidates.first {
+            FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: $0) != nil
+        } ?? candidates.first
+    }()
 
     private static var url: URL? {
         guard let id = groupID,
@@ -71,5 +93,6 @@ struct GlucoseActivityAttributes: ActivityAttributes {
         var trendRate: Double?
         var delta: Int?
         var date: Date
+        var iob: Double?
     }
 }

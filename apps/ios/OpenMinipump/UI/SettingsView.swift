@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
 import UIKit
+import WidgetKit
 
 struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
@@ -18,6 +19,15 @@ struct SettingsView: View {
     @AppStorage("settings.notify") private var openNotify = false
     @AppStorage("settings.info") private var openInfo = false
     @AppStorage("settings.widgets") private var openWidgets = false
+    @AppStorage("settings.appearance") private var openAppearance = false
+    @AppStorage(Prefs.languageKey, store: Prefs.defaults) private var language = AppLanguage.system.rawValue
+    @AppStorage(Prefs.themeKey, store: Prefs.defaults) private var theme = AppTheme.system.rawValue
+    @AppStorage(Prefs.unitKey, store: Prefs.defaults) private var unit = GlucoseUnit.mgdl.rawValue
+    @AppStorage(Prefs.lowKey, store: Prefs.defaults) private var low = 70
+    @AppStorage(Prefs.highKey, store: Prefs.defaults) private var high = 180
+    @AppStorage(Prefs.widgetStyleKey, store: Prefs.defaults) private var widgetStyle = WidgetStyle.plain.rawValue
+    @AppStorage(Prefs.widgetShowIOBKey, store: Prefs.defaults) private var widgetShowIOB = true
+    @AppStorage(Prefs.widgetHoursKey, store: Prefs.defaults) private var widgetHours = 3
     @State private var liveActivity = WidgetBridge.liveActivityEnabled
 
     var body: some View {
@@ -28,7 +38,7 @@ struct SettingsView: View {
                     LabeledContent("Seriennummer", value: link.pumpSerial ?? "–")
                     LabeledContent("Firmware", value: link.pumpFirmware ?? "–")
                     LabeledContent("Verbindung", value: link.phase.label)
-                    LabeledContent("Entwicklermodus", value: model.config.devGuard.devMode ? "an (nur Testpumpe)" : "aus")
+                    LabeledContent("Entwicklermodus", value: model.config.devGuard.devMode ? L10n.tr("an (nur Testpumpe)") : L10n.tr("aus"))
                     NavigationLink("Schlüsseldatenbank") { KeyImportView() }
                 }
 
@@ -51,7 +61,7 @@ struct SettingsView: View {
                         if uploader.uploadTreatments {
                             Toggle("Auch Auto-Basal-Mikroboli", isOn: $uploader.uploadAutoBasal)
                         }
-                        Button(testing ? "Teste…" : "Verbindung testen") {
+                        Button(testing ? L10n.tr("Teste…") : L10n.tr("Verbindung testen")) {
                             testing = true
                             Task {
                                 testResult = await uploader.test()
@@ -104,7 +114,47 @@ struct SettingsView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
 
+                Section("Aussehen", isExpanded: $openAppearance) {
+                    Picker("Darstellung", selection: $theme) {
+                        Text("Wie System").tag(AppTheme.system.rawValue)
+                        Text("Hell").tag(AppTheme.light.rawValue)
+                        Text("Dunkel").tag(AppTheme.dark.rawValue)
+                    }
+                    Picker("Sprache", selection: $language) {
+                        Text("Wie System").tag(AppLanguage.system.rawValue)
+                        Text("Deutsch").tag(AppLanguage.de.rawValue)
+                        Text("English").tag(AppLanguage.en.rawValue)
+                    }
+                    Picker("Einheit", selection: $unit) {
+                        ForEach(GlucoseUnit.allCases) { Text($0.label).tag($0.rawValue) }
+                    }
+                    Stepper(value: $low, in: 60...100, step: 5) {
+                        LabeledContent("Zielbereich unten", value: "\(GlucoseUnit(rawValue: unit)?.format(low) ?? "\(low)")")
+                    }
+                    Stepper(value: $high, in: 120...250, step: 10) {
+                        LabeledContent("Zielbereich oben", value: "\(GlucoseUnit(rawValue: unit)?.format(high) ?? "\(high)")")
+                    }
+                    Text("Zielbereich und Einheit gelten für Anzeige, Graph und Widgets. Alarmgrenzen stellst du unter Alarme ein. Nightscout und die lokale API bleiben in mg/dL.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                .onChange(of: unit) { _, _ in reloadWidgets() }
+                .onChange(of: low) { _, _ in reloadWidgets() }
+                .onChange(of: high) { _, _ in reloadWidgets() }
+                .onChange(of: language) { _, _ in reloadWidgets() }
+
                 Section("Widgets", isExpanded: $openWidgets) {
+                    Picker("Stil", selection: $widgetStyle) {
+                        Text("Schlicht").tag(WidgetStyle.plain.rawValue)
+                        Text("Farbig nach Bereich").tag(WidgetStyle.tinted.rawValue)
+                    }
+                    .onChange(of: widgetStyle) { _, _ in reloadWidgets() }
+                    Picker("Verlauf im großen Widget", selection: $widgetHours) {
+                        Text("3 h").tag(3)
+                        Text("6 h").tag(6)
+                    }
+                    .onChange(of: widgetHours) { _, _ in reloadWidgets() }
+                    Toggle("Aktives Insulin anzeigen", isOn: $widgetShowIOB)
+                        .onChange(of: widgetShowIOB) { _, _ in reloadWidgets() }
                     Toggle("Live-Aktivität (Dynamic Island)", isOn: $liveActivity)
                         .onChange(of: liveActivity) { _, on in WidgetBridge.liveActivityEnabled = on }
                     Text("Wert, Trend und Änderung auf dem Sperrbildschirm und in der Dynamic Island. iOS beendet Live-Aktivitäten nach spätestens 8 Stunden; beim nächsten Öffnen der App startet sie neu. Widgets fügst du wie gewohnt über den Home-Bildschirm hinzu.")
@@ -112,6 +162,8 @@ struct SettingsView: View {
                 }
 
                 Section("Info", isExpanded: $openInfo) {
+                    NavigationLink("Anleitung") { GuideView() }
+                    NavigationLink("Nutzungsbedingungen") { TermsView() }
                     NavigationLink("Protokoll") { LogView() }
                     NavigationLink("Über & Impressum") { AboutView() }
                 }
@@ -126,6 +178,10 @@ struct SettingsView: View {
             }
         }
     }
+}
+
+private func reloadWidgets() {
+    WidgetCenter.shared.reloadAllTimelines()
 }
 
 struct LogView: View {
@@ -149,7 +205,7 @@ struct LogView: View {
 }
 
 private struct URLRow: View {
-    let title: String
+    let title: LocalizedStringKey
     let url: String
 
     var body: some View {

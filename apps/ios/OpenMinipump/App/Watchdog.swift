@@ -39,9 +39,9 @@ enum Watchdog {
     static func arm() {
         guard enabled else { return }
         let content = UNMutableNotificationContent()
-        content.title = "Keine Pumpendaten seit \(Int(delay / 60)) Minuten"
+        content.title = L10n.tr("Keine Pumpendaten seit %d Minuten", Int(delay / 60))
         content.interruptionLevel = .timeSensitive
-        content.body = "Ist iPump-mini noch geöffnet und die Pumpe in Reichweite? Tippe hier, um die App zu öffnen."
+        content.body = L10n.tr("Ist iPump-mini noch geöffnet und die Pumpe in Reichweite? Tippe hier, um die App zu öffnen.")
         content.sound = .default
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
         let center = UNUserNotificationCenter.current()
@@ -53,8 +53,8 @@ enum Watchdog {
     static func appTerminated() {
         guard enabled else { return }
         let content = UNMutableNotificationContent()
-        content.title = "iPump-mini wurde beendet"
-        content.body = "Ohne laufende App kommen keine Werte von der Pumpe. Tippe hier, um sie wieder zu öffnen."
+        content.title = L10n.tr("iPump-mini wurde beendet")
+        content.body = L10n.tr("Ohne laufende App kommen keine Werte von der Pumpe. Tippe hier, um sie wieder zu öffnen.")
         content.sound = .default
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 2, repeats: false)
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: terminatedID, content: content, trigger: trigger))

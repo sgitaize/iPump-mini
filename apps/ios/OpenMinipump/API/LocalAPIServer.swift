@@ -61,7 +61,7 @@ final class LocalAPIServer: @unchecked Sendable {
             listener?.cancel()
             listener = nil
             isReady = false
-            onStateChange?("gestoppt")
+            onStateChange?(L10n.tr("gestoppt"))
         }
     }
 
@@ -94,16 +94,16 @@ final class LocalAPIServer: @unchecked Sendable {
                 case .ready:
                     self.isReady = true
                     self.retryDelay = 1
-                    self.onStateChange?(lan ? "läuft (WLAN, Port \(Self.port))" : "läuft (nur dieses iPhone, Port \(Self.port))")
+                    self.onStateChange?(lan ? L10n.tr("läuft (WLAN, Port %d)", Int(Self.port)) : L10n.tr("läuft (nur dieses iPhone, Port %d)", Int(Self.port)))
                 case .waiting(let e):
-                    self.onStateChange?("wartet: \(e)")
+                    self.onStateChange?(L10n.tr("wartet: %@", "\(e)"))
                 case .failed(let e):
                     self.isReady = false
                     l?.cancel()
                     let delay = self.retryDelay
                     self.retryDelay = min(self.retryDelay * 2, 30)
                     self.onLog?("API-Server Fehler: \(e), Neustart in \(Int(delay)) s")
-                    self.onStateChange?("Neustart nach Fehler …")
+                    self.onStateChange?(L10n.tr("Neustart nach Fehler …"))
                     self.queue.asyncAfter(deadline: .now() + delay) { [weak self] in
                         guard let self, gen == self.generation else { return }
                         self.restart()
@@ -116,7 +116,7 @@ final class LocalAPIServer: @unchecked Sendable {
             l.start(queue: queue)
         } catch {
             onLog?("API-Server konnte nicht starten: \(error)")
-            onStateChange?("Fehler: \(error)")
+            onStateChange?(L10n.tr("Fehler: %@", "\(error)"))
             let delay = retryDelay
             retryDelay = min(retryDelay * 2, 30)
             queue.asyncAfter(deadline: .now() + delay) { [weak self] in

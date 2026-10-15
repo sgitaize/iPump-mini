@@ -1,0 +1,3999 @@
+{
+  "sourceLanguage" : "de",
+  "strings" : {
+    "" : {
+      "shouldTranslate" : false
+    },
+    "%d h" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d h"
+          }
+        }
+      }
+    },
+    "%d mg/dL (%@ mmol/L)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d mg/dL (%@ mmol/L)"
+          }
+        }
+      }
+    },
+    "%d mg/dL, %@ mg/dL pro Minute" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d mg/dL, %@ mg/dL per minute"
+          }
+        }
+      }
+    },
+    "%d T %d h" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d d %d h"
+          }
+        }
+      }
+    },
+    "%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
+    },
+    "%lld g" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld g"
+          }
+        }
+      }
+    },
+    "%lld h" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld h"
+          }
+        }
+      }
+    },
+    "1 h stumm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mute 1 h"
+          }
+        }
+      }
+    },
+    "1 Stunde stumm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mute 1 hour"
+          }
+        }
+      }
+    },
+    "1. Zweck" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Purpose"
+          }
+        }
+      }
+    },
+    "15 min stumm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mute 15 min"
+          }
+        }
+      }
+    },
+    "2 Stunden stumm" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mute 2 hours"
+          }
+        }
+      }
+    },
+    "2. Kein Medizinprodukt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. Not a medical device"
+          }
+        }
+      }
+    },
+    "3 h" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 h"
+          }
+        }
+      }
+    },
+    "3. Die Pumpe ist maßgeblich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. The pump is authoritative"
+          }
+        }
+      }
+    },
+    "30 min stumm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mute 30 min"
+          }
+        }
+      }
+    },
+    "4. Grenzen der App" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4. Limitations of the app"
+          }
+        }
+      }
+    },
+    "5. Nur lesend" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5. Read-only"
+          }
+        }
+      }
+    },
+    "6 h" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6 h"
+          }
+        }
+      }
+    },
+    "6. Keine Verbindung zum Hersteller" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6. No affiliation with the manufacturer"
+          }
+        }
+      }
+    },
+    "7. Haftung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7. Liability"
+          }
+        }
+      }
+    },
+    "8. Daten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "8. Data"
+          }
+        }
+      }
+    },
+    "9. Eigene Verantwortung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "9. Your own responsibility"
+          }
+        }
+      }
+    },
+    "ab %@ mg/dL pro Minute" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "from %@ mg/dL per minute"
+          }
+        }
+      }
+    },
+    "ab %d mg/dL (%@ mmol/L)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "from %d mg/dL (%@ mmol/L)"
+          }
+        }
+      }
+    },
+    "Abgabe angehalten" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delivery suspended"
+          }
+        }
+      }
+    },
+    "Abgabe läuft" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delivering"
+          }
+        }
+      }
+    },
+    "abgelaufen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "expired"
+          }
+        }
+      }
+    },
+    "abgelehnt: in den iPhone-Einstellungen erlauben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "denied: allow in iPhone Settings"
+          }
+        }
+      }
+    },
+    "Abschaltung bei Grenzwert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suspend on low limit"
+          }
+        }
+      }
+    },
+    "Abschaltung bei Tief" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suspend on low"
+          }
+        }
+      }
+    },
+    "Abschaltung bei Tief: Zeit abgelaufen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suspend on low: time expired"
+          }
+        }
+      }
+    },
+    "Abschaltung vor Tief" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suspend before low"
+          }
+        }
+      }
+    },
+    "Akku" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Battery"
+          }
+        }
+      }
+    },
+    "Aktives Insulin" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active insulin"
+          }
+        }
+      }
+    },
+    "Aktives Insulin anzeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show active insulin"
+          }
+        }
+      }
+    },
+    "Aktives Insulin gelöscht" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active insulin cleared"
+          }
+        }
+      }
+    },
+    "Aktueller Sensorwert mit Trend, groß mit Verlauf." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current sensor glucose with trend; larger sizes with a graph."
+          }
+        }
+      }
+    },
+    "Alarm vor Tief" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alert before low"
+          }
+        }
+      }
+    },
+    "Alarme" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarms"
+          }
+        }
+      }
+    },
+    "Alarme & Benachrichtigungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarms & notifications"
+          }
+        }
+      }
+    },
+    "Alarme stumm bis %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarms muted until %@"
+          }
+        }
+      }
+    },
+    "Alle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
+    },
+    "alle %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "every %lld min"
+          }
+        }
+      }
+    },
+    "Alle Alarme stummschalten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mute all alarms"
+          }
+        }
+      }
+    },
+    "Alle Daten bleiben auf diesem iPhone. Die App sendet nichts an Medtronic oder CareLink und nichts an die Entwickler. Ins Internet verbindet sie sich nur, wenn du den Nightscout-Upload einschaltest oder die Schlüsseldatenbank lädst (GitHub). Die lokale API ist standardmäßig nur auf diesem Gerät erreichbar; eine Freigabe im WLAN ist optional und durch ein API-Secret geschützt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All data stays on this iPhone. The app sends nothing to Medtronic or CareLink and nothing to the developers. It only connects to the internet when you turn on the Nightscout upload or load the key database (GitHub). By default the local API is only reachable on this device; sharing it on Wi-Fi is optional and protected by an API secret."
+          }
+        }
+      }
+    },
+    "Alle Glukose-Alarme inkl. schneller Änderungen und alle Pumpenmeldungen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All glucose alarms including rapid changes, and all pump alerts"
+          }
+        }
+      }
+    },
+    "an (nur Testpumpe)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "on (test pump only)"
+          }
+        }
+      }
+    },
+    "An der Pumpe: **Menü › Kopplungsoptionen › Neues Gerät koppeln**. Die Bezeichnungen können je nach Softwarestand leicht abweichen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the pump: **Menu › Pairing options › Pair new device**. The wording may differ slightly depending on the software version."
+          }
+        }
+      }
+    },
+    "Andere Adresse" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other address"
+          }
+        }
+      }
+    },
+    "Angezeigte Werte können falsch, veraltet oder unvollständig sein. Die App kann jederzeit ausfallen, etwa wenn iOS sie beendet, die Bluetooth-Verbindung abbricht, das iPhone stummgeschaltet ist, ein Fokus-Modus aktiv ist, Mitteilungen deaktiviert sind oder der Akku leer ist. Alarme können verspätet, stumm oder gar nicht kommen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Displayed values may be wrong, outdated or incomplete. The app can stop working at any time, for example when iOS terminates it, the Bluetooth connection drops, the iPhone is silenced, a Focus is active, notifications are turned off or the battery is empty. Alarms may arrive late, silently or not at all."
+          }
+        }
+      }
+    },
+    "Anleitung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guide"
+          }
+        }
+      }
+    },
+    "Anleitung öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open instructions"
+          }
+        }
+      }
+    },
+    "API-Format der lokalen Schnittstelle (cgm-remote-monitor)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API format of the local interface (cgm-remote-monitor)."
+          }
+        }
+      }
+    },
+    "API-Secret (oder token=…)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API secret (or token=…)"
+          }
+        }
+      }
+    },
+    "API-Secret (Pflicht für WLAN)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API secret (required for Wi-Fi)"
+          }
+        }
+      }
+    },
+    "App" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
+          }
+        }
+      }
+    },
+    "App nicht wegwischen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don't swipe the app away"
+          }
+        }
+      }
+    },
+    "Auch Auto-Basal-Mikroboli" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Include auto basal micro boluses"
+          }
+        }
+      }
+    },
+    "Auf dem iPhone erscheint eine **Bluetooth-Kopplungsanfrage**. Tippe auf „Koppeln“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A **Bluetooth pairing request** appears on the iPhone. Tap “Pair”."
+          }
+        }
+      }
+    },
+    "Auf diesem iPhone" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On this iPhone"
+          }
+        }
+      }
+    },
+    "Aufheben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unmute"
+          }
+        }
+      }
+    },
+    "Aufwärmphase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warm-up"
+          }
+        }
+      }
+    },
+    "aus" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "off"
+          }
+        }
+      }
+    },
+    "Aussehen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance"
+          }
+        }
+      }
+    },
+    "Auto" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        }
+      }
+    },
+    "Auto-Basal" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto basal"
+          }
+        }
+      }
+    },
+    "Autokorr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto corr."
+          }
+        }
+      }
+    },
+    "Autokorrektur" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto correction"
+          }
+        }
+      }
+    },
+    "Basalabgabe fortgesetzt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basal delivery resumed"
+          }
+        }
+      }
+    },
+    "Basalrate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basal rate"
+          }
+        }
+      }
+    },
+    "Batterie einsetzen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insert battery"
+          }
+        }
+      }
+    },
+    "Behandlungen (Bolus, Autokorrektur, KH, BZ)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Treatments (bolus, auto correction, carbs, BG)"
+          }
+        }
+      }
+    },
+    "Bei stummgeschaltetem iPhone kommen Alarme ohne Ton. Nur „kritische Alarme“ durchbrechen den Stummschalter; die braucht eine Freigabe von Apple, die selbst gebaute Versionen nicht haben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When the iPhone is silenced, alarms come without sound. Only “critical alerts” break through the silent switch; they need an approval from Apple that self-built versions don't have."
+          }
+        }
+      }
+    },
+    "Bis" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To"
+          }
+        }
+      }
+    },
+    "Bitte lies diese Bedingungen. Ohne Zustimmung lässt sich die App nicht verwenden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please read these terms. The app cannot be used without accepting them."
+          }
+        }
+      }
+    },
+    "Blockiert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blocked"
+          }
+        }
+      }
+    },
+    "Bluetooth an lassen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep Bluetooth on"
+          }
+        }
+      }
+    },
+    "Bluetooth aus" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bluetooth off"
+          }
+        }
+      }
+    },
+    "Bluetooth im Kontrollzentrum auszuschalten trennt die Pumpe nur bis zum nächsten Einschalten. In den Einstellungen ausgeschaltet bleibt die Verbindung weg." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turning Bluetooth off in Control Center only disconnects the pump until it is turned on again. Turned off in Settings, the connection stays down."
+          }
+        }
+      }
+    },
+    "Bolus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bolus"
+          }
+        }
+      }
+    },
+    "Bolus gestoppt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bolus stopped"
+          }
+        }
+      }
+    },
+    "BZ nach Bolus prüfen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check BG after bolus"
+          }
+        }
+      }
+    },
+    "BZ/Kalibr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BG/calib."
+          }
+        }
+      }
+    },
+    "Damit nur passende Werte angezeigt werden. Später änderbar in den Einstellungen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "So that only matching values are shown. You can change this later in Settings."
+          }
+        }
+      }
+    },
+    "Danach erscheinen nach kurzer Zeit die ersten Werte. Ab jetzt die App nicht mehr wegwischen; im Hintergrund läuft sie weiter." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The first values appear shortly afterwards. From now on, don't swipe the app away; it keeps running in the background."
+          }
+        }
+      }
+    },
+    "Danach lässt sich jeder Alarm einzeln anpassen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afterwards you can adjust each alarm individually."
+          }
+        }
+      }
+    },
+    "Darstellung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theme"
+          }
+        }
+      }
+    },
+    "Das ist nicht die Datenbank „Mobile Application ↔ Insulin Pump“." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is not the “Mobile Application ↔ Insulin Pump” database."
+          }
+        }
+      }
+    },
+    "Das Projekt steht in keiner Verbindung zu Medtronic und wird von Medtronic weder unterstützt noch geprüft. MiniMed, SmartGuard, Guardian, Simplera und CareLink sind Marken ihrer Inhaber. Die Nutzung kann Garantie- oder Supportbedingungen des Herstellers berühren; das prüfst du selbst." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The project is not affiliated with Medtronic and is neither supported nor reviewed by Medtronic. MiniMed, SmartGuard, Guardian, Simplera and CareLink are trademarks of their owners. Using the app may affect the manufacturer's warranty or support terms; checking this is up to you."
+          }
+        }
+      }
+    },
+    "Daten weitergeben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sharing data"
+          }
+        }
+      }
+    },
+    "Datenschutz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy"
+          }
+        }
+      }
+    },
+    "Deutsch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deutsch"
+          }
+        }
+      }
+    },
+    "Die Alarme der App sind eine Ergänzung. Lass die Alarme der Pumpe immer eingeschaltet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app's alarms are a supplement. Always keep the pump's alarms turned on."
+          }
+        }
+      }
+    },
+    "Die App braucht diese Datenbank für die verschlüsselte Verbindung zur Pumpe. Sie ist nicht in der App enthalten, sondern wird von der öffentlichen Dokumentation des Projekts OpenMinimed geladen und mit Prüfsumme und Gerätetyp geprüft." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app needs this database for the encrypted connection to the pump. It is not included in the app; it is loaded from the public documentation of the OpenMinimed project and checked by checksum and device type."
+          }
+        }
+      }
+    },
+    "Die App braucht einmalig die Schlüsseldatenbank für die verschlüsselte Verbindung. Einstellungen › Pumpe › Schlüsseldatenbank › „Von OpenMinimed laden“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app needs the key database once for the encrypted connection. Settings › Pump › Key database › “Load from OpenMinimed”."
+          }
+        }
+      }
+    },
+    "Die App gibt Alarme und Hinweise der Pumpe weiter, sobald die Pumpe sie meldet. Quittieren musst du sie weiterhin an der Pumpe." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app forwards the pump's alarms and alerts as soon as the pump reports them. You still have to clear them on the pump."
+          }
+        }
+      }
+    },
+    "Die App ist kein Medizinprodukt, hat keine Zulassung und keine CE-Kennzeichnung. Sie darf nicht für Therapie- oder Behandlungsentscheidungen verwendet werden, zum Beispiel für die Berechnung oder Abgabe von Insulin oder die Behandlung einer Unterzuckerung." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app is not a medical device and has no approval and no CE marking. It must not be used for therapy or treatment decisions, for example to calculate or deliver insulin or to treat a low."
+          }
+        }
+      }
+    },
+    "Die App ist so gebaut, dass sie keine Befehle sendet, die Therapie, Einstellungen oder Zustand der Pumpe verändern. Eine Garantie dafür, dass die Pumpe sich durch die Verbindung in keiner Weise anders verhält, gibt es nicht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app is built so that it sends no commands that change the pump's therapy, settings or state. There is no guarantee that the connection does not change the pump's behaviour in any way."
+          }
+        }
+      }
+    },
+    "Die App liest nur. Sie kann keinen Bolus abgeben, keine Einstellungen ändern und keine Alarme quittieren." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app only reads. It cannot deliver a bolus, change settings or clear alarms."
+          }
+        }
+      }
+    },
+    "Die App wird unentgeltlich und ohne Gewährleistung bereitgestellt, so wie sie ist (siehe GPL-3.0, Abschnitte 15 und 16). Die Haftung der Entwickler ist ausgeschlossen, soweit das gesetzlich zulässig ist. Unberührt bleibt die Haftung für Vorsatz und grobe Fahrlässigkeit sowie nach zwingenden gesetzlichen Vorschriften." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app is provided free of charge and without warranty, as is (see GPL-3.0, sections 15 and 16). The developers' liability is excluded to the extent permitted by law. Liability for intent and gross negligence and under mandatory statutory provisions remains unaffected."
+          }
+        }
+      }
+    },
+    "Die Daten bleiben auf deinem iPhone. Die Entwickler erhalten keine Daten. Sie verlassen das Gerät nur, wenn du selbst den Nightscout-Upload oder die lokale API im WLAN einschaltest; dafür bist du verantwortlich." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The data stays on your iPhone. The developers receive no data. It only leaves the device if you turn on the Nightscout upload or the local API on Wi-Fi yourself; you are responsible for that."
+          }
+        }
+      }
+    },
+    "Die Pumpe ist maßgeblich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The pump is authoritative"
+          }
+        }
+      }
+    },
+    "Die Pumpe nimmt nur **ein** Mobilgerät an. Ist noch MiniMed Mobile gekoppelt, entferne diese Kopplung zuerst an der Pumpe (Menü › Kopplungsoptionen › gekoppelte Geräte)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The pump accepts only **one** mobile device. If MiniMed Mobile is still paired, remove that pairing on the pump first (Menu › Pairing options › Paired devices)."
+          }
+        }
+      }
+    },
+    "Die Pumpe nimmt nur ein Mobilgerät an. Eine Kopplung mit MiniMed Mobile vorher an der Pumpe entfernen. Dann „Pumpe koppeln“ in der App öffnen und der Anleitung folgen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The pump accepts only one mobile device. Remove a pairing with MiniMed Mobile on the pump first. Then open “Pair pump” in the app and follow the instructions."
+          }
+        }
+      }
+    },
+    "Die Pumpe weckt die App alle 5 Minuten. Das klappt nur, solange die App im Hintergrund läuft. Wird sie im App-Umschalter weggewischt, kommen keine Werte mehr. Die App erinnert dich dann per Mitteilung." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The pump wakes the app every 5 minutes. This only works while the app is running in the background. If you swipe it away in the app switcher, no more values arrive. The app then reminds you with a notification."
+          }
+        }
+      }
+    },
+    "Die Pumpe zeigt **Mobile %@**. Wähle es aus und bestätige." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The pump shows **Mobile %@**. Select it and confirm."
+          }
+        }
+      }
+    },
+    "Diese App erscheint an der Pumpe als" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On the pump, this app appears as"
+          }
+        }
+      }
+    },
+    "Diese Schritte kannst du auch später in den Einstellungen erledigen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can also complete these steps later in Settings."
+          }
+        }
+      }
+    },
+    "Dringend niedrig" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Urgent low"
+          }
+        }
+      }
+    },
+    "Dringend niedrig, niedrig, hoch, keine Daten; Pumpe: Abgabe, Reservoir/Batterie, Sensor, Kalibrierung, SmartGuard" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Urgent low, low, high, no data; pump: delivery, reservoir/battery, sensor, calibration, SmartGuard"
+          }
+        }
+      }
+    },
+    "Du nutzt die App auf eigene Verantwortung und prüfst selbst, ob die Nutzung in deinem Land zulässig ist. Sprich bei Fragen zu deiner Therapie mit deinem Diabetes-Team." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You use the app at your own responsibility and check yourself whether its use is permitted in your country. Talk to your diabetes team about questions regarding your therapy."
+          }
+        }
+      }
+    },
+    "Dunkel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark"
+          }
+        }
+      }
+    },
+    "Ein Fokus (auch „Schlafen“) hält normale Mitteilungen zurück. Füge iPump-mini im Fokus unter „Erlaubte Apps“ hinzu, sonst hörst du nachts keinen Alarm." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Focus (including “Sleep”) holds back normal notifications. Add iPump-mini to the Focus under “Allowed apps”, otherwise you won't hear alarms at night."
+          }
+        }
+      }
+    },
+    "Einfügen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paste"
+          }
+        }
+      }
+    },
+    "Einheit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unit"
+          }
+        }
+      }
+    },
+    "Einrichten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set up"
+          }
+        }
+      }
+    },
+    "Einrichtung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setup"
+          }
+        }
+      }
+    },
+    "Einstellungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
+    },
+    "Einzelne Alarme lassen sich direkt in der Mitteilung für 15, 30 oder 60 Minuten stummschalten. „Dringend niedrig“ lässt sich nicht global stummschalten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Individual alarms can be muted for 15, 30 or 60 minutes right from the notification. “Urgent low” cannot be muted globally."
+          }
+        }
+      }
+    },
+    "Endpunkte wie Nightscout: /api/v1/entries.json, /api/v1/treatments.json, /api/v1/devicestatus.json, /pebble?count=N&units=mmol. iOS pausiert die App im Hintergrund zwischen den Bluetooth-Ereignissen; dann antwortet die API nicht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endpoints like Nightscout: /api/v1/entries.json, /api/v1/treatments.json, /api/v1/devicestatus.json, /pebble?count=N&units=mmol. iOS suspends the app in the background between Bluetooth events; the API does not answer then."
+          }
+        }
+      }
+    },
+    "English" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "English"
+          }
+        }
+      }
+    },
+    "Entfernt. Wirkt nach einem Neustart der App." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removed. Takes effect after restarting the app."
+          }
+        }
+      }
+    },
+    "Entwicklermodus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Developer mode"
+          }
+        }
+      }
+    },
+    "Erinnerungen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reminders"
+          }
+        }
+      }
+    },
+    "erlaubt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "allowed"
+          }
+        }
+      }
+    },
+    "Erneut alarmieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeat alarm"
+          }
+        }
+      }
+    },
+    "Erste Kalibrierung erfolgreich" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "First calibration successful"
+          }
+        }
+      }
+    },
+    "Farbig nach Bereich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coloured by range"
+          }
+        }
+      }
+    },
+    "Fehler" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error"
+          }
+        }
+      }
+    },
+    "Fehler: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error: %@"
+          }
+        }
+      }
+    },
+    "fehlt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "missing"
+          }
+        }
+      }
+    },
+    "fehlt, jetzt laden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "missing, load now"
+          }
+        }
+      }
+    },
+    "Fertig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "Firmware" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Firmware"
+          }
+        }
+      }
+    },
+    "Fokus und Schlafmodus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus and Sleep"
+          }
+        }
+      }
+    },
+    "Frühe Kalibrierung" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Early calibration"
+          }
+        }
+      }
+    },
+    "Füge iPump-mini in deinem Schlaf-Fokus unter „Erlaubte Apps“ hinzu, sonst bleiben Alarme nachts stumm." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add iPump-mini to your Sleep Focus under “Allowed apps”, otherwise alarms stay silent at night."
+          }
+        }
+      }
+    },
+    "für Alarme nötig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "required for alarms"
+          }
+        }
+      }
+    },
+    "Ganze Anleitung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full guide"
+          }
+        }
+      }
+    },
+    "gekoppelt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "paired"
+          }
+        }
+      }
+    },
+    "Gekoppelt. Die Pumpe verbindet sich von selbst, sobald sie in Reichweite ist. Die App muss dafür geöffnet bleiben (im Hintergrund ist ok, nicht wegwischen)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paired. The pump connects by itself as soon as it is in range. The app has to stay open for this (background is fine, don't swipe it away)."
+          }
+        }
+      }
+    },
+    "gerade eben" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "just now"
+          }
+        }
+      }
+    },
+    "Gespeichert. Die App kann jetzt mit der Pumpe sprechen." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved. The app can now talk to the pump."
+          }
+        }
+      }
+    },
+    "gestartet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "started"
+          }
+        }
+      }
+    },
+    "gestoppt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "stopped"
+          }
+        }
+      }
+    },
+    "Gilt nicht für „Dringend niedrig“. Einzelne Alarme lassen sich direkt in der Mitteilung für 15, 30 oder 60 Minuten stummschalten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Does not apply to “Urgent low”. Individual alarms can be muted for 15, 30 or 60 minutes right from the notification."
+          }
+        }
+      }
+    },
+    "Glukose" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glucose"
+          }
+        }
+      }
+    },
+    "Glukose-Alarme (dringend niedrig, niedrig, hoch, schnelle Änderungen), Meldungen der Pumpe, „Keine Daten“, Stummschalten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glucose alarms (urgent low, low, high, rapid changes), pump alerts, “No data”, muting."
+          }
+        }
+      }
+    },
+    "Glukose-Alarme der Pumpe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pump glucose alerts"
+          }
+        }
+      }
+    },
+    "Guardian 4 (mit Transmitter)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardian 4 (with transmitter)"
+          }
+        }
+      }
+    },
+    "Handshake läuft" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Handshake in progress"
+          }
+        }
+      }
+    },
+    "Hell" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light"
+          }
+        }
+      }
+    },
+    "Hoch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High"
+          }
+        }
+      }
+    },
+    "Hoher SG-Wert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High SG"
+          }
+        }
+      }
+    },
+    "Home-Bildschirm oder Sperrbildschirm lange drücken › Bearbeiten › Widget hinzufügen › iPump-mini. Aussehen unter Einstellungen › Widgets." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long-press the Home Screen or Lock Screen › Edit › Add widget › iPump-mini. Appearance under Settings › Widgets."
+          }
+        }
+      }
+    },
+    "https://dein-nightscout.example" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://your-nightscout.example"
+          }
+        }
+      }
+    },
+    "https://…" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "https://…"
+          }
+        }
+      }
+    },
+    "Ich habe die Nutzungsbedingungen gelesen und stimme ihnen zu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I have read the terms of use and accept them."
+          }
+        }
+      }
+    },
+    "Ich habe verstanden: Für Behandlungsentscheidungen und Alarme ist die Pumpe maßgeblich. Die App kann ausfallen, ihre Alarme können verspätet oder stumm kommen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I understand: the pump is authoritative for treatment decisions and alarms. The app can fail, and its alarms may arrive late or silently."
+          }
+        }
+      }
+    },
+    "IE" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "U"
+          }
+        }
+      }
+    },
+    "im App-Paket enthalten" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "included in the app"
+          }
+        }
+      }
+    },
+    "Im Hintergrund" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the background"
+          }
+        }
+      }
+    },
+    "Im WLAN" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On Wi-Fi"
+          }
+        }
+      }
+    },
+    "Im WLAN freigeben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share on Wi-Fi"
+          }
+        }
+      }
+    },
+    "Importierte Datenbank entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove imported database"
+          }
+        }
+      }
+    },
+    "Impressum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprint"
+          }
+        }
+      }
+    },
+    "Impressum und Datenschutz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprint and privacy"
+          }
+        }
+      }
+    },
+    "In diesen 5 Minuten keine Abgabe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No delivery in these 5 minutes"
+          }
+        }
+      }
+    },
+    "Info" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Info"
+          }
+        }
+      }
+    },
+    "Insulinabgabe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insulin delivery"
+          }
+        }
+      }
+    },
+    "IOB" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IOB"
+          }
+        }
+      }
+    },
+    "iPump-mini" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPump-mini"
+          }
+        }
+      }
+    },
+    "iPump-mini (Projekt openMinipump) ist kein Medizinprodukt und nicht für Therapieentscheidungen bestimmt. Maßgeblich sind immer die Anzeigen und Alarme der Pumpe. Die App liest die Pumpe ausschließlich aus und kann keine Einstellungen ändern oder Insulin abgeben. Nutzung auf eigene Verantwortung." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPump-mini (project openMinipump) is not a medical device and not intended for therapy decisions. The pump's displays and alarms are always authoritative. The app only reads from the pump and cannot change settings or deliver insulin. Use at your own responsibility."
+          }
+        }
+      }
+    },
+    "iPump-mini ist ein privates, nicht-kommerzielles Open-Source-Projekt. Die App liest Daten einer Insulinpumpe der Reihe MiniMed 780G per Bluetooth aus und zeigt sie an. Sie dient nur der Information und dem Komfort." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPump-mini is a private, non-commercial open-source project. The app reads data from a MiniMed 780G series insulin pump via Bluetooth and displays it. It is for information and convenience only."
+          }
+        }
+      }
+    },
+    "iPump-mini wurde beendet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPump-mini was closed"
+          }
+        }
+      }
+    },
+    "Ist iPump-mini noch geöffnet und die Pumpe in Reichweite? Tippe hier, um die App zu öffnen." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Is iPump-mini still open and the pump in range? Tap here to open the app."
+          }
+        }
+      }
+    },
+    "Jetzt hochladen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload now"
+          }
+        }
+      }
+    },
+    "Jetzt kalibrieren" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calibrate now"
+          }
+        }
+      }
+    },
+    "Kalibrier-Erinnerung" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calibration reminder"
+          }
+        }
+      }
+    },
+    "Kalibriert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calibrated"
+          }
+        }
+      }
+    },
+    "Kalibrierung" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calibration"
+          }
+        }
+      }
+    },
+    "Kalibrierung empfohlen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calibration recommended"
+          }
+        }
+      }
+    },
+    "Kalibrierung erforderlich" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calibration required"
+          }
+        }
+      }
+    },
+    "Kalibrierung nicht akzeptiert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calibration not accepted"
+          }
+        }
+      }
+    },
+    "Katheterwechsel-Erinnerung" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set change reminder"
+          }
+        }
+      }
+    },
+    "Kein Sensor gekoppelt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No sensor paired"
+          }
+        }
+      }
+    },
+    "Kein Sensorsignal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No sensor signal"
+          }
+        }
+      }
+    },
+    "Kein WLAN verbunden – im WLAN nicht erreichbar." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Wi-Fi connected – not reachable on Wi-Fi."
+          }
+        }
+      }
+    },
+    "Keine Abgaben in diesem Zeitraum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No deliveries in this period"
+          }
+        }
+      }
+    },
+    "Keine Daten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No data"
+          }
+        }
+      }
+    },
+    "Keine Insulinabgabe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No insulin delivery"
+          }
+        }
+      }
+    },
+    "Keine Kalibrierung erfolgt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calibration not done"
+          }
+        }
+      }
+    },
+    "Keine Pumpendaten seit %d Minuten" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pump data for %d minutes"
+          }
+        }
+      }
+    },
+    "Keine Verbindung?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No connection?"
+          }
+        }
+      }
+    },
+    "Keine Werte in diesem Zeitraum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No values in this period"
+          }
+        }
+      }
+    },
+    "KH" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carbs"
+          }
+        }
+      }
+    },
+    "Kohlenhydrate" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carbs"
+          }
+        }
+      }
+    },
+    "Kopplungsmodus" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pairing mode"
+          }
+        }
+      }
+    },
+    "Kopplungsmodus aktiv" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pairing mode active"
+          }
+        }
+      }
+    },
+    "Kritische Alarme" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Critical alerts"
+          }
+        }
+      }
+    },
+    "Kritische Alarme (durch Stummschalter) brauchen eine Freigabe von Apple. Bis dahin kommen dringende Alarme als „zeitkritisch“: Sie durchbrechen Fokus-Modi, folgen aber dem Stummschalter. In den iPhone-Einstellungen › Mitteilungen › iPump-mini „Zeitkritische Mitteilungen“ aktiviert lassen." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Critical alerts (through the silent switch) need an approval from Apple. Until then, urgent alarms arrive as “time sensitive”: they break through Focus modes but follow the silent switch. Keep “Time Sensitive Notifications” on under iPhone Settings › Notifications › iPump-mini."
+          }
+        }
+      }
+    },
+    "Kritische und zeitkritische Alarme sind in diesem Build nicht verfügbar (kostenloses Entwickler-Team). Alarme kommen als normale Mitteilungen: mit Ton, aber nicht durch Stummschalter oder Fokus-Modi. Für die Nacht den Fokus so einstellen, dass iPump-mini durchkommt." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Critical and time-sensitive alerts are not available in this build (free developer team). Alarms arrive as normal notifications: with sound, but not through the silent switch or Focus modes. For the night, set up your Focus so that iPump-mini is allowed."
+          }
+        }
+      }
+    },
+    "Laden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load"
+          }
+        }
+      }
+    },
+    "Lass diese App im Vordergrund geöffnet und das iPhone entsperrt, bis die Kopplung fertig ist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep this app open in the foreground and the iPhone unlocked until pairing is complete."
+          }
+        }
+      }
+    },
+    "Letzte 24 h erneut hochladen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload last 24 h again"
+          }
+        }
+      }
+    },
+    "Letzte Daten %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last data %@"
+          }
+        }
+      }
+    },
+    "Letzter Upload" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last upload"
+          }
+        }
+      }
+    },
+    "Liest deine MiniMed 780G per Bluetooth aus, nur lesend und ohne Cloud." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reads your MiniMed 780G via Bluetooth – read-only and without a cloud."
+          }
+        }
+      }
+    },
+    "Live-Aktivität" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live Activity"
+          }
+        }
+      }
+    },
+    "Live-Aktivität (Dynamic Island)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live Activity (Dynamic Island)"
+          }
+        }
+      }
+    },
+    "Lizenz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "License"
+          }
+        }
+      }
+    },
+    "Lokale API" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local API"
+          }
+        }
+      }
+    },
+    "Lädt die Seite key_databases.md von GitHub und übernimmt den Block „Mobile Application ↔ Insulin Pump“. Es werden keine Daten von dir gesendet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loads the page key_databases.md from GitHub and takes the “Mobile Application ↔ Insulin Pump” block. None of your data is sent."
+          }
+        }
+      }
+    },
+    "Lädt neue Sensorwerte sofort hoch, dazu Pumpenstatus und Behandlungen aus der Pumpenhistorie. Funktioniert auch im Hintergrund, weil die Pumpe die App alle 5 Minuten weckt. Fehlende Werte liest die App aus der Pumpenhistorie nach und lädt sie gesammelt hoch. Das Secret liegt im Schlüsselbund." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uploads new sensor values immediately, plus pump status and treatments from the pump history. Works in the background too, because the pump wakes the app every 5 minutes. Missing values are read from the pump history and uploaded together. The secret is stored in the keychain."
+          }
+        }
+      }
+    },
+    "Lädt …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading …"
+          }
+        }
+      }
+    },
+    "läuft (nur dieses iPhone, Port %d)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "running (this iPhone only, port %d)"
+          }
+        }
+      }
+    },
+    "läuft (WLAN, Port %d)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "running (Wi-Fi, port %d)"
+          }
+        }
+      }
+    },
+    "Manuell" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual"
+          }
+        }
+      }
+    },
+    "Manuelle Fortsetzung" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual resume"
+          }
+        }
+      }
+    },
+    "Manueller Modus" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manual mode"
+          }
+        }
+      }
+    },
+    "Marken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trademarks"
+          }
+        }
+      }
+    },
+    "Maximale Füllmenge erreicht" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Max fill reached"
+          }
+        }
+      }
+    },
+    "Maßgeblich sind immer die Anzeigen, Werte und Alarme der Pumpe und des Sensors. Die Alarme der Pumpe müssen eingeschaltet bleiben. Die Alarme dieser App sind eine unverbindliche Ergänzung und ersetzen die Alarme der Pumpe nicht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The displays, values and alarms of the pump and the sensor are always authoritative. The pump's alarms must stay turned on. The alarms of this app are a non-binding supplement and do not replace the pump's alarms."
+          }
+        }
+      }
+    },
+    "Medtronic, MiniMed, CareLink, SmartGuard und Guardian sind Marken der Medtronic plc bzw. ihrer Tochtergesellschaften. Dieses Projekt steht in keiner Verbindung zu Medtronic und wird von Medtronic weder unterstützt noch geprüft." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medtronic, MiniMed, CareLink, SmartGuard and Guardian are trademarks of Medtronic plc or its subsidiaries. This project is not affiliated with Medtronic and is neither supported nor reviewed by Medtronic."
+          }
+        }
+      }
+    },
+    "Meldet sich, wenn so lange keine Pumpendaten kamen – auch wenn die App weggewischt wurde." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifies you when no pump data arrived for this long – even if the app was swiped away."
+          }
+        }
+      }
+    },
+    "Meldung der Pumpe um %@. Bitte an der Pumpe prüfen." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pump alert at %@. Please check the pump."
+          }
+        }
+      }
+    },
+    "Meldungen der Pumpe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pump alerts"
+          }
+        }
+      }
+    },
+    "mg/dL" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mg/dL"
+          }
+        }
+      }
+    },
+    "Mit einem bezahlten Entwickler-Account kommen dringende Alarme als „zeitkritisch“ auch durch Fokus-Modi. Mit dem kostenlosen Account nicht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With a paid developer account, urgent alarms arrive as “time sensitive” and break through Focus modes. Not with the free account."
+          }
+        }
+      }
+    },
+    "Mitteilungen erlauben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow notifications"
+          }
+        }
+      }
+    },
+    "Mitteilungen und Alarme" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications and alarms"
+          }
+        }
+      }
+    },
+    "Mobile %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mobile %@"
+          }
+        }
+      }
+    },
+    "Modus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode"
+          }
+        }
+      }
+    },
+    "nach %d min" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "after %d min"
+          }
+        }
+      }
+    },
+    "Name in der Pumpe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name on the pump"
+          }
+        }
+      }
+    },
+    "Neu koppeln …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pair again …"
+          }
+        }
+      }
+    },
+    "Neustart nach Fehler …" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restarting after error …"
+          }
+        }
+      }
+    },
+    "Nicht festgelegt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not set"
+          }
+        }
+      }
+    },
+    "Nicht gültig: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not valid: %@"
+          }
+        }
+      }
+    },
+    "Nicht kalibrieren" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do not calibrate"
+          }
+        }
+      }
+    },
+    "Niedrig" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low"
+          }
+        }
+      }
+    },
+    "Niedriger SG-Wert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low SG"
+          }
+        }
+      }
+    },
+    "Nightscout" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nightscout"
+          }
+        }
+      }
+    },
+    "Nightscout ok, %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nightscout ok, %@"
+          }
+        }
+      }
+    },
+    "Nightscout wartet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nightscout waiting"
+          }
+        }
+      }
+    },
+    "Nightscout-kompatible Schnittstelle auf Port 17580, für Uhren und andere Apps. Im WLAN nur mit API-Secret." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nightscout-compatible interface on port 17580, for watches and other apps. On Wi-Fi only with an API secret."
+          }
+        }
+      }
+    },
+    "noch %d h %d min" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d h %d min left"
+          }
+        }
+      }
+    },
+    "noch %d T %d h" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d d %d h left"
+          }
+        }
+      }
+    },
+    "Noch kein Sensorwert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No sensor value yet"
+          }
+        }
+      }
+    },
+    "Noch keine Pumpe gekoppelt. Die Pumpe muss einmalig mit dieser App gekoppelt werden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No pump paired yet. The pump has to be paired with this app once."
+          }
+        }
+      }
+    },
+    "Nur dringend" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Urgent only"
+          }
+        }
+      }
+    },
+    "Nur dringend niedrig, keine Daten und Probleme mit der Insulinabgabe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only urgent low, no data and insulin delivery problems"
+          }
+        }
+      }
+    },
+    "Nur im Hintergrund laufend bekommt die App alle 5 Minuten neue Werte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only while running in the background does the app get new values every 5 minutes."
+          }
+        }
+      }
+    },
+    "Nur zur Information. Keine Therapieentscheidungen auf Basis dieser App treffen – maßgeblich ist die Anzeige der Pumpe. Kein Medizinprodukt, nicht mit Medtronic verbunden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For information only. Do not make therapy decisions based on this app – the pump's display is authoritative. Not a medical device, not affiliated with Medtronic."
+          }
+        }
+      }
+    },
+    "Nutzungsbedingungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terms of use"
+          }
+        }
+      }
+    },
+    "Ohne API-Secret bleibt die API auf dieses iPhone beschränkt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without an API secret the API stays limited to this iPhone."
+          }
+        }
+      }
+    },
+    "Ohne Erlaubnis kommen keine Alarme. Prüfen unter iPhone-Einstellungen › Mitteilungen › iPump-mini: Mitteilungen, Töne und Sperrbildschirm an." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without permission, no alarms arrive. Check under iPhone Settings › Notifications › iPump-mini: notifications, sounds and Lock Screen on."
+          }
+        }
+      }
+    },
+    "Ohne laufende App kommen keine Werte von der Pumpe. Tippe hier, um sie wieder zu öffnen." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without the app running, no values arrive from the pump. Tap here to open it again."
+          }
+        }
+      }
+    },
+    "Optional: lädt Werte, Pumpenstatus und Behandlungen in deine eigene Nightscout-Instanz. URL und API-Secret unter Einstellungen › Nightscout." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional: uploads values, pump status and treatments to your own Nightscout. URL and API secret under Settings › Nightscout."
+          }
+        }
+      }
+    },
+    "Pebble / Nightscout-Clients" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pebble / Nightscout clients"
+          }
+        }
+      }
+    },
+    "Persönliche Erinnerung" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personal reminder"
+          }
+        }
+      }
+    },
+    "Port 17580 der lokalen Schnittstelle, für kompatible Clients." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Port 17580 of the local interface, for compatible clients."
+          }
+        }
+      }
+    },
+    "Privates, nicht-kommerzielles Open-Source-Projekt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Private, non-commercial open-source project."
+          }
+        }
+      }
+    },
+    "Protokoll" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log"
+          }
+        }
+      }
+    },
+    "Protokoll-Dokumentation, PythonSake, JavaSake, PythonPumpConnector (GPL-3.0). Die SAKE-Implementierung dieser App ist ein Swift-Port davon." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Protocol documentation, PythonSake, JavaSake, PythonPumpConnector (GPL-3.0). The SAKE implementation of this app is a Swift port of it."
+          }
+        }
+      }
+    },
+    "Protokolldatei teilen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share log file"
+          }
+        }
+      }
+    },
+    "Prüfe Pumpe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking pump"
+          }
+        }
+      }
+    },
+    "Prüfen und speichern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check and save"
+          }
+        }
+      }
+    },
+    "Pumpe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pump"
+          }
+        }
+      }
+    },
+    "Pumpe in Reichweite bringen, App öffnen. Hilft das nach einigen Minuten nicht, Bluetooth in den iPhone-Einstellungen kurz aus- und wieder einschalten. Erst wenn auch das nicht hilft, neu koppeln." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bring the pump into range and open the app. If that doesn't help after a few minutes, turn Bluetooth off and on again in iPhone Settings. Only if that doesn't help either, pair again."
+          }
+        }
+      }
+    },
+    "Pumpe koppeln" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pair pump"
+          }
+        }
+      }
+    },
+    "Pumpe: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pump: %@"
+          }
+        }
+      }
+    },
+    "Pumpenbatterie" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pump battery"
+          }
+        }
+      }
+    },
+    "Pumpenbatterie schwach" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pump battery low"
+          }
+        }
+      }
+    },
+    "Pumpenfehler" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pump error"
+          }
+        }
+      }
+    },
+    "Pumpenstatus (devicestatus)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pump status (devicestatus)"
+          }
+        }
+      }
+    },
+    "Pumpenstatus aktualisiert %@%@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pumpenstatus aktualisiert %1$@%2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pump status updated %@%@"
+          }
+        }
+      }
+    },
+    "Quellcode auf GitHub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source code on GitHub"
+          }
+        }
+      }
+    },
+    "Quelle ansehen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View source"
+          }
+        }
+      }
+    },
+    "Quellen & Dank" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sources & thanks"
+          }
+        }
+      }
+    },
+    "Reservoir" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reservoir"
+          }
+        }
+      }
+    },
+    "Reservoir & Batterie" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reservoir & battery"
+          }
+        }
+      }
+    },
+    "Reservoir fast leer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Low reservoir"
+          }
+        }
+      }
+    },
+    "Schlicht" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plain"
+          }
+        }
+      }
+    },
+    "Schlüsseldatenbank" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key database"
+          }
+        }
+      }
+    },
+    "Schlüsseldatenbank fehlt. Einstellungen › Pumpe › Schlüsseldatenbank." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key database missing. Settings › Pump › Key database."
+          }
+        }
+      }
+    },
+    "Schlüsseldatenbank ungültig: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Key database invalid: %@"
+          }
+        }
+      }
+    },
+    "Schnell fallend" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falling fast"
+          }
+        }
+      }
+    },
+    "Schnell steigend" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rising fast"
+          }
+        }
+      }
+    },
+    "Sehr niedriger SG-Wert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Very low SG"
+          }
+        }
+      }
+    },
+    "Seit 3 Stunden hoch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "High for 3 hours"
+          }
+        }
+      }
+    },
+    "Seit über 3 Minuten keine Verbindung: In den iPhone-Einstellungen Bluetooth kurz aus- und wieder einschalten. Die Pumpe verbindet sich dann neu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No connection for more than 3 minutes: turn Bluetooth off and on again in iPhone Settings. The pump then reconnects."
+          }
+        }
+      }
+    },
+    "Sensor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor"
+          }
+        }
+      }
+    },
+    "Sensor ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor ok"
+          }
+        }
+      }
+    },
+    "Sensor verbunden" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor connected"
+          }
+        }
+      }
+    },
+    "Sensor wechseln" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change sensor"
+          }
+        }
+      }
+    },
+    "Sensor wählen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose sensor"
+          }
+        }
+      }
+    },
+    "Sensorfehler" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor error"
+          }
+        }
+      }
+    },
+    "Sensorsignal verloren" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lost sensor signal"
+          }
+        }
+      }
+    },
+    "Sensorsignal wird gesucht" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Searching for sensor signal"
+          }
+        }
+      }
+    },
+    "Seriennummer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serial number"
+          }
+        }
+      }
+    },
+    "Server antwortet mit Fehler %d." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server responded with error %d."
+          }
+        }
+      }
+    },
+    "SG unter Messbereich" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SG below range"
+          }
+        }
+      }
+    },
+    "SG über Messbereich" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SG above range"
+          }
+        }
+      }
+    },
+    "Sicherheitsbasal" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Safe basal"
+          }
+        }
+      }
+    },
+    "Simplera Sync (ohne Transmitter)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simplera Sync (no transmitter)"
+          }
+        }
+      }
+    },
+    "Simplera Sync hat keinen Transmitter, Guardian 4 schon. Danach richtet sich, welche Werte angezeigt werden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simplera Sync has no transmitter, Guardian 4 does. This determines which values are shown."
+          }
+        }
+      }
+    },
+    "SmartGuard" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SmartGuard"
+          }
+        }
+      }
+    },
+    "SmartGuard aus" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SmartGuard off"
+          }
+        }
+      }
+    },
+    "SmartGuard beendet" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SmartGuard exit"
+          }
+        }
+      }
+    },
+    "SmartGuard beendet: hoher SG" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SmartGuard exit: high SG"
+          }
+        }
+      }
+    },
+    "SmartGuard: Bolus empfohlen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SmartGuard: bolus recommended"
+          }
+        }
+      }
+    },
+    "SmartGuard: maximale Abgabe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SmartGuard: max delivery"
+          }
+        }
+      }
+    },
+    "SmartGuard: minimale Abgabe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SmartGuard: min delivery"
+          }
+        }
+      }
+    },
+    "So koppelst du die Pumpe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to pair the pump"
+          }
+        }
+      }
+    },
+    "So sieht ein Alarm von iPump-mini aus." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is what an iPump-mini alarm looks like."
+          }
+        }
+      }
+    },
+    "Sonstige" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        }
+      }
+    },
+    "Spezifikationen Insulin Delivery Service (IDS), Continuous Glucose Monitoring Service (CGMS), GATT Specification Supplement." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Specifications Insulin Delivery Service (IDS), Continuous Glucose Monitoring Service (CGMS), GATT Specification Supplement."
+          }
+        }
+      }
+    },
+    "Sprache" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
+          }
+        }
+      }
+    },
+    "Standard" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard"
+          }
+        }
+      }
+    },
+    "Startseite: Benutzername beliebig, Passwort = API-Secret." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start page: any user name, password = API secret."
+          }
+        }
+      }
+    },
+    "Status" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status"
+          }
+        }
+      }
+    },
+    "Stil" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Style"
+          }
+        }
+      }
+    },
+    "Stumm bis" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muted until"
+          }
+        }
+      }
+    },
+    "Stummschalten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mute"
+          }
+        }
+      }
+    },
+    "Stummschalter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silent switch"
+          }
+        }
+      }
+    },
+    "Stummschaltung aufheben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unmute"
+          }
+        }
+      }
+    },
+    "Summe %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total %@"
+          }
+        }
+      }
+    },
+    "temporär" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "temporary"
+          }
+        }
+      }
+    },
+    "Test-Alarm" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test alarm"
+          }
+        }
+      }
+    },
+    "Test-Alarm senden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send test alarm"
+          }
+        }
+      }
+    },
+    "Teste…" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testing…"
+          }
+        }
+      }
+    },
+    "Transmitter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmitter"
+          }
+        }
+      }
+    },
+    "Transmitter-Batterie leer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transmitter battery empty"
+          }
+        }
+      }
+    },
+    "Ungültige URL" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid URL"
+          }
+        }
+      }
+    },
+    "unter %d mg/dL (%@ mmol/L)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "below %d mg/dL (%@ mmol/L)"
+          }
+        }
+      }
+    },
+    "Unter dieser Adresse wurde keine passende Datenbank gefunden." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matching database was found at this address."
+          }
+        }
+      }
+    },
+    "URL kopieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy URL"
+          }
+        }
+      }
+    },
+    "Verbinde" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connecting"
+          }
+        }
+      }
+    },
+    "Verbindung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connection"
+          }
+        }
+      }
+    },
+    "Verbindung testen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Test connection"
+          }
+        }
+      }
+    },
+    "Verbunden" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected"
+          }
+        }
+      }
+    },
+    "Verbunden, aber kein Schreibrecht – API-Secret prüfen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected, but no write permission – check the API secret"
+          }
+        }
+      }
+    },
+    "Verbunden, API-Secret nicht bestätigt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected, API secret not confirmed"
+          }
+        }
+      }
+    },
+    "Verbunden, API-Secret ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected, API secret ok"
+          }
+        }
+      }
+    },
+    "Verbunden, Schreibrecht ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connected, write permission ok"
+          }
+        }
+      }
+    },
+    "Verlauf im großen Widget" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "History in the large widget"
+          }
+        }
+      }
+    },
+    "Version" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Version"
+          }
+        }
+      }
+    },
+    "Von" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From"
+          }
+        }
+      }
+    },
+    "Von dieser Adresse laden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load from this address"
+          }
+        }
+      }
+    },
+    "Von OpenMinimed laden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load from OpenMinimed"
+          }
+        }
+      }
+    },
+    "von SmartGuard gesteuert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "controlled by SmartGuard"
+          }
+        }
+      }
+    },
+    "vor %d min" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d min ago"
+          }
+        }
+      }
+    },
+    "Voreinstellung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preset"
+          }
+        }
+      }
+    },
+    "vorhanden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "available"
+          }
+        }
+      }
+    },
+    "Warte auf Pumpe" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for pump"
+          }
+        }
+      }
+    },
+    "Warten auf Aufwärmphase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for warm-up"
+          }
+        }
+      }
+    },
+    "Warten auf Kalibrierung" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting for calibration"
+          }
+        }
+      }
+    },
+    "wartet: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "waiting: %@"
+          }
+        }
+      }
+    },
+    "Weiter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        }
+      }
+    },
+    "Welchen Sensor verwendest du?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which sensor do you use?"
+          }
+        }
+      }
+    },
+    "Wert oder Insulin-Balken antippen für Details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap a value or insulin bar for details"
+          }
+        }
+      }
+    },
+    "Wert, Trend und Änderung auf dem Sperrbildschirm und in der Dynamic Island. iOS beendet Live-Aktivitäten nach spätestens 8 Stunden; beim nächsten Öffnen der App startet sie neu. Widgets fügst du wie gewohnt über den Home-Bildschirm hinzu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Value, trend and change on the Lock Screen and in the Dynamic Island. iOS ends Live Activities after 8 hours at the latest; it restarts the next time you open the app. Add widgets from the Home Screen as usual."
+          }
+        }
+      }
+    },
+    "Wichtig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Important"
+          }
+        }
+      }
+    },
+    "Wichtiger Hinweis" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Important notice"
+          }
+        }
+      }
+    },
+    "Widgets" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widgets"
+          }
+        }
+      }
+    },
+    "Widgets hinzufügen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add widgets"
+          }
+        }
+      }
+    },
+    "Wie System" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        }
+      }
+    },
+    "Zeigt Wert, Trend und Änderung in der Dynamic Island. iOS beendet sie nach spätestens 8 Stunden; beim nächsten Öffnen der App startet sie neu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows value, trend and change in the Dynamic Island. iOS ends it after 8 hours at the latest; it restarts the next time you open the app."
+          }
+        }
+      }
+    },
+    "Zeit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        }
+      }
+    },
+    "Zeit im Zielbereich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time in range"
+          }
+        }
+      }
+    },
+    "Zeitkritische Mitteilungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time-sensitive notifications"
+          }
+        }
+      }
+    },
+    "Zeitraum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period"
+          }
+        }
+      }
+    },
+    "Zielbereich oben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target range high"
+          }
+        }
+      }
+    },
+    "Zielbereich und Einheit gelten für Anzeige, Graph und Widgets. Alarmgrenzen stellst du unter Alarme ein. Nightscout und die lokale API bleiben in mg/dL." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target range and unit apply to the display, graph and widgets. Alarm thresholds are set under Alarms. Nightscout and the local API stay in mg/dL."
+          }
+        }
+      }
+    },
+    "Zielbereich unten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Target range low"
+          }
+        }
+      }
+    },
+    "Zu Nightscout hochladen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload to Nightscout"
+          }
+        }
+      }
+    },
+    "Zugestimmt am %@ (Version %lld)." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Zugestimmt am %1$@ (Version %2$lld)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accepted on %@ (version %lld)."
+          }
+        }
+      }
+    },
+    "Zustimmen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accept"
+          }
+        }
+      }
+    },
+    "Über & Impressum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About & imprint"
+          }
+        }
+      }
+    },
+    "–" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "–"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
+    "„Dringend niedrig“ und dringende Pumpenmeldungen kommen auch bei Stummschalter und Fokus." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Urgent low” and urgent pump alerts come through the silent switch and Focus too."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

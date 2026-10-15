@@ -11,7 +11,13 @@ mkdir -p "$DEST"
 
 DEV_MODE=1
 TEST_PUMP_SERIAL=""
-if [ -f "$REPO/.env" ]; then
+# Public builds (CI, OMP_PUBLIC_BUILD=1) never take local files: no .env, no key database.
+# Their DEV_MODE comes from OMP_PUBLIC_DEV_MODE (default 1 = locked to no pump).
+PUBLIC="${OMP_PUBLIC_BUILD:-0}"
+if [ "$PUBLIC" = "1" ]; then
+  DEV_MODE="${OMP_PUBLIC_DEV_MODE:-1}"
+  echo "note: public build, DEV_MODE=$DEV_MODE, no key database embedded"
+elif [ -f "$REPO/.env" ]; then
   v=$(grep -E '^DEV_MODE=' "$REPO/.env" | tail -1 | cut -d= -f2- | tr -d '"'"'"' \r' || true)
   [ -n "$v" ] && DEV_MODE="$v"
   TEST_PUMP_SERIAL=$(grep -E '^TEST_PUMP_SERIAL=' "$REPO/.env" | tail -1 | cut -d= -f2- | tr -d '"'"'"' \r' || true)
@@ -32,7 +38,9 @@ cat > "$DEST/DevConfig.plist" <<EOF
 EOF
 
 KEYDB="$REPO/_vendor/keys/mobile-pump.keydb.hex"
-if [ -f "$KEYDB" ]; then
+if [ "$PUBLIC" = "1" ]; then
+  rm -f "$DEST/mobile-pump.keydb.hex"
+elif [ -f "$KEYDB" ]; then
   cp "$KEYDB" "$DEST/mobile-pump.keydb.hex"
 else
   rm -f "$DEST/mobile-pump.keydb.hex"

@@ -10,17 +10,21 @@ Stand: vorbereitet, **nicht aktiv**. Bevor etwas veröffentlicht wird, entscheid
 
 ## Pipeline (GitHub Actions)
 `.github/workflows/release.yml` – nur **manuell** startbar (Actions › „Release IPA“ › Run workflow):
-1. macOS-Runner, XcodeGen, Build ohne Signatur (`CODE_SIGNING_ALLOWED=NO`) im Release-Modus.
-2. `Payload/OpenMinipump.app` → `OpenMinipump-<version>.ipa`.
-3. GitHub-Release als **Entwurf** mit der IPA als Asset (wird erst durch manuelles Veröffentlichen sichtbar).
-4. `altstore/source.json` wird mit Version, Datum, Größe und Download-URL aktualisiert (als Artefakt; Commit/Pages-Veröffentlichung manuell).
+1. macOS-Runner, XcodeGen, Release-Build ohne Signatur. `OMP_PUBLIC_BUILD=1` sorgt dafür, dass `embed-local-config.sh` weder `.env` noch die Schlüsseldatenbank übernimmt.
+2. **Prüfschritt:** Bricht ab, wenn eine Schlüsseldatenbank oder eine Test-Seriennummer im Paket liegt.
+3. **Ad-hoc-Signatur mit Berechtigungen** (App Group für App und Widget). AltStore liest daraus, welche App Group es mit der Apple-ID des Nutzers anlegen muss. AltStore benennt Bundle-ID und Gruppe dabei um; die App sucht deshalb zur Laufzeit auch `group.<aktuelle Bundle-ID>` (`SharedStore.groupID`). Auf einem echten AltStore-Gerät noch nicht getestet.
+4. `Payload/OpenMinipump.app` → `iPump-mini-<version>.ipa`, dazu `source.json` mit Version, Datum, Größe und Download-URL.
+5. GitHub-Release als **Entwurf** (erst durch manuelles Veröffentlichen sichtbar).
+
+Eingabe **`allow_any_pump`** (Standard: aus): aus = gesperrter Build (`DEV_MODE=1` ohne Testpumpe, lehnt jede Pumpe ab), an = `DEV_MODE=0`. Anschalten nur mit Simons Freigabe.
 
 Die Quelle könnte später über GitHub Pages ausgeliefert werden (`https://<user>.github.io/<repo>/altstore/source.json`); dafür muss das Repo öffentlich sein.
 
 ## Offene Entscheidungen vor einer Veröffentlichung
-- [x] **Schlüsseldatenbank:** Sie darf nach unseren Regeln nicht ins Repo und auch nicht in eine öffentliche IPA. Umgesetzt (Branch `feature/alarms-widgets`): Einstellungen › Pumpe › Schlüsseldatenbank. Hex einfügen, Prüfung (CRC, richtige Datenbank), Speicherung im Schlüsselbund. Eigene Builds nutzen weiterhin die Datei aus `_vendor/`.
-- [ ] **DEV_MODE:** Öffentliche Builds müssen jede (vom Nutzer gekoppelte) Pumpe akzeptieren, also `DEV_MODE=0`. Regel 2 des Projekt-Briefs gilt für die Entwicklung; Freigabe durch Simon nötig.
+- [x] **Schlüsseldatenbank:** nicht im Repo und nicht in der IPA. Die App lädt sie auf Knopfdruck von der öffentlichen OpenMinimed-Dokumentation (Einstellungen › Pumpe › Schlüsseldatenbank, auch in der Ersteinrichtung), alternativ von einer eigenen URL oder per Einfügen. Prüfung: CRC und richtiger Gerätetyp; Speicherung im Schlüsselbund.
+- [x] **Name:** „iPump-mini“ als Anzeigename, Bundle-ID bleibt `de.sgitaize.openminipump`.
+- [x] **Nutzungsbedingungen:** müssen beim ersten Start akzeptiert werden (`TermsView.swift`, versioniert). Text ist ein Entwurf, keine Rechtsberatung.
+- [ ] **DEV_MODE:** Öffentliche Builds müssen jede (vom Nutzer gekoppelte) Pumpe akzeptieren, also `allow_any_pump`. Regel 2 des Projekt-Briefs gilt für die Entwicklung; Freigabe durch Simon nötig.
 - [ ] **Kompatibilitäts-Kennung:** Die App meldet sich gegenüber der Pumpe mit den Geräteinfos der offiziellen App (`PumpLink.compatSoftwareRevision`). Rechtliche Einschätzung vor Veröffentlichung.
-- [ ] **Name/Bundle-ID:** Umbenennung in „iPump-mini“ vorher abschließen (Bundle-ID nicht mehr ändern, sobald Nutzer installiert haben).
 - [ ] **Repo öffentlich:** vorher Git-Historie von den Build-Artefakten bereinigen (siehe `docs/tasks.md`).
-- [ ] **Datenschutz/Haftung:** Hinweise in App und README (vorhanden), ggf. Prüfung.
+- [ ] **Probelauf:** Workflow einmal im privaten Repo starten (erzeugt nur einen Entwurf) und die IPA per AltStore installieren.

@@ -23,7 +23,7 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 `docs/` Wissen · `research/` eigene Skripte · `captures/` (ignored) Mitschnitte · `_vendor/` (ignored) Vendor-Material · `proto/` Referenz/Prototypen (bleak entfällt, siehe ADR 0003) · `core/` gemeinsame Protokoll-Lib · `apps/ios/` SwiftUI · `apps/android/` Kotlin
 
 ## Umgebung
-- Repo: `~/Dev/openMinipump` (bewusst nicht in iCloud, siehe ADR 0001), GitHub: `sgitaize/openMinipump` (privat)
+- Repo: `~/Dev/openMinipump` (bewusst nicht in iCloud, siehe ADR 0001), GitHub: `sgitaize/iPump-mini` (privat; bis 15.10. `openMinipump`, GitHub leitet weiter)
 - Der iOS-Simulator hat kein Bluetooth, deshalb braucht es einen Replay-Transport aus echten Mitschnitten.
 
 ## Aktueller Stand
@@ -31,6 +31,8 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 - `core/MiniMedKit` (Swift-Paket): SAKE-Port, Parser inkl. History, `ReadOnlyPolicy` (Allowlist, Änderungen nur mit Simon; letzte Freigabe 15.10.: IDD-RACP-Report-Befehle), `DevModeGuard`, Nightscout-Mapping. `swift test` prüft den Handshake gegen den echten 780G-Trace.
 - `apps/ios`: XcodeGen, Setup `docs/setup-ios.md`, Signing lokal in `Config/Local.xcconfig`. Alle Schreibzugriffe auf die Pumpe laufen über `PumpLink.guardedWrite`. Protokolldatei auf dem iPhone: `Application Support/openminipump.log` (per `xcrun devicectl device copy from … --domain-type appDataContainer`).
 - Erkenntnisse im Laborbuch: DIS-Werte wie die offizielle App, 5-min-Trigger (GST Battery + IDD Status Changed), Sitzung wird gespeichert, ohne Sitzung GATT-Dienste neu registrieren, CGM-RACP „≥ Offset“ nicht unterstützt.
-- In Arbeit: Alarme und Widgets auf Branch `wip/alarms-widgets` (Details und nächste Handgriffe in `docs/tasks.md`, Phase 5). Danach Phase 6: Design, Website, öffentliches Repo, AltStore.
+- Anzeigename **iPump-mini** (Bundle-ID bleibt). Alarme/Widgets sind in main. In Arbeit: Branch `feature/onboarding-l10n` (Ersteinrichtung mit Nutzungsbedingungen, Englisch, Aussehen, Widgets neu, Release-Pipeline), Stand in `docs/tasks.md` („Vormittag 15.10.“).
+- Sprachen: Deutsch ist Quellsprache, Übersetzungen in `Shared/Localizable.xcstrings`; neue Texte → `docs/localization.md`. Texte aus Code über `L10n.tr`.
+- Signing: kostenloses Team kann App Groups, keine zeitkritischen Mitteilungen. Neue Berechtigungen brauchen einmal ⌘R in Xcode (Profil), danach geht die Kommandozeile.
 - Installieren aufs iPhone ohne Xcode-GUI: `xcodebuild -project apps/ios/OpenMinipump.xcodeproj -scheme OpenMinipump -destination 'id=<UDID>' -allowProvisioningUpdates build`, dann `xcrun devicectl device install app --device <UDID> <…/Debug-iphoneos/OpenMinipump.app>`. Simon lässt die App laufen; die Sitzung zur Pumpe wird über Updates hinweg fortgesetzt.
 - casiocgm-Testversion mit Datenquelle openMinipump: VPS-Projekt `casiocgm`, Branch `feature/openminipump-source`; auf der echten Uhr noch nicht funktionsfähig.
