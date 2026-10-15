@@ -72,7 +72,7 @@ German is the source language; English translations are in `Shared/Localizable.x
 | Variant | How | Key database | Pump lock |
 |---|---|---|---|
 | Developer | Xcode / `xcodebuild` with `.env` | embedded from `_vendor/keys` if present | `DEV_MODE=1`, serial from `.env` |
-| Public (AltStore, TestFlight) | `OMP_PUBLIC_BUILD=1 OMP_PUBLIC_DEV_MODE=0` (release workflow) | loaded by the user at runtime | none (any paired 780G) |
+| Public (AltStore, TestFlight, App Store) | every **Release** build (Xcode archive or CI); opt out locally with `OMP_PUBLIC_BUILD=0` | loaded by the user at runtime | none (any paired 780G) |
 
 ## Tests
 

@@ -13,9 +13,18 @@ DEV_MODE=1
 TEST_PUMP_SERIAL=""
 # Public builds (CI, OMP_PUBLIC_BUILD=1) never take local files: no .env, no key database.
 # Their DEV_MODE comes from OMP_PUBLIC_DEV_MODE (default 1 = locked to no pump).
-PUBLIC="${OMP_PUBLIC_BUILD:-0}"
+# Release builds (archives for TestFlight/App Store, made in Xcode or CI) are public by
+# default: DEV_MODE=0 and nothing local embedded. A local release build for the own
+# device can opt out with OMP_PUBLIC_BUILD=0.
+if [ "${CONFIGURATION:-}" = "Release" ]; then
+  PUBLIC="${OMP_PUBLIC_BUILD:-1}"
+  DEFAULT_PUBLIC_DEV_MODE=0
+else
+  PUBLIC="${OMP_PUBLIC_BUILD:-0}"
+  DEFAULT_PUBLIC_DEV_MODE=1
+fi
 if [ "$PUBLIC" = "1" ]; then
-  DEV_MODE="${OMP_PUBLIC_DEV_MODE:-1}"
+  DEV_MODE="${OMP_PUBLIC_DEV_MODE:-$DEFAULT_PUBLIC_DEV_MODE}"
   echo "note: public build, DEV_MODE=$DEV_MODE, no key database embedded"
 elif [ -f "$REPO/.env" ]; then
   v=$(grep -E '^DEV_MODE=' "$REPO/.env" | tail -1 | cut -d= -f2- | tr -d '"'"'"' \r' || true)
