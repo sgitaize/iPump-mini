@@ -35,6 +35,14 @@ Die iOS-App stellt die gelesenen Daten über einen kleinen HTTP-Server bereit. E
 
 Die Pumpe liefert eine Änderungsrate in mg/dL/min. Medtronic zeigt einen Pfeil ab 1, zwei ab 2 und drei ab 3 mg/dL/min. Für Nightscout gilt: unter 1 ist `Flat`, ab 1 `SingleUp`/`SingleDown`, ab 2 `DoubleUp`/`DoubleDown`. Drei Pfeile werden ebenfalls `Double*`, weil nicht alle Clients `TripleUp` kennen. Die Rohrate steht in `trendRate`.
 
+### Weckplan (`ompSync`)
+`/pebble` liefert zusätzlich, wann die App im Hintergrund erreichbar ist (andere Clients ignorieren das Feld):
+
+```json
+"ompSync": {"lastWake": 1792012800000, "nextWake": 1792013100000, "intervalSec": 300, "windowSec": 25}
+```
+`lastWake`/`nextWake` in ms seit 1970 (Server-Uhr, Abgleich über `status[0].now`). Die Pumpe weckt die App etwa alle 5 Minuten (`intervalSec`, gelernt aus den letzten Weckzeiten); danach bleibt der Server etwa `windowSec` Sekunden erreichbar. Clients sollten kurz nach `nextWake` abfragen statt ständig.
+
 ## Grenze unter iOS
 
 iOS hält die App im Hintergrund nur wach, solange ein Bluetooth-Ereignis verarbeitet wird (Pumpe meldet sich etwa alle 5 min). Dazwischen ist die App pausiert und **der Server antwortet nicht**. Verlässlich funktioniert die API, solange die App im Vordergrund ist.

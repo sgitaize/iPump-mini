@@ -29,6 +29,8 @@ final class LocalAPIServer: @unchecked Sendable {
     private var retryDelay: TimeInterval = 1
 
     var onStateChange: ((String) -> Void)?
+    /// Seconds the app keeps the server reachable after a pump update while in the background.
+    static let awakeWindow = 25
     var onLog: ((String) -> Void)?
     /// Request diagnostics (path and client), throttled: one entry per path and client per 10 min.
     var onRequest: ((String) -> Void)?
@@ -223,8 +225,18 @@ final class LocalAPIServer: @unchecked Sendable {
         case "/pebble":
             let count = Int(query["count"] ?? "") ?? 1
             let mmol = (query["units"] ?? "").lowercased().hasPrefix("mmol")
-            send(connection, json: Nightscout.pebble(readings: readings, snapshot: snapshot, uploaderBattery: uploaderBattery,
-                                                     count: count, mmol: mmol))
+            var body = Nightscout.pebble(readings: readings, snapshot: snapshot, uploaderBattery: uploaderBattery,
+                                         count: count, mmol: mmol)
+            // Extension (ignored by other clients): when the app is awake in the background.
+            if let wake = shared.wakeSchedule() {
+                body["ompSync"] = [
+                    "lastWake": Int64(wake.last.timeIntervalSince1970 * 1000),
+                    "nextWake": Int64(wake.next.timeIntervalSince1970 * 1000),
+                    "intervalSec": Int(wake.interval),
+                    "windowSec": Self.awakeWindow,
+                ]
+            }
+            send(connection, json: body)
         case "/", "/api/v1":
             send(connection, json: ["name": "openMinipump", "readOnly": true, "endpoints": [
                 "/status.html", "/api/v1/entries.json?count=N", "/api/v1/entries/current.json", "/api/v1/devicestatus.json",

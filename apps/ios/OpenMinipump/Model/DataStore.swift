@@ -199,6 +199,31 @@ final class SharedData: @unchecked Sendable {
         lock.lock(); defer { lock.unlock() }
         return (_readings, _snapshot, _uploaderBattery)
     }
+
+    // MARK: Wake schedule for clients of the local API
+    // In the background the app (and its server) only runs for a short window after
+    // each pump update. Clients such as watch faces use this schedule to poll then.
+
+    private var _wakes: [Date] = []
+
+    func recordWake(_ date: Date = Date()) {
+        lock.lock(); defer { lock.unlock() }
+        if let last = _wakes.last, date.timeIntervalSince(last) < 60 { return }
+        _wakes.append(date)
+        if _wakes.count > 7 { _wakes.removeFirst(_wakes.count - 7) }
+    }
+
+    /// Last wake, the typical interval (median of recent gaps, 5 min by default) and the
+    /// next expected wake (always in the future).
+    func wakeSchedule(now: Date = Date()) -> (last: Date, interval: TimeInterval, next: Date)? {
+        lock.lock(); defer { lock.unlock() }
+        guard let last = _wakes.last else { return nil }
+        let gaps = zip(_wakes.dropFirst(), _wakes).map { $0.timeIntervalSince($1) }.filter { $0 >= 120 && $0 <= 900 }.sorted()
+        let interval = gaps.isEmpty ? 300 : gaps[gaps.count / 2]
+        var next = last.addingTimeInterval(interval)
+        while next < now { next.addTimeInterval(interval) }
+        return (last, interval, next)
+    }
 }
 
 /// In-memory log shown in the app (diagnostics for the first device tests).

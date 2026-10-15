@@ -64,7 +64,7 @@ final class AppModel: ObservableObject {
         apiKeepAlive = UIApplication.shared.beginBackgroundTask(withName: "LocalAPI") { [weak self] in
             self?.endAPIKeepAlive()
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 25) { [weak self] in self?.endAPIKeepAlive() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(LocalAPIServer.awakeWindow)) { [weak self] in self?.endAPIKeepAlive() }
     }
 
     private func endAPIKeepAlive() {
@@ -84,6 +84,7 @@ final class AppModel: ObservableObject {
         })
         let store = store
         store.onNewReading = { [weak self] in
+            store.shared.recordWake()
             self?.keepAPIAwake()
             uploader.newReading()
             if let latest = store.latest { AlarmEngine.shared.evaluate(latest) }
