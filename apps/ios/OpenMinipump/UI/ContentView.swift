@@ -772,7 +772,9 @@ struct SensorAlertBanner: View {
                 Image(systemName: "sensor.fill").foregroundStyle(.orange).font(.title3)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: L10n.tr("Sensor: %@", L10n.tr(AlarmEngine.sensorText(status)))).font(.headline)
-                    Text("Die Pumpe meldet ein Problem mit dem Sensor. Bitte an der Pumpe prüfen.")
+                    Text(status.sensorMessageState == 0x02
+                         ? L10n.tr("Der Sensor wird aktualisiert und liefert vorübergehend keine Werte. Bitte abwarten, die Pumpe meldet sich, wenn er wieder bereit ist.")
+                         : L10n.tr("Die Pumpe meldet ein Problem mit dem Sensor. Bitte an der Pumpe prüfen."))
                         .font(.subheadline).foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 0)

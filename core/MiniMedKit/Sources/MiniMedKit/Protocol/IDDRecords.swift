@@ -69,7 +69,7 @@ public struct PumpStatus: Equatable, Sendable, Codable {
         switch sensorMessageState {
         case 0x00: "Sensor ok"
         case 0x01: "Warten auf Kalibrierung"
-        case 0x02: "Nicht kalibrieren"
+        case 0x02: "Sensor wird aktualisiert"   // 780G with Simplera: no values for a while (shown as "sensor updating")
         case 0x03: "Kalibrierung erforderlich"
         case 0x04: "Kalibriert"
         case 0x05: "Sensorsignal wird gesucht"

@@ -202,8 +202,10 @@ final class AlarmEngine: ObservableObject {
         log?.add("Sensorstatus: \(text)")
         clear("sensor")
         guard !status.sensorOK, config.pump[.sensor] == true else { return }
+        let updating = status.sensorMessageState == 0x02
         fire(key: "sensor", title: L10n.tr("Sensor: %@", L10n.tr(text)),
-             body: L10n.tr("Die Pumpe meldet ein Problem mit dem Sensor. Bitte an der Pumpe prüfen."),
+             body: updating ? L10n.tr("Der Sensor wird aktualisiert und liefert vorübergehend keine Werte. Bitte abwarten, die Pumpe meldet sich, wenn er wieder bereit ist.")
+                            : L10n.tr("Die Pumpe meldet ein Problem mit dem Sensor. Bitte an der Pumpe prüfen."),
              urgent: false, ignoresMute: false, repeatMinutes: 0, now: now)
     }
 

@@ -1057,6 +1057,17 @@
         }
       }
     },
+    "Der Sensor wird aktualisiert und liefert vorübergehend keine Werte. Bitte abwarten, die Pumpe meldet sich, wenn er wieder bereit ist." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The sensor is updating and temporarily provides no values. Please wait – the pump will tell you when it is ready again."
+          }
+        }
+      }
+    },
     "Deutsch" : {
       "localizations" : {
         "en" : {
@@ -1168,6 +1179,7 @@
       }
     },
     "Die Pumpe meldet ein Problem mit dem Sensor. Bitte an der Pumpe prüfen." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2690,17 +2702,6 @@
         }
       }
     },
-    "Nicht kalibrieren" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Do not calibrate"
-          }
-        }
-      }
-    },
     "Niedrig" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3330,6 +3331,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Change sensor"
+          }
+        }
+      }
+    },
+    "Sensor wird aktualisiert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor updating"
           }
         }
       }
