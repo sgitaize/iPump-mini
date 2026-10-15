@@ -718,6 +718,16 @@
         }
       }
     },
+    "aus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "off"
+          }
+        }
+      }
+    },
     "Aussehen" : {
       "localizations" : {
         "en" : {
@@ -1153,6 +1163,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The pump is authoritative"
+          }
+        }
+      }
+    },
+    "Die Pumpe meldet ein Problem mit dem Sensor. Bitte an der Pumpe prüfen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The pump reports a sensor problem. Please check the pump."
           }
         }
       }
@@ -2076,6 +2096,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Set change reminder"
+          }
+        }
+      }
+    },
+    "Kein Sensor aktiv" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No active sensor"
           }
         }
       }
@@ -3309,6 +3340,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choose sensor"
+          }
+        }
+      }
+    },
+    "Sensor: %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sensor: %@"
           }
         }
       }

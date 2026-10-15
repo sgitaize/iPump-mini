@@ -173,6 +173,8 @@ final class AlarmEngine: ObservableObject {
     // MARK: Pump
 
     func pumpAlarm(id: UInt16, type: UInt16, status: UInt8, date: Date, now: Date = Date()) {
+        log?.add(String(format: "Alarm-Eintrag der Pumpe: id %d, Typ 0x%04X, Status 0x%02X, %@", Int(id), Int(type), Int(status),
+                        date.formatted(date: .omitted, time: .shortened)))
         guard status == 0x33, now.timeIntervalSince(date) < 30 * 60, !seenPumpAlarms.contains(id) else { return }
         seenPumpAlarms.append(id)
         if seenPumpAlarms.count > 200 { seenPumpAlarms.removeFirst(seenPumpAlarms.count - 200) }
@@ -183,6 +185,33 @@ final class AlarmEngine: ObservableObject {
         fire(key: "pump.\(id)", title: L10n.tr("Pumpe: %@", L10n.tr(info.title)),
              body: L10n.tr("Meldung der Pumpe um %@. Bitte an der Pumpe prüfen.", date.formatted(date: .omitted, time: .shortened)),
              urgent: info.urgent, ignoresMute: info.urgent, repeatMinutes: 0, now: now)
+    }
+
+    // MARK: Sensor
+
+    /// Sensor state from the pump status (read every update). One notification whenever it
+    /// changes into a problem state (e.g. "change sensor", "no signal"); cleared when ok.
+    /// Uses the pump alert category "Sensor".
+    func sensorStatus(_ status: PumpStatus, now: Date = Date()) {
+        guard !DemoMode.isOn else { return }
+        let state = Int(status.sensorMessageState) | (status.sensorSignalLost ? 0x100 : 0) | (status.sensorOn ? 0 : 0x200)
+        let previous = UserDefaults.standard.object(forKey: "alarmSensorState") as? Int
+        guard state != previous else { return }
+        UserDefaults.standard.set(state, forKey: "alarmSensorState")
+        let text = Self.sensorText(status)
+        log?.add("Sensorstatus: \(text)")
+        clear("sensor")
+        guard !status.sensorOK, config.pump[.sensor] == true else { return }
+        fire(key: "sensor", title: L10n.tr("Sensor: %@", L10n.tr(text)),
+             body: L10n.tr("Die Pumpe meldet ein Problem mit dem Sensor. Bitte an der Pumpe prüfen."),
+             urgent: false, ignoresMute: false, repeatMinutes: 0, now: now)
+    }
+
+    /// German source text of the sensor state (localised with L10n.tr).
+    static func sensorText(_ status: PumpStatus) -> String {
+        if !status.sensorOn { return "Kein Sensor aktiv" }
+        if status.sensorSignalLost { return "Sensorsignal verloren" }
+        return status.sensorMessage
     }
 
     // MARK: Snooze

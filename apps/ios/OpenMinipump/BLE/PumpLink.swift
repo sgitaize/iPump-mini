@@ -827,6 +827,7 @@ final class PumpLink: NSObject, ObservableObject {
         case PumpUUID.iddStatus.uppercased():
             if let s = try? PumpStatus(plain) {
                 store.update { $0.status = s }
+                AlarmEngine.shared.sensorStatus(s)
                 onData()
             } else { log.add("IDD-Status nicht lesbar: \(plain.hex)", .warning) }
             finish { if case .read = $0 { true } else { false } }

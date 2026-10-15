@@ -60,6 +60,7 @@ struct ContentView: View {
                     } else if !Self.screenshotMode {
                         StatusBanner(showPairing: $showPairing)
                     }
+                    SensorAlertBanner()
                     MuteBanner()
                     SensorTypeCard()
                     GlucoseHeader()
@@ -758,5 +759,26 @@ struct DemoBanner: View {
         }
         .padding()
         .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+    }
+}
+
+/// Prominent hint when the pump reports a sensor problem (e.g. "change sensor").
+struct SensorAlertBanner: View {
+    @EnvironmentObject private var store: DataStore
+
+    var body: some View {
+        if let status = store.snapshot.status, !status.sensorOK, !DemoMode.isOn {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "sensor.fill").foregroundStyle(.orange).font(.title3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: L10n.tr("Sensor: %@", L10n.tr(AlarmEngine.sensorText(status)))).font(.headline)
+                    Text("Die Pumpe meldet ein Problem mit dem Sensor. Bitte an der Pumpe prüfen.")
+                        .font(.subheadline).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding()
+            .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+        }
     }
 }

@@ -33,8 +33,12 @@ def unescape(s):
     return s.encode().decode("unicode_escape").encode("latin-1").decode("utf-8") if "\\" in s else s
 
 
+# Texts passed to L10n.tr through variables (not found by the scan).
+EXTRA_KEYS = {"Kein Sensor aktiv"}
+
+
 def code_keys():
-    keys = set()
+    keys = set(EXTRA_KEYS)
     tr = re.compile(r'L10n\.tr\(\s*"((?:[^"\\]|\\.)*)"')
     for folder in ["OpenMinipump", "Shared", "Widgets"]:
         for f in (ROOT / folder).rglob("*.swift"):
