@@ -3,3 +3,8 @@
 DEVELOPMENT_TEAM = ABCDE12345
 // A free personal team needs a bundle id that is unique to you:
 // OMP_BUNDLE_ID = de.example.openminipump
+// Paid team: time-sensitive notifications in addition to the App Group:
+// OMP_APP_ENTITLEMENTS = OpenMinipump/OpenMinipump-paid.entitlements
+// Team without App Groups: switch the entitlements off (widgets fall back to the local API):
+// OMP_APP_ENTITLEMENTS =
+// OMP_WIDGET_ENTITLEMENTS =

@@ -1,65 +1,65 @@
-// Renders the app icon (1024×1024 PNG). Usage: swift Scripts/render-icon.swift <out.png>
-// Design: white drop on a teal→blue gradient, inside a CGM trace ending in a dot (current value).
+// Renders the app icon (1024×1024 PNG, opaque). Usage: swift Scripts/render-icon.swift <out.png>
+// Design "iPump-mini" (variant A, docs/design/ipump-mini.md): a small petrol device whose
+// screen shows a CGM trace ending in the current value.
 import AppKit
 import CoreGraphics
 
 let size: CGFloat = 1024
 let out = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "AppIcon.png"
 let cs = CGColorSpace(name: CGColorSpace.sRGB)!
+// No alpha channel: iOS icons must be opaque (iOS masks the corners itself).
 let ctx = CGContext(data: nil, width: Int(size), height: Int(size), bitsPerComponent: 8, bytesPerRow: 0,
-                    space: cs, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+                    space: cs, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
 
 func color(_ hex: UInt32, _ a: CGFloat = 1) -> CGColor {
     CGColor(srgbRed: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
             blue: CGFloat(hex & 0xFF) / 255, alpha: a)
 }
 
-// Background gradient (iOS masks the corners itself).
-let bg = CGGradient(colorsSpace: cs, colors: [color(0x14B8A6), color(0x2563EB)] as CFArray, locations: [0, 1])!
-ctx.drawLinearGradient(bg, start: CGPoint(x: 0, y: size), end: CGPoint(x: size, y: 0), options: [])
+ctx.setFillColor(color(0xF4F6F8))
+ctx.fill(CGRect(x: 0, y: 0, width: size, height: size))
 
-// Drop: circle bottom, pointed top (CoreGraphics y axis points up).
-let cx = size / 2, cy: CGFloat = 430, r: CGFloat = 285
-let tip = CGPoint(x: cx, y: 905)
-let drop = CGMutablePath()
-// Tangent point: CP ⟂ PT, so the angle between CT (straight up) and CP is acos(r / |CT|).
-let start = CGFloat.pi / 2 - acos(r / (tip.y - cy))
-drop.move(to: tip)
-drop.addLine(to: CGPoint(x: cx + r * cos(start), y: cy + r * sin(start)))
-drop.addArc(center: CGPoint(x: cx, y: cy), radius: r, startAngle: start, endAngle: .pi - start, clockwise: true)
-drop.closeSubpath()
-ctx.setShadow(offset: CGSize(width: 0, height: -14), blur: 40, color: color(0x0F172A, 0.28))
-ctx.addPath(drop)
-ctx.setFillColor(color(0xFFFFFF))
+// Device body.
+let body = CGRect(x: 232, y: 232, width: 560, height: 560)
+ctx.setShadow(offset: CGSize(width: 0, height: -10), blur: 30, color: color(0x0F172A, 0.18))
+ctx.addPath(CGPath(roundedRect: body, cornerWidth: 150, cornerHeight: 150, transform: nil))
+ctx.setFillColor(color(0x0F766E))
 ctx.fillPath()
 ctx.setShadow(offset: .zero, blur: 0, color: nil)
 
-// CGM trace inside the drop.
-let pts: [CGPoint] = [(-190, -40), (-120, -10), (-60, -70), (0, -30), (60, 40), (120, 20), (175, 95)]
-    .map { CGPoint(x: cx + $0.0, y: cy + $0.1) }
+// Screen.
+let screen = body.insetBy(dx: 80, dy: 120).offsetBy(dx: 0, dy: 40)
+ctx.addPath(CGPath(roundedRect: screen, cornerWidth: 60, cornerHeight: 60, transform: nil))
+ctx.setFillColor(color(0xFFFFFF))
+ctx.fillPath()
+
+// CGM trace on the screen.
+let pts = [(-150, -10), (-90, 25), (-30, -25), (30, 5), (90, 55), (140, 40)].map {
+    CGPoint(x: screen.midX + CGFloat($0.0), y: screen.midY + CGFloat($0.1))
+}
 let line = CGMutablePath()
 line.move(to: pts[0])
 for i in 1..<pts.count {
     let p0 = pts[i - 1], p1 = pts[i]
-    let mid = CGPoint(x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2)
-    line.addQuadCurve(to: mid, control: p0)
+    line.addQuadCurve(to: CGPoint(x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2), control: p0)
     if i == pts.count - 1 { line.addLine(to: p1) }
 }
 ctx.addPath(line)
-ctx.setLineWidth(34)
+ctx.setLineWidth(26)
 ctx.setLineCap(.round)
 ctx.setLineJoin(.round)
 ctx.setStrokeColor(color(0x0F766E))
 ctx.strokePath()
 
-// Current value dot with halo.
+// Current value.
 let last = pts.last!
-ctx.setFillColor(color(0x2563EB, 0.22))
-ctx.fillEllipse(in: CGRect(x: last.x - 52, y: last.y - 52, width: 104, height: 104))
 ctx.setFillColor(color(0x2563EB))
-ctx.fillEllipse(in: CGRect(x: last.x - 30, y: last.y - 30, width: 60, height: 60))
+ctx.fillEllipse(in: CGRect(x: last.x - 26, y: last.y - 26, width: 52, height: 52))
 
-let image = ctx.makeImage()!
-let rep = NSBitmapImageRep(cgImage: image)
+// Button under the screen.
+ctx.setFillColor(color(0xFFFFFF, 0.85))
+ctx.fillEllipse(in: CGRect(x: body.midX - 34, y: body.minY + 52, width: 68, height: 68))
+
+let rep = NSBitmapImageRep(cgImage: ctx.makeImage()!)
 try! rep.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: out))
 print("wrote \(out)")

@@ -10,15 +10,18 @@ struct ContentView: View {
     @State private var showSettings = false
     /// Selected insulin time block; tapping anywhere else clears it.
     @State private var insulinSelection: Date?
+    /// Selected sensor value (its timestamp).
+    @State private var glucoseSelection: Date?
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
                     StatusBanner(showPairing: $showPairing)
+                    MuteBanner()
                     SensorTypeCard()
                     GlucoseHeader()
-                    GlucoseChart(insulinSelection: $insulinSelection)
+                    GlucoseChart(insulinSelection: $insulinSelection, glucoseSelection: $glucoseSelection)
                     ValueGrid()
                     Text("Nur zur Information. Keine Therapieentscheidungen auf Basis dieser App treffen – maßgeblich ist die Anzeige der Pumpe. Kein Medizinprodukt, nicht mit Medtronic verbunden.")
                         .font(.footnote)
@@ -29,10 +32,20 @@ struct ContentView: View {
                 }
                 .padding()
                 .contentShape(Rectangle())
-                .onTapGesture { insulinSelection = nil }
+                .onTapGesture {
+                    insulinSelection = nil
+                    glucoseSelection = nil
+                }
             }
             .refreshable { link.refreshNow() }
-            .navigationTitle("openMinipump")
+            #if DEBUG
+            .onAppear {
+                if ProcessInfo.processInfo.arguments.contains("-selectPoint") {
+                    glucoseSelection = store.readings.dropLast(30).last?.date
+                }
+            }
+            #endif
+            .navigationTitle("iPump-mini")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: { Image(systemName: "gearshape") }
@@ -172,6 +185,7 @@ struct GlucoseChart: View {
     @EnvironmentObject private var store: DataStore
     @AppStorage("chartHours") private var hours = 3
     @Binding var insulinSelection: Date?
+    @Binding var glucoseSelection: Date?
 
     /// Height of the insulin band below the glucose values, in chart units (mg/dL scale).
     private static let band: Double = 36
@@ -237,6 +251,11 @@ struct GlucoseChart: View {
             RuleMark(y: .value("", Self.bandTop))
                 .foregroundStyle(.secondary.opacity(0.3))
                 .lineStyle(StrokeStyle(lineWidth: 0.5))
+            if let g = glucoseSelection {
+                RuleMark(x: .value("Zeit", g))
+                    .foregroundStyle(.secondary.opacity(0.5))
+                    .lineStyle(StrokeStyle(lineWidth: 1))
+            }
             if let selected {
                 RectangleMark(xStart: .value("Von", selected.start), xEnd: .value("Bis", selected.end),
                               yStart: .value("", 0), yEnd: .value("", Self.bandTop))
@@ -249,7 +268,7 @@ struct GlucoseChart: View {
             }
             ForEach(points, id: \.date) { r in
                 PointMark(x: .value("Zeit", r.date), y: .value("mg/dL", r.mgdl))
-                    .symbolSize(hours > 6 ? 10 : 24)
+                    .symbolSize(r.date == glucoseSelection ? 90 : hours > 6 ? 10 : 24)
                     .foregroundStyle(r.mgdl < 70 ? .red : r.mgdl > 180 ? .orange : .primary)
             }
             ForEach(events.filter { $0.kind == .suspend || $0.kind == .resume }) { t in
@@ -288,6 +307,16 @@ struct GlucoseChart: View {
             AxisMarks(position: .trailing, values: Array(stride(from: 50, through: yMax, by: 50)))
         }
         .chartXScale(domain: from...Date())
+        .chartXAxis {
+            AxisMarks(values: .stride(by: .hour, count: hours <= 6 ? 1 : hours <= 12 ? 2 : 4)) { value in
+                AxisGridLine()
+                AxisValueLabel {
+                    if let d = value.as(Date.self) {
+                        Text(d.formatted(.dateTime.hour(.twoDigits(amPM: .omitted)).minute(.twoDigits))).fixedSize()
+                    }
+                }
+            }
+        }
         .chartPlotStyle { $0.clipped() }
         .chartOverlay { proxy in
             GeometryReader { geo in
@@ -297,15 +326,23 @@ struct GlucoseChart: View {
                         let origin = geo[frame].origin
                         guard let date: Date = proxy.value(atX: location.x - origin.x),
                               let y: Double = proxy.value(atY: location.y - origin.y) else { return }
-                        // Taps in the insulin band select a block; anywhere else clears it.
+                        // Taps in the insulin band select a block, taps above select the
+                        // nearest sensor value; anywhere else clears the selection.
                         if y <= Self.bandTop, segments.contains(where: { block(for: $0.start).start == block(for: date).start }) {
+                            glucoseSelection = nil
                             if let current = insulinSelection, block(for: current).start == block(for: date).start {
                                 insulinSelection = nil
                             } else {
                                 insulinSelection = date
                             }
+                        } else if y > Self.bandTop,
+                                  let nearest = points.min(by: { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }),
+                                  abs(nearest.date.timeIntervalSince(date)) < Double(hours) * 90 {
+                            insulinSelection = nil
+                            glucoseSelection = glucoseSelection == nearest.date ? nil : nearest.date
                         } else {
                             insulinSelection = nil
+                            glucoseSelection = nil
                         }
                     }
             }
@@ -314,13 +351,22 @@ struct GlucoseChart: View {
         .overlay {
             if points.isEmpty { Text("Keine Werte in diesem Zeitraum").font(.caption).foregroundStyle(.secondary) }
         }
-        if let selected {
+        if let g = glucoseSelection, let r = store.readings.first(where: { $0.date == g }) {
+            GlucosePointDetail(reading: r, iob: store.iob(at: r.date),
+                               insulin: store.treatments.filter {
+                                   [.autoBasal, .autoCorrection, .bolus].contains($0.kind)
+                                       && $0.date > r.date.addingTimeInterval(-300) && $0.date <= r.date
+                               },
+                               carbs: store.treatments.filter {
+                                   $0.kind == .carbs && $0.date > r.date.addingTimeInterval(-300) && $0.date <= r.date
+                               })
+        } else if let selected {
             InsulinBlockDetail(start: selected.start, end: selected.end,
                                items: store.treatments.filter {
                                    [.autoBasal, .autoCorrection, .bolus].contains($0.kind) && $0.date >= selected.start && $0.date < selected.end
                                })
         } else if !segments.isEmpty {
-            Text("Insulin-Balken unten antippen für Details").font(.caption2).foregroundStyle(.secondary)
+            Text("Wert oder Insulin-Balken antippen für Details").font(.caption2).foregroundStyle(.secondary)
         }
         ChartLegend()
     }
@@ -506,5 +552,81 @@ struct SensorTypeCard: View {
             .padding()
             .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
         }
+    }
+}
+
+/// Shows a global alarm mute with a way to lift it.
+struct MuteBanner: View {
+    @ObservedObject private var engine = AlarmEngine.shared
+
+    var body: some View {
+        if let until = engine.mutedUntil, until > Date() {
+            HStack {
+                Image(systemName: "bell.slash")
+                Text("Alarme stumm bis \(until.formatted(date: .omitted, time: .shortened))")
+                Spacer()
+                Button("Aufheben") { engine.muteAll(minutes: nil) }
+            }
+            .font(.subheadline)
+            .padding(12)
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        }
+    }
+}
+
+/// Details of one sensor value: time, value, trend, IOB at that time and what was
+/// delivered in its 5-minute window.
+struct GlucosePointDetail: View {
+    let reading: GlucoseReading
+    let iob: Double?
+    let insulin: [Treatment]
+    let carbs: [Treatment]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(reading.date.formatted(date: .omitted, time: .shortened)).font(.subheadline.weight(.semibold))
+                Spacer()
+                Text("\(reading.mgdl) mg/dL").font(.title3.weight(.semibold)).monospacedDigit()
+                Text(TrendArrow.text(reading.trendMgdlPerMin))
+            }
+            HStack(spacing: 14) {
+                Label(String(format: "%.1f mmol/L", Double(reading.mgdl) / 18), systemImage: "drop")
+                if let rate = reading.trendMgdlPerMin {
+                    Label(String(format: "%+.1f/min", rate), systemImage: "arrow.up.right")
+                }
+                Label(iob.map { String(format: "IOB %.2f IE", $0) } ?? "IOB –", systemImage: "syringe")
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            let total = insulin.reduce(0) { $0 + ($1.value ?? 0) }
+            if insulin.isEmpty && carbs.isEmpty {
+                Text("In diesen 5 Minuten keine Abgabe").font(.caption).foregroundStyle(.secondary)
+            } else {
+                ForEach(insulin.sorted { $0.date < $1.date }) { t in
+                    HStack {
+                        Text(t.date.formatted(date: .omitted, time: .shortened)).monospacedDigit()
+                        Text(t.kind == .bolus ? "Bolus" : t.kind == .autoCorrection ? "Autokorrektur" : "Auto-Basal").foregroundStyle(.secondary)
+                        Spacer()
+                        Text(String(format: "%.3f IE", t.value ?? 0)).monospacedDigit()
+                    }
+                    .font(.caption)
+                }
+                ForEach(carbs) { t in
+                    HStack {
+                        Text(t.date.formatted(date: .omitted, time: .shortened)).monospacedDigit()
+                        Text("Kohlenhydrate").foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(Int(t.value ?? 0)) g").monospacedDigit()
+                    }
+                    .font(.caption)
+                }
+                if insulin.count > 1 {
+                    Text(String(format: "Summe %.3f IE", total)).font(.caption.weight(.semibold))
+                }
+            }
+        }
+        .padding(10)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
     }
 }

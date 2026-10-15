@@ -61,15 +61,18 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - [ ] AppDelegate als `UNUserNotificationCenterDelegate`: Vordergrund-Anzeige (Banner + Ton), Snooze-Aktionen → `AlarmEngine.shared.snooze(key:minutes:)` (Key in userInfo „alarmKey“)
 - [ ] Einstellungen: Bereich „Alarme“ (Preset-Auswahl, je Alarm Ein/Aus, Schwelle mit mmol-Anzeige, Snooze, Wiederholung; Pumpenkategorien; Test-Alarm; Hinweis kritische Alarme)
 - [ ] Hauptansicht: Hinweis „Alarme stumm bis …“ + Aufheben
-- [ ] Kritische Alarme: Entitlement `com.apple.developer.usernotifications.critical-alerts` bei Apple beantragen (bezahlter Account nötig); bis dahin zeitkritisch (Entitlement ist bereits aktiv und funktioniert mit dem persönlichen Team)
-- [ ] Widgets (Extension-Gerüst + App Group `group.<bundle id>` sind auf main und signieren mit dem persönlichen Team):
+- [ ] Kritische Alarme: Entitlement `com.apple.developer.usernotifications.critical-alerts` bei Apple beantragen (bezahlter Account nötig); bis dahin zeitkritisch
+- [ ] **Simon: in Xcode › Target › Signing & Capabilities prüfen, ob das persönliche Team „App Groups“ und „Time Sensitive Notifications“ anbietet.** Korrektur 15.10.: Die frühere Aussage „funktioniert mit dem persönlichen Team“ war falsch. XcodeGen hatte die Entitlements-Dateien leer überschrieben, deshalb lief der Build nur ohne diese Berechtigungen. Die Berechtigungen sind jetzt per `OMP_APP_ENTITLEMENTS` / `OMP_WIDGET_ENTITLEMENTS` (Base.xcconfig) schaltbar und in Simons Local.xcconfig vorerst aus.
+- [x] Alarme verdrahtet (Branch `feature/alarms-widgets`): Auswertung je Wert, Pumpenalarme aus der History, sofortiger History-Abruf bei Alarm-Bit, Snooze-Aktionen, Einstellungsseite, Stumm-Banner. Im Simulator ausgelöst („Dringend niedrig 52 mg/dL“). **Bewusst noch nicht aufs iPhone gespielt** (soll Simon nachts nicht wecken), morgen gemeinsam testen.
+- [x] Widgets + Live Activity gebaut (Branch `feature/alarms-widgets`): klein, mittel, groß mit Graph, Sperrbildschirm (rund, rechteckig, Zeile), Dynamic Island (kompakt Wert+Pfeil / Delta, erweitert, minimal). Live Activity startet im Simulator. Daten: App-Group-Datei, Fallback über lokalen Server (ohne App Group).
+- Ursprüngliche Widget-Planung:
   - Shared-Modell (letzte Werte, Trend, Delta, IOB) als JSON in der App Group; App schreibt bei neuem Wert und ruft `WidgetCenter.reloadAllTimelines()`
   - klein: Wert + Trendpfeil + Alter; groß: zusätzlich Graph der letzten 3 h; optional Sperrbildschirm (accessory)
   - Live Activity / Dynamic Island: Wert + Trend + Delta seit letztem Wert (`NSSupportsLiveActivities`, Update aus der App bei jedem Wert; Start nur im Vordergrund möglich, Laufzeit max. 8 h → beim Öffnen neu starten)
 - [ ] Insulin-Band im Glukose-Graph (gleiche Zeitachse, Antippen für Details): von Simon auf dem Gerät bestätigen lassen
 
 ## Ideen (Simon 15.10.)
-- [ ] Im CGM-Graph auf einen 5-Minuten-Wert tippen: Uhrzeit, genauer SG-Wert, aktives Insulin (IOB) zu diesem Zeitpunkt und das in diesem 5-Minuten-Fenster abgegebene Insulin anzeigen (IOB-Verlauf müsste dafür gespeichert werden, bisher nur aktueller Wert)
+- [x] Im CGM-Graph auf einen 5-Minuten-Wert tippen: Uhrzeit, SG-Wert (mg/dL + mmol/L), Trend, IOB zu diesem Zeitpunkt, Insulin und KH im 5-Minuten-Fenster (Branch `feature/alarms-widgets`; der IOB-Verlauf wird ab dieser Version gespeichert)
 
 ## Phase 6 – Veröffentlichung (nächste Schritte, Simon 15.10.)
 - [ ] **Umbenennen in „iPump-mini“** (Anzeigename, Bundle-ID/Repo-Name prüfen), App-Icon und Designsprache passend dazu entwickeln
@@ -80,6 +83,24 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
   - vorher: rechtliche Prüfung (Interoperabilität §69e UrhG, Markenhinweise, Haftungsausschluss), Umgang mit der Kompatibilitäts-Kennung `compatSoftwareRevision`
   - Schlüsseldatenbank bleibt draußen; Anleitung, wie man sie sich selbst beschafft (OpenMinimed-Doku)
 - [ ] AltStore-Veröffentlichung vorbereiten: Source-JSON (apps.json), signierte IPA als GitHub-Release-Asset, GitHub-Actions-Pipeline (Build → IPA → Release → Source aktualisieren)
+
+## Nachtarbeit 15.10.2026 (01:08–01:30, Simon schläft, Freigabe „selbstständig nach Plan“)
+- 01:08 Neukopplung durch Simon nach dem Verbindungsfehler: läuft, Werte alle 5 min im Hintergrund, Nightscout-Upload ok (main-Build auf dem iPhone).
+- Branch **`feature/alarms-widgets`** (gepusht, **nicht auf dem iPhone**, nicht nach main gemergt):
+  - Alarme komplett verdrahtet + Einstellungsseite, im Simulator ausgelöst
+  - Widgets (klein/mittel/groß/Sperrbildschirm) + Live Activity/Dynamic Island, Live Activity startet im Simulator
+  - Tippen auf Sensorwert → Details mit IOB-Verlauf und Abgaben im 5-min-Fenster
+  - Import der Schlüsseldatenbank in der App (für spätere öffentliche Builds)
+  - README + Build-Anleitung, AltStore-Vorbereitung (`docs/release-altstore.md`, `altstore/source.json`, manuelle Draft-Pipeline)
+- Designvorschlag iPump-mini: `docs/design/ipump-mini.md`, `docs/design/icon-proposals.png` (Empfehlung Variante A)
+- Website: Entwurf der openMinipump-Karte (oben auf /dev/) im VPS-Projekt `simongutjahr-website/drafts/`, **nicht deployt**
+- **Für Simon am Morgen:**
+  1. In Xcode mit angemeldetem Account Signing & Capabilities prüfen (App Groups, Time Sensitive). Falls verfügbar, in `Local.xcconfig` die zwei leeren `OMP_*_ENTITLEMENTS`-Zeilen entfernen.
+  2. Branch `feature/alarms-widgets` gemeinsam aufs iPhone spielen und testen (Alarme, Widgets, Dynamic Island), dann nach main mergen.
+  3. Icon-Variante und Namen entscheiden.
+  4. Freigabe für die Website-Karte und den Zeitpunkt „Repo öffentlich“.
+- **Morgen 15.10. erledigt:** Simon hat geprüft: das kostenlose Team bietet App Groups (App und Widget), aber **keine** zeitkritischen Mitteilungen. Standard-Entitlements jetzt nur App Group, `OpenMinipump-paid.entitlements` mit Time Sensitive für bezahlte Teams. Alarme kommen beim kostenlosen Team als normale Mitteilungen (Hinweis in den Alarm-Einstellungen). Icon Variante A umgesetzt, Anzeigename „iPump-mini“ (Bundle-ID unverändert).
+  - Offen: neues Profil mit App Group braucht einmal **Run in Xcode** (Kommandozeile hat keinen Account), danach Test von Alarmen, Widgets, Dynamic Island auf dem iPhone, dann Merge nach main.
 
 ## Stand am Ende der Sitzung (15.10.2026, ~00:50)
 - main (`bb71a98`) ist auf Simons iPhone installiert und läuft: Werte, Historie, Behandlungen, Nightscout, API, antippbarer Insulin-Graph.

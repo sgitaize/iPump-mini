@@ -11,6 +11,8 @@ final class DataStore: ObservableObject {
     @Published private(set) var snapshot = PumpSnapshot()
     @Published private(set) var lastDataAt: Date?
     @Published private(set) var treatments: [Treatment] = []
+    /// Insulin on board over time (one sample per pump refresh), for the chart details.
+    @Published private(set) var iobHistory: [IOBSample] = []
 
     /// Thread-safe view for the API server (runs on its own queue).
     let shared = SharedData()
@@ -30,6 +32,7 @@ final class DataStore: ObservableObject {
         var snapshot: PumpSnapshot
         var lastDataAt: Date?
         var treatments: [Treatment]?
+        var iobHistory: [IOBSample]?
     }
 
     init() {
@@ -40,11 +43,18 @@ final class DataStore: ObservableObject {
             snapshot = p.snapshot
             lastDataAt = p.lastDataAt
             treatments = p.treatments ?? []
+            iobHistory = p.iobHistory ?? []
         }
         publish()
     }
 
     var latest: GlucoseReading? { readings.last }
+
+    /// IOB sample closest to `date` (within 5 min).
+    func iob(at date: Date) -> Double? {
+        iobHistory.min { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }
+            .flatMap { abs($0.date.timeIntervalSince(date)) <= 300 ? $0.units : nil }
+    }
 
     #if DEBUG
     /// Synthetic values for simulator tests (launch argument -demoData). Never in release builds.
@@ -71,6 +81,7 @@ final class DataStore: ObservableObject {
             Treatment(id: UInt32(10 + i), date: now.addingTimeInterval(-Double(i) * 300), kind: .autoBasal,
                       value: [0.05, 0.1, 0.0, 0.15, 0.05][i % 5])
         }.filter { ($0.value ?? 0) > 0 }
+        iobHistory = (0..<72).map { i in IOBSample(date: now.addingTimeInterval(-Double(71 - i) * 300), units: max(0, 3.2 - Double(i) * 0.03)) }
         touched()
     }
     #endif
@@ -132,7 +143,13 @@ final class DataStore: ObservableObject {
     }
 
     func update(_ change: (inout PumpSnapshot) -> Void) {
+        let oldIOB = snapshot.iob
         change(&snapshot)
+        if let iob = snapshot.iob, iob != oldIOB || iobHistory.last.map({ Date().timeIntervalSince($0.date) > 240 }) ?? true {
+            iobHistory.append(IOBSample(date: Date(), units: iob.units))
+            let cutoff = Date().addingTimeInterval(-retention)
+            iobHistory.removeAll { $0.date < cutoff }
+        }
         snapshot.updatedAt = Date()
         touched()
     }
@@ -150,7 +167,8 @@ final class DataStore: ObservableObject {
     }
 
     private func save() {
-        let p = Persisted(readings: readings, snapshot: snapshot, lastDataAt: lastDataAt, treatments: treatments)
+        let p = Persisted(readings: readings, snapshot: snapshot, lastDataAt: lastDataAt, treatments: treatments,
+                          iobHistory: iobHistory)
         if let data = try? JSONEncoder().encode(p) {
             try? data.write(to: fileURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
         }
@@ -239,4 +257,9 @@ final class EventLog: ObservableObject {
         f.dateFormat = "HH:mm:ss.SSS"
         return entries.map { "\(f.string(from: $0.date)) [\($0.level)] \($0.text)" }.joined(separator: "\n")
     }
+}
+
+struct IOBSample: Codable, Equatable {
+    let date: Date
+    let units: Double
 }

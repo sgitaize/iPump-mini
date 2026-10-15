@@ -7,7 +7,6 @@ struct SettingsView: View {
     @EnvironmentObject private var link: PumpLink
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var uploader: NightscoutUploader
-    @State private var watchdog = Watchdog.enabled
     @AppStorage(SensorType.key) private var sensorType = ""
     @State private var testResult: String?
     @State private var testing = false
@@ -18,6 +17,8 @@ struct SettingsView: View {
     @AppStorage("settings.api") private var openAPI = false
     @AppStorage("settings.notify") private var openNotify = false
     @AppStorage("settings.info") private var openInfo = false
+    @AppStorage("settings.widgets") private var openWidgets = false
+    @State private var liveActivity = WidgetBridge.liveActivityEnabled
 
     var body: some View {
         NavigationStack {
@@ -28,6 +29,7 @@ struct SettingsView: View {
                     LabeledContent("Firmware", value: link.pumpFirmware ?? "–")
                     LabeledContent("Verbindung", value: link.phase.label)
                     LabeledContent("Entwicklermodus", value: model.config.devGuard.devMode ? "an (nur Testpumpe)" : "aus")
+                    NavigationLink("Schlüsseldatenbank") { KeyImportView() }
                 }
 
                 Section("Sensor", isExpanded: $openSensor) {
@@ -96,10 +98,16 @@ struct SettingsView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
 
-                Section("Benachrichtigungen", isExpanded: $openNotify) {
-                    Toggle("Erinnern, wenn keine Daten kommen", isOn: $watchdog)
-                        .onChange(of: watchdog) { _, on in Watchdog.enabled = on }
-                    Text("Kommen 20 Minuten lang keine Pumpendaten (z. B. weil die App weggewischt wurde), erscheint eine Mitteilung zum erneuten Öffnen.")
+                Section("Alarme", isExpanded: $openNotify) {
+                    NavigationLink("Alarme & Benachrichtigungen") { AlarmSettingsView() }
+                    Text("Glukose-Alarme (dringend niedrig, niedrig, hoch, schnelle Änderungen), Meldungen der Pumpe, „Keine Daten“, Stummschalten.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+
+                Section("Widgets", isExpanded: $openWidgets) {
+                    Toggle("Live-Aktivität (Dynamic Island)", isOn: $liveActivity)
+                        .onChange(of: liveActivity) { _, on in WidgetBridge.liveActivityEnabled = on }
+                    Text("Wert, Trend und Änderung auf dem Sperrbildschirm und in der Dynamic Island. iOS beendet Live-Aktivitäten nach spätestens 8 Stunden; beim nächsten Öffnen der App startet sie neu. Widgets fügst du wie gewohnt über den Home-Bildschirm hinzu.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
 

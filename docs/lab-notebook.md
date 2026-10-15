@@ -122,3 +122,10 @@ Folge: Unsere Allowlist ist eine echte Teilmenge dessen, was die offizielle App 
 - **Fix (53191ce):** Die App initiiert nie eine Verbindung zur Pumpe. Sie hängt sich nur nach dem SAKE-Handshake an die Verbindung der Pumpe (`retrievePeripherals` + `connect` auf den bestehenden Link). Einmaliges Aufräumen: hängende Anfrage abbrechen, Dienste neu registrieren.
 - **Folge:** Die Kopplung war danach weg. Simon fand die Pumpe nicht mehr in den iOS-Bluetooth-Geräten. Vermutlich hat iOS oder die Pumpe den Bond nach den unverschlüsselten Versuchen verworfen.
 - **Lösung:** Simon hat um 01:07 neu gekoppelt. Um 01:08 Handshake, Werte, History und Nightscout laufen wieder. Lehre: Niemals vom iPhone aus eine Verbindung zur Pumpe initiieren.
+
+## 2026-10-15 – Entitlements und Widgets (Korrektur)
+
+- Die Aussage, dass App Group und zeitkritische Mitteilungen mit dem kostenlosen Team funktionieren, war **falsch**. XcodeGen schreibt bei `entitlements: path:` ohne `properties` eine leere Datei. Der Build war deshalb ohne diese Berechtigungen erfolgreich.
+- Mit korrekt gesetzten Berechtigungen meldet `xcodebuild` „No Accounts“ und „Profile doesn't include the App Groups capability“. Ein neues Profil gibt es nur über Xcode mit angemeldetem Account. Offen: Kann das persönliche Team App Groups überhaupt?
+- **Lösung bis dahin:** Die Berechtigungen sind über die xcconfig schaltbar. Widgets lesen ohne App Group vom lokalen Server der App. Die Live Activity braucht keine App Group, die App aktualisiert sie direkt per ActivityKit.
+- Simulator: Live Activity startet („Live-Aktivität gestartet“); die Dynamic Island wird breiter, ihr Inhalt erscheint im Simulator-Screenshot aber nicht.

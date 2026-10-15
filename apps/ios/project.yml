@@ -18,8 +18,6 @@ targets:
     dependencies:
       - package: MiniMedKit
       - target: OpenMinipumpWidgets
-    entitlements:
-      path: OpenMinipump/OpenMinipump.entitlements
     configFiles:
       Debug: Config/Base.xcconfig
       Release: Config/Base.xcconfig
@@ -27,6 +25,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(OMP_BUNDLE_ID)
         PRODUCT_NAME: OpenMinipump
+        CODE_SIGN_ENTITLEMENTS: $(OMP_APP_ENTITLEMENTS)
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.0"
@@ -37,7 +36,7 @@ targets:
     info:
       path: OpenMinipump/Info.plist
       properties:
-        CFBundleDisplayName: openMinipump
+        CFBundleDisplayName: iPump-mini
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
@@ -46,8 +45,10 @@ targets:
         UIBackgroundModes: [bluetooth-central, bluetooth-peripheral]
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
-        NSBluetoothAlwaysUsageDescription: "openMinipump verbindet sich per Bluetooth mit deiner MiniMed-Pumpe und liest Werte aus (nur lesend)."
+        NSBluetoothAlwaysUsageDescription: "iPump-mini verbindet sich per Bluetooth mit deiner MiniMed-Pumpe und liest Werte aus (nur lesend)."
         NSLocalNetworkUsageDescription: "Optional: Die lokale API kann im WLAN freigegeben werden."
+        NSSupportsLiveActivities: true
+        OMPAppGroup: group.$(OMP_BUNDLE_ID)
     postCompileScripts:
       - name: Embed local config (.env, key database)
         script: "\"${SRCROOT}/Scripts/embed-local-config.sh\""
@@ -60,14 +61,13 @@ targets:
       - Shared
     dependencies:
       - package: MiniMedKit
-    entitlements:
-      path: Widgets/Widgets.entitlements
     configFiles:
       Debug: Config/Base.xcconfig
       Release: Config/Base.xcconfig
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(OMP_BUNDLE_ID).widgets
+        CODE_SIGN_ENTITLEMENTS: $(OMP_WIDGET_ENTITLEMENTS)
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
@@ -76,8 +76,11 @@ targets:
     info:
       path: Widgets/Info.plist
       properties:
-        CFBundleDisplayName: openMinipump
+        CFBundleDisplayName: iPump-mini
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        OMPAppGroup: group.$(OMP_BUNDLE_ID)
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension

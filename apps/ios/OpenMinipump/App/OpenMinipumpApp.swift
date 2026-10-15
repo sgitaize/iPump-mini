@@ -1,10 +1,37 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+import MiniMedKit
 import SwiftUI
 import UIKit
+import UserNotifications
 
-final class AppDelegate: NSObject, UIApplicationDelegate {
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        UNUserNotificationCenter.current().delegate = self
+        return true
+    }
+
     func applicationWillTerminate(_ application: UIApplication) {
         Watchdog.appTerminated()
+    }
+
+    /// Alarms also show (with sound) while the app is in the foreground.
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound, .list])
+    }
+
+    /// Snooze actions of an alarm notification.
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        let key = response.notification.request.content.userInfo["alarmKey"] as? String
+        let action = response.actionIdentifier
+        Task { @MainActor in
+            if let key, let snooze = AlarmEngine.snoozeActions.first(where: { $0.id == action }) {
+                AlarmEngine.shared.snooze(key: key, minutes: snooze.minutes)
+            }
+            completionHandler()
+        }
     }
 }
 
@@ -35,7 +62,15 @@ final class AppModel: ObservableObject {
         }, onHistory: { oldest in
             uploader.historyAdded(oldestReading: oldest)
         })
-        store.onNewReading = { uploader.newReading() }
+        let store = store
+        store.onNewReading = {
+            uploader.newReading()
+            if let latest = store.latest { AlarmEngine.shared.evaluate(latest) }
+            WidgetBridge.update(store: store)
+        }
+        AlarmEngine.shared.log = log
+        WidgetBridge.log = log
+        AlarmEngine.shared.registerCategories()
         api.onStateChange = { [weak self] text in
             Task { @MainActor in self?.apiState = text }
         }
@@ -44,10 +79,26 @@ final class AppModel: ObservableObject {
             Task { @MainActor in log.add(text, .warning) }
         }
         restartAPI()
-        Watchdog.requestAuthorization()
+        #if DEBUG
+        let isDemo = ProcessInfo.processInfo.arguments.contains("-demoData")
+        #else
+        let isDemo = false
+        #endif
+        // Simulator tests with demo data skip the permission dialog (it blocks the UI).
+        if !isDemo { AlarmEngine.shared.requestAuthorization() }
+        Watchdog.configure(enabled: AlarmEngine.shared.config.noDataEnabled, minutes: AlarmEngine.shared.config.noDataMinutes)
         link.migrateHistoryIfNeeded()
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-demoData") { store.loadDemoData() }
+        if ProcessInfo.processInfo.arguments.contains("-demoData") {
+            store.loadDemoData()
+            WidgetBridge.update(store: store)
+        }
+        if ProcessInfo.processInfo.arguments.contains("-demoAlarm") {
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(2))
+                AlarmEngine.shared.evaluate(GlucoseReading(date: Date(), mgdl: 52, trendMgdlPerMin: -2.5, sessionOffsetMinutes: nil))
+            }
+        }
         if let url = ProcessInfo.processInfo.environment["OMP_NS_URL"] {
             uploader.url = url
             uploader.secret = ProcessInfo.processInfo.environment["OMP_NS_SECRET"] ?? ""
@@ -81,6 +132,7 @@ struct OpenMinipumpApp: App {
             if phase == .active {
                 Watchdog.appOpened()
                 model.api.ensureRunning()
+                WidgetBridge.appBecameActive(store: model.store)
             }
         }
     }

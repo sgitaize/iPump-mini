@@ -174,7 +174,7 @@ final class LocalAPIServer: @unchecked Sendable {
                 return send(connection, status: "401 Unauthorized",
                             body: Data("Anmeldung erforderlich: Benutzername beliebig, Passwort = API-Secret.".utf8),
                             type: "text/plain; charset=utf-8",
-                            extraHeaders: ["WWW-Authenticate": "Basic realm=\"openMinipump\", charset=\"UTF-8\""])
+                            extraHeaders: ["WWW-Authenticate": "Basic realm=\"iPump-mini\", charset=\"UTF-8\""])
             }
             let (readings, snapshot, battery) = shared.get()
             return send(connection, status: "200 OK",

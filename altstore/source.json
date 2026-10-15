@@ -1,0 +1,28 @@
+{
+  "name": "openMinipump",
+  "identifier": "de.sgitaize.openminipump.source",
+  "subtitle": "MiniMed 780G lesen, ohne Cloud",
+  "website": "https://github.com/sgitaize/openMinipump",
+  "apps": [
+    {
+      "name": "openMinipump",
+      "bundleIdentifier": "de.sgitaize.openminipump",
+      "developerName": "Simon",
+      "subtitle": "Liest die MiniMed 780G per Bluetooth – nur lesend.",
+      "localizedDescription": "Open-Source-App, die eine MiniMed 780G ausschließlich lesend per Bluetooth ausliest: Sensorwert, Trend, aktives Insulin, Reservoir, SmartGuard-Status und Pumpenhistorie. Optionaler Nightscout-Upload und lokale Nightscout-kompatible API. Kein Medizinprodukt, nicht für Therapieentscheidungen, nicht mit Medtronic verbunden.",
+      "iconURL": "https://raw.githubusercontent.com/sgitaize/openMinipump/main/apps/ios/OpenMinipump/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+      "tintColor": "#14B8A6",
+      "category": "utilities",
+      "screenshots": [],
+      "versions": [],
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {
+          "NSBluetoothAlwaysUsageDescription": "openMinipump verbindet sich per Bluetooth mit deiner MiniMed-Pumpe und liest Werte aus (nur lesend).",
+          "NSLocalNetworkUsageDescription": "Optional: Die lokale API kann im WLAN freigegeben werden."
+        }
+      }
+    }
+  ],
+  "news": []
+}

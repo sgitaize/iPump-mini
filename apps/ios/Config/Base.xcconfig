@@ -1,4 +1,9 @@
 // Shared build settings. Personal values (signing team, bundle id) go into
 // Local.xcconfig next to this file. It is gitignored, see Local.xcconfig.example.
 OMP_BUNDLE_ID = de.sgitaize.openminipump
+// Capabilities. Default: App Group only (widgets), which a free personal team supports.
+// A paid team can add time-sensitive notifications with OpenMinipump-paid.entitlements.
+// Empty values switch them off completely; widgets then read from the app's local server.
+OMP_APP_ENTITLEMENTS = OpenMinipump/OpenMinipump.entitlements
+OMP_WIDGET_ENTITLEMENTS = Widgets/Widgets.entitlements
 #include? "Local.xcconfig"
