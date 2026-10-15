@@ -60,7 +60,7 @@ final class AppModel: ObservableObject {
 
     func keepAPIAwake() {
         guard UIApplication.shared.applicationState != .active, apiKeepAlive == .invalid else { return }
-        api.ensureRunning()
+        api.revive()
         apiKeepAlive = UIApplication.shared.beginBackgroundTask(withName: "LocalAPI") { [weak self] in
             self?.endAPIKeepAlive()
         }
@@ -159,7 +159,7 @@ struct OpenMinipumpApp: App {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 Watchdog.appOpened()
-                model.api.ensureRunning()
+                model.api.revive()
                 WidgetBridge.appBecameActive(store: model.store)
             }
         }

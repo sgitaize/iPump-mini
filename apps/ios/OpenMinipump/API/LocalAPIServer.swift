@@ -57,6 +57,13 @@ final class LocalAPIServer: @unchecked Sendable {
         }
     }
 
+    /// Forced restart after the app was suspended. iOS reclaims the listening socket
+    /// silently: the listener stays "ready" but no longer accepts connections (seen on the
+    /// device: connection refused, no failure state), so `isReady` cannot be trusted then.
+    func revive() {
+        queue.async { [self] in restart() }
+    }
+
     func stop() {
         queue.async { [self] in
             generation += 1
