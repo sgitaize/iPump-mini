@@ -1,5 +1,12 @@
 # Aufgabenliste
 
+## ▶ Aktueller Stand (15.10.2026, Nachmittag) – hier weitermachen
+- **App Store:** iPump-mini 1.0.0 (Build 2) ist **zur Prüfung eingereicht**. Texte/Bilder DE+EN, Datenschutz („keine Daten“), Altersfreigabe, Inhaltsrechte, „kein reguliertes Medizinprodukt“, Verfügbarkeit ohne Frankreich (Verschlüsselungsantwort). Bei Rückfragen von Apple: Antworten in `store-application.md` §7.
+- **Pebble läuft** mit casiocgm 2.4.5 (Simon bestätigt): Weckplan `ompSync`, Uhr-Taktgeber, Nightscout-Fallback mit Wolke, letzter Wert bleibt. Code: VPS `casiocgm`, Branch `feature/openminipump-source`; noch nicht im Store/main.
+- **Repo öffentlich:** github.com/sgitaize/iPump-mini (Historie bereinigt). Website: simongutjahr.de/dev/ipump-mini/, Datenschutz /impressum/#ipump-mini.
+- **Builds:** Release = immer öffentliche Variante. Neuer Upload: `CURRENT_PROJECT_VERSION` in `apps/ios/project.yml` erhöhen, archivieren, `xcodebuild -exportArchive` (ExportOptions: app-store-connect/upload). Texte/Bilder: `apps/ios/Scripts/asc_metadata.py` (API-Schlüssel in `~/.appstoreconnect/`).
+- **Offen / Ideen:** Ergebnis App Review abwarten · TestFlight intern nutzen · AltStore Classic (Workflow „Release IPA“) und PAL · casiocgm-Version für den Store aufbereiten (Beta-Config → live) · Protokollmeldungen/Statusseite englisch · Android (JavaSake) später · Backup-Bundle `~/Dev/openMinipump-backup-20261015-0859.bundle` (alte Historie) irgendwann löschen.
+
 ## Phase 0 – Umgebung und Repo ✅
 - [x] Tool-Bestand prüfen
 - [x] Tools: python@3.12, apktool, adb, wireshark (CLI), mitmproxy, gitleaks, frida-tools
