@@ -135,7 +135,8 @@ struct OnboardingView: View {
                     SetupRow(done: link.isPaired, title: "Pumpe koppeln",
                              detail: link.isPaired ? "gekoppelt" : "Anleitung öffnen")
                 }
-                .disabled(link.keyDatabase == nil)
+                // Already paired: no pairing mode (re-pairing stays in the status card).
+                .disabled(link.keyDatabase == nil || link.isPaired)
             }
             Section {
                 GuideItem(icon: "moon", title: "Fokus und Schlafmodus",

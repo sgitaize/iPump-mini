@@ -37,8 +37,23 @@ struct WidgetSnapshot: Codable, Equatable {
 }
 
 enum SharedStore {
-    /// "group.<bundle id of the app>", set in both Info.plists.
-    static var groupID: String? { Bundle.main.object(forInfoDictionaryKey: "OMPAppGroup") as? String }
+    /// The App Group shared by app and widgets. Normally "group.<bundle id of the app>" from
+    /// the Info.plist. Sideloading tools such as AltStore re-sign with changed identifiers
+    /// (bundle id and group get a team suffix), so the group derived from the current bundle
+    /// id is tried as well. The first group with an accessible container wins.
+    static let groupID: String? = {
+        var candidates: [String] = []
+        if let configured = Bundle.main.object(forInfoDictionaryKey: "OMPAppGroup") as? String {
+            candidates.append(configured)
+        }
+        if var bundleID = Bundle.main.bundleIdentifier {
+            if bundleID.hasSuffix(".widgets") { bundleID.removeLast(".widgets".count) }
+            candidates.append("group.\(bundleID)")
+        }
+        return candidates.first {
+            FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: $0) != nil
+        } ?? candidates.first
+    }()
 
     private static var url: URL? {
         guard let id = groupID,

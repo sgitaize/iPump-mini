@@ -1,6 +1,7 @@
-# Builds an unsigned IPA for AltStore/SideStore (they re-sign it with the user's Apple ID).
+# Builds an IPA for AltStore/SideStore (they re-sign it with the user's Apple ID).
 # Manual only; creates a DRAFT release. Nothing is published automatically.
-# Note: the SAKE key database is not part of the build (see docs/release-altstore.md).
+# The SAKE key database is never part of the build: users load it in the app
+# (Settings › Pump › Key database). See docs/release-altstore.md.
 name: Release IPA
 
 on:
@@ -9,9 +10,16 @@ on:
       version:
         description: "Version (e.g. 0.2.0)"
         required: true
+      allow_any_pump:
+        description: "DEV_MODE=0: accept any pump. Off = build locked (rejects every pump). Only with Simon's approval."
+        type: boolean
+        default: false
 
 permissions:
   contents: write
+
+env:
+  BUNDLE_ID: de.sgitaize.openminipump
 
 jobs:
   build:
@@ -26,38 +34,56 @@ jobs:
         working-directory: apps/ios
         run: xcodegen
 
-      - name: Build (unsigned, Release)
+      - name: Build (Release, unsigned)
         working-directory: apps/ios
+        env:
+          OMP_PUBLIC_BUILD: "1"
+          OMP_PUBLIC_DEV_MODE: ${{ inputs.allow_any_pump && '0' || '1' }}
         run: |
           xcodebuild -project OpenMinipump.xcodeproj -scheme OpenMinipump -configuration Release \
             -destination 'generic/platform=iOS' -derivedDataPath build \
             MARKETING_VERSION=${{ inputs.version }} CURRENT_PROJECT_VERSION=${{ github.run_number }} \
-            OMP_APP_ENTITLEMENTS= OMP_WIDGET_ENTITLEMENTS= \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+
+      - name: Check bundle (no key database, no test serial)
+        run: |
+          APP=apps/ios/build/Build/Products/Release-iphoneos/OpenMinipump.app
+          if [ -e "$APP/mobile-pump.keydb.hex" ]; then echo "key database in bundle"; exit 1; fi
+          plutil -p "$APP/DevConfig.plist"
+          if [ -n "$(plutil -extract TEST_PUMP_SERIAL raw "$APP/DevConfig.plist")" ]; then echo "test serial in bundle"; exit 1; fi
+
+      - name: Ad-hoc sign with entitlements (so AltStore registers the App Group)
+        run: |
+          APP=apps/ios/build/Build/Products/Release-iphoneos/OpenMinipump.app
+          sed "s/\$(OMP_BUNDLE_ID)/$BUNDLE_ID/" apps/ios/Widgets/Widgets.entitlements > widgets.ent
+          sed "s/\$(OMP_BUNDLE_ID)/$BUNDLE_ID/" apps/ios/OpenMinipump/OpenMinipump.entitlements > app.ent
+          codesign -f -s - --entitlements widgets.ent "$APP/PlugIns/OpenMinipumpWidgets.appex"
+          codesign -f -s - --entitlements app.ent "$APP"
+          codesign -d --entitlements :- "$APP"
 
       - name: Package IPA
         run: |
           mkdir -p dist/Payload
           cp -R apps/ios/build/Build/Products/Release-iphoneos/OpenMinipump.app dist/Payload/
-          (cd dist && zip -qr "OpenMinipump-${{ inputs.version }}.ipa" Payload)
+          (cd dist && zip -qry "iPump-mini-${{ inputs.version }}.ipa" Payload)
+          rm -rf dist/Payload
           ls -l dist/*.ipa
 
       - name: Update AltStore source (artifact)
         run: |
-          IPA="dist/OpenMinipump-${{ inputs.version }}.ipa"
+          IPA="dist/iPump-mini-${{ inputs.version }}.ipa"
           SIZE=$(stat -f%z "$IPA")
-          URL="https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/OpenMinipump-${{ inputs.version }}.ipa"
-          python3 - "$SIZE" "$URL" <<'PY'
+          URL="https://github.com/${{ github.repository }}/releases/download/v${{ inputs.version }}/iPump-mini-${{ inputs.version }}.ipa"
+          python3 - "$SIZE" "$URL" "${{ inputs.version }}" "${{ github.run_number }}" <<'PY'
           import json, sys, datetime
-          size, url = int(sys.argv[1]), sys.argv[2]
-          p = "altstore/source.json"
-          s = json.load(open(p))
+          size, url, version, build = int(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4]
+          s = json.load(open("altstore/source.json"))
           app = s["apps"][0]
           app["versions"].insert(0, {
-              "version": "${{ inputs.version }}",
-              "buildVersion": "${{ github.run_number }}",
+              "version": version,
+              "buildVersion": build,
               "date": datetime.date.today().isoformat(),
-              "localizedDescription": "Siehe Release-Notizen auf GitHub.",
+              "localizedDescription": "See the release notes on GitHub.",
               "downloadURL": url,
               "size": size,
               "minOSVersion": "17.0",
@@ -74,5 +100,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v${{ inputs.version }}" "dist/OpenMinipump-${{ inputs.version }}.ipa" \
-            --draft --title "v${{ inputs.version }}" --notes "Entwurf – vor Veröffentlichung prüfen."
+          NOTE="Draft – check before publishing."
+          if [ "${{ inputs.allow_any_pump }}" != "true" ]; then NOTE="$NOTE Locked build (DEV_MODE=1): rejects every pump."; fi
+          gh release create "v${{ inputs.version }}" "dist/iPump-mini-${{ inputs.version }}.ipa" dist/source.json \
+            --draft --title "iPump-mini ${{ inputs.version }}" --notes "$NOTE"

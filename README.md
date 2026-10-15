@@ -1,6 +1,8 @@
-# openMinipump
+# iPump-mini
 
-*Working title; planned new name: **iPump-mini**.*
+*Project and repository name: openMinipump.*
+
+**→ [Get started](docs/getting-started.md)** (Deutsch / English)
 
 **English summary.** An open-source iPhone app that reads a Medtronic MiniMed 780G insulin pump **strictly read-only** over Bluetooth LE, without the manufacturer cloud. It shows sensor glucose, insulin on board, reservoir, SmartGuard state and the pump history (boluses, auto corrections, carbs, calibrations). Optionally it uploads to your own Nightscout and serves a local Nightscout-compatible API. It builds on the protocol research of [OpenMinimed](https://github.com/OpenMinimed). Not a medical device, not affiliated with Medtronic, not for treatment decisions.
 
@@ -23,8 +25,10 @@ Eine quelloffene iPhone-App, die eine Insulinpumpe der Reihe **MiniMed 780G auss
 - **Graph** (3/6/12/24 h) mit Mahlzeiten, Boli und Insulin-Band. Antippen eines Werts oder Zeitblocks zeigt Details (Uhrzeit, Wert, aktives Insulin, Abgaben).
 - **Nightscout-Upload** (optional): Werte sofort bei neuem Wert, Pumpenstatus, Behandlungen.
 - **Lokale API** im Nightscout-Format auf Port 17580 (wie xDrip+), inkl. `/pebble` und einer Statusseite mit Passwort; optional im WLAN.
-- **Alarme** (in Arbeit): dringend niedrig, niedrig, hoch, schnelle Änderungen, Meldungen der Pumpe, „keine Daten“, mit Stummschalten und Voreinstellungen.
-- **Widgets und Dynamic Island** (in Arbeit).
+- **Alarme:** dringend niedrig, niedrig, hoch, schnelle Änderungen, Meldungen der Pumpe, „keine Daten“, mit Stummschalten und Voreinstellungen.
+- **Widgets** (Home- und Sperrbildschirm) und **Live-Aktivität/Dynamic Island**.
+- **Deutsch und Englisch**, hell/dunkel, mg/dL oder mmol/L, eigener Zielbereich.
+- **Ersteinrichtung** mit Nutzungsbedingungen, Checkliste und Anleitung in der App.
 
 ## Wie es funktioniert
 
@@ -37,9 +41,9 @@ Das Protokollwissen stammt aus der Arbeit von **[OpenMinimed](https://github.com
 Voraussetzungen: Mac mit Xcode, [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`), ein iPhone und eine Apple-ID (das kostenlose Entwickler-Team genügt; die App läuft dann jeweils 7 Tage).
 
 1. **Repository klonen**, dann `git config core.hooksPath .githooks` (Secret-Scan vor jedem Commit, braucht `gitleaks`).
-2. **Schlüsseldatenbank:** Die App braucht die SAKE-Schlüsseldatenbank „Mobile Application ↔ Insulin Pump“. Sie ist **nicht** in diesem Repository. Sie ist in der [OpenMinimed-Dokumentation](https://github.com/OpenMinimed/Documentation/blob/main/key_databases.md) veröffentlicht. Lege sie als eine Zeile Hex in `_vendor/keys/mobile-pump.keydb.hex` ab (Ordner ist gitignored).
+2. **Schlüsseldatenbank:** Die App braucht die SAKE-Schlüsseldatenbank „Mobile Application ↔ Insulin Pump“. Sie ist **nicht** in diesem Repository. Am einfachsten lädt die App sie selbst aus der [OpenMinimed-Dokumentation](https://github.com/OpenMinimed/Documentation/blob/main/key_databases.md) (Ersteinrichtung bzw. Einstellungen › Pumpe › Schlüsseldatenbank). Für eigene Builds kannst du sie stattdessen als eine Zeile Hex in `_vendor/keys/mobile-pump.keydb.hex` ablegen (Ordner ist gitignored); dann wird sie ins App-Paket übernommen.
 3. **`.env`** aus `.env.example` anlegen. Im Entwicklermodus (`DEV_MODE=1`) akzeptiert die App nur die Pumpe mit der Seriennummer aus `TEST_PUMP_SERIAL`.
-4. **Signing:** `apps/ios/Config/Local.xcconfig.example` nach `Local.xcconfig` kopieren und `DEVELOPMENT_TEAM` eintragen. Mit dem kostenlosen Team eine eigene `OMP_BUNDLE_ID` wählen und, falls das Profil keine App Groups/zeitkritischen Mitteilungen erlaubt, `OMP_APP_ENTITLEMENTS =` und `OMP_WIDGET_ENTITLEMENTS =` leer setzen.
+4. **Signing:** `apps/ios/Config/Local.xcconfig.example` nach `Local.xcconfig` kopieren und `DEVELOPMENT_TEAM` eintragen. Mit dem kostenlosen Team eine eigene `OMP_BUNDLE_ID` wählen. Das kostenlose Team kann App Groups (Standard), aber keine zeitkritischen Mitteilungen; mit bezahltem Account `OMP_APP_ENTITLEMENTS = OpenMinipump/OpenMinipump-paid.entitlements`. Beim ersten Build mit neuer Berechtigung einmal in Xcode starten (⌘R), damit Xcode das Profil holt.
 5. **Bauen:** `cd apps/ios && xcodegen && open OpenMinipump.xcodeproj`, iPhone wählen, starten. Auf dem iPhone den Entwicklermodus aktivieren (Einstellungen › Datenschutz & Sicherheit).
 6. **Koppeln:** Ist die offizielle MiniMed-Mobile-App gekoppelt, diese Kopplung an der Pumpe entfernen (die Pumpe nimmt nur ein Mobilgerät an). Dann in der App „Pumpe koppeln“ öffnen und der Anleitung folgen.
 
