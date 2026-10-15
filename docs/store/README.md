@@ -6,6 +6,7 @@
 | Background, review answers, TestFlight, AltStore | [../internal/store-application.md](../internal/store-application.md) |
 | Screenshots 6.9″ (1320 × 2868), German | [screenshots/de/](screenshots/de/) |
 | Screenshots 6.9″ (1320 × 2868), English | [screenshots/en/](screenshots/en/) |
+| Header artwork (optional, „Kopfzeile“) 3840 × 1646 and 5244 × 2950, DE/EN | [header/](header/) (`render-header.swift`) |
 | App icon 1024 × 1024 (no alpha) | [../../apps/ios/OpenMinipump/Assets.xcassets/AppIcon.appiconset/AppIcon.png](../../apps/ios/OpenMinipump/Assets.xcassets/AppIcon.appiconset/AppIcon.png) |
 | Privacy policy | https://simongutjahr.de/impressum/#ipump-mini |
 | Marketing page | https://simongutjahr.de/dev/ipump-mini/ |
