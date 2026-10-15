@@ -102,6 +102,10 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - **Morgen 15.10. erledigt:** Simon hat geprüft: das kostenlose Team bietet App Groups (App und Widget), aber **keine** zeitkritischen Mitteilungen. Standard-Entitlements jetzt nur App Group, `OpenMinipump-paid.entitlements` mit Time Sensitive für bezahlte Teams. Alarme kommen beim kostenlosen Team als normale Mitteilungen (Hinweis in den Alarm-Einstellungen). Icon Variante A umgesetzt, Anzeigename „iPump-mini“ (Bundle-ID unverändert).
   - Offen: neues Profil mit App Group braucht einmal **Run in Xcode** (Kommandozeile hat keinen Account), danach Test von Alarmen, Widgets, Dynamic Island auf dem iPhone, dann Merge nach main.
 
+## 15.10.2026, öffentliche Variante auf Simons iPhone
+- Release-Build mit `OMP_PUBLIC_BUILD=1 OMP_PUBLIC_DEV_MODE=0` (keine Schlüsseldatenbank, keine Seriennummer) installiert, ersetzt den Entwickler-Build. Zurück zum Entwickler-Build: normaler `xcodebuild … build` + Installation. Test: Schlüsseldatenbank über „Von OpenMinimed laden“.
+- casiocgm 2.4.3: Nightscout-Fallback im Emulator geprüft (ein NS-Abruf nach ~7 min ohne lokalen Server, Wert angezeigt).
+
 ## To-do Veröffentlichung (Simon 15.10.: App Store, TestFlight, AltStore Classic und PAL – alles probieren)
 - Texte und Anträge: `docs/internal/store-application.md` (Beschreibungen DE/EN, Review-Notes, TestFlight, kritische Alarme, AltStore, Rückfragen).
 - Code sauber dokumentieren: Kommentare sind bereits englisch (1 Zeile deutsch); fehlt: Doku-Kommentare öffentlicher Typen (MiniMedKit, App-Kerne), `docs/en/architecture.md`, Protokollmeldungen und API-Statusseite englisch bzw. lokalisiert.
