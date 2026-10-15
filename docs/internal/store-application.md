@@ -22,6 +22,7 @@ Transparenz und Selbstbestimmung über die eigenen Gesundheitsdaten, lokal und d
 - **Keine Therapieentscheidungen.** Die App dient der Information und dem Komfort. Insulin dosieren, Unterzuckerungen behandeln und alle anderen Behandlungsentscheidungen richten sich nach den Anzeigen und Alarmen der Pumpe und den Vorgaben des Diabetes-Teams.
 - **Nur lesend, technisch erzwungen.** Die App kann keinen Bolus abgeben, keine Einstellungen ändern und keine Alarme quittieren. Jeder Zugriff auf die Pumpe läuft über eine Allowlist reiner Abfragen (`ReadOnlyPolicy.swift`); alles andere wird blockiert und protokolliert.
 - **Die Alarme der Pumpe bleiben maßgeblich.** Alarme der App sind eine zusätzliche, unverbindliche Erinnerung.
+- **Jede Insulinabgabe läuft über die Pumpe selbst – und dort steht der Wert.** Wer einen Bolus abgeben will, muss die Pumpe in die Hand nehmen und am Gerät bedienen. Dabei sieht man zwangsläufig den aktuellen Sensorwert auf dem Display der Pumpe, bevor Insulin abgegeben wird. Ein falscher oder veralteter Wert in iPump-mini kann deshalb nicht unbemerkt zu einer Dosis führen: Die maßgebliche Anzeige liegt im Behandlungsablauf immer dazwischen. Das begrenzt das Risiko der App strukturell, nicht nur durch Hinweise.
 - **Keine Datensammlung.** Daten bleiben auf dem iPhone. Die Entwickler erhalten nichts. Optional lädt die App in einen eigenen Nightscout-Server der Nutzer*innen hoch.
 - **Keine Verbindung zu Medtronic.** Medtronic, MiniMed, SmartGuard, Guardian, Simplera und CareLink sind Marken ihrer Inhaber.
 - Beim ersten Start müssen Nutzer*innen den **Nutzungsbedingungen** zustimmen und bestätigen, dass die Pumpe für Behandlungsentscheidungen und Alarme maßgeblich ist.
@@ -127,6 +128,7 @@ PURPOSE
 iPump-mini lets people who use a MiniMed 780G insulin pump view the data of their own pump on their iPhone. The pump otherwise only shares data through the manufacturer's app and cloud. iPump-mini reads the data locally over Bluetooth LE, without any server.
 
 READ-ONLY / SAFETY
+- Every insulin delivery is made on the pump itself. To give a bolus, the user has to pick up the pump and operate it; the pump's display shows the current sensor glucose at that moment. A wrong or outdated value in iPump-mini can therefore never lead to a dose unnoticed – the authoritative reading on the pump is always part of the treatment step.
 - The app only reads. It cannot deliver insulin, change pump settings or clear alarms. All requests to the pump pass through a hard-coded allowlist of read-only report requests (source: core/MiniMedKit/Sources/MiniMedKit/Safety/ReadOnlyPolicy.swift in the public repository); anything else is blocked and logged.
 - The app is not a medical device and is not intended for treatment decisions. This is stated in the description, in the app (footer on the main screen, About page) and in terms of use that every user must accept on first launch, including an explicit confirmation that the pump's displays and alarms are authoritative.
 - Optional notifications are labelled as additional, non-binding reminders; the pump's own alarms stay on.
@@ -214,6 +216,11 @@ Prüfpunkte der Notarisierung sind Funktion, Sicherheit und Datenschutz (Teilmen
 ```
 iPump-mini does not diagnose, treat or dose. It displays data that the user's own, already approved pump has measured and calculated, for information and convenience. It explicitly instructs users not to use it for treatment decisions and to rely on the pump's displays and alarms, and requires users to confirm this before first use. It cannot control the pump in any way.
 ```
+Additional argument (structural risk control):
+```
+Treatment always happens on the pump. iPump-mini cannot deliver or suggest a dose, and to deliver insulin the user must operate the pump, whose display shows the current sensor glucose at that moment. The pump's own reading is therefore always in front of the user before any insulin is given; iPump-mini only adds visibility (lock screen, watch, caregivers via the user's own Nightscout).
+```
+
 **„Do you have permission to use the manufacturer's protocol / trademarks?“**
 ```
 The app is an independent implementation for interoperability with the user's own device, based on public research (OpenMinimed, GPL-3.0) and the public Bluetooth SIG specifications (Insulin Delivery Service, CGM Service). It contains no code or assets of the manufacturer. Trademarks are used only descriptively to state compatibility, with a clear non-affiliation notice.

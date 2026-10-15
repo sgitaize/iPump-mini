@@ -85,6 +85,11 @@ struct GlucoseLiveActivity: Widget {
                     .padding(.trailing, 4)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
+                    if let curve = s.curve, curve.count > 1 {
+                        LiveCurve(points: curve, low: Prefs.low, high: Prefs.high, dimmed: false)
+                            .frame(height: 34)
+                            .padding(.horizontal, 4)
+                    }
                     HStack {
                         Text(s.date, style: .relative)
                         Spacer()

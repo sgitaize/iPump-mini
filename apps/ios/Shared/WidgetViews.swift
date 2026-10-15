@@ -327,10 +327,22 @@ struct GlucoseChartView: View {
 /// Lock screen banner of the Live Activity.
 struct LiveActivityView: View {
     let state: GlucoseActivityAttributes.ContentState
+    /// Always-On display: dimmed lock screen. Draw plain white, no colours or fills.
+    @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         let unit = Prefs.unit
-        let color = RangeColor.color(state.mgdl, low: Prefs.low, high: Prefs.high, neutral: .primary)
+        let color = dimmed ? Color.white : RangeColor.color(state.mgdl, low: Prefs.low, high: Prefs.high, neutral: .primary)
+        VStack(spacing: 8) {
+            header(unit: unit, color: color)
+            if let curve = state.curve, curve.count > 1 {
+                LiveCurve(points: curve, low: Prefs.low, high: Prefs.high, dimmed: dimmed)
+                    .frame(height: 46)
+            }
+        }
+    }
+
+    private func header(unit: GlucoseUnit, color: Color) -> some View {
         HStack(alignment: .center, spacing: 14) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(verbatim: unit.format(state.mgdl))
@@ -350,6 +362,51 @@ struct LiveActivityView: View {
                 }
             }
         }
+    }
+}
+
+/// Glucose curve of the last 3 h for the Live Activity. Awake: target range band and
+/// points coloured by range. Always-On (dimmed): a thin white line only.
+struct LiveCurve: View {
+    let points: [GlucoseActivityAttributes.CurvePoint]
+    let low: Int
+    let high: Int
+    let dimmed: Bool
+
+    var body: some View {
+        let values = points.map(\.v)
+        let lo = Double(min(values.min() ?? low, low) - 10)
+        let hi = Double(max(values.max() ?? high, high) + 10)
+        Chart {
+            if !dimmed {
+                RectangleMark(xStart: .value("", -180), xEnd: .value("", 0),
+                              yStart: .value("", low), yEnd: .value("", high))
+                    .foregroundStyle(.green.opacity(0.18))
+            }
+            ForEach(points, id: \.self) { p in
+                LineMark(x: .value("", -p.m), y: .value("", p.v))
+                    .interpolationMethod(.catmullRom)
+                    .lineStyle(StrokeStyle(lineWidth: dimmed ? 1.5 : 2, lineCap: .round))
+                    .foregroundStyle(dimmed ? Color.white.opacity(0.85) : Color.primary.opacity(0.35))
+            }
+            if !dimmed {
+                ForEach(points, id: \.self) { p in
+                    PointMark(x: .value("", -p.m), y: .value("", p.v))
+                        .symbolSize(10)
+                        .foregroundStyle(RangeColor.color(p.v, low: low, high: high, neutral: .primary))
+                }
+            }
+            if let last = points.min(by: { $0.m < $1.m }) {
+                PointMark(x: .value("", -last.m), y: .value("", last.v))
+                    .symbolSize(dimmed ? 22 : 34)
+                    .foregroundStyle(dimmed ? Color.white : RangeColor.color(last.v, low: low, high: high, neutral: .primary))
+            }
+        }
+        .chartXScale(domain: -180...0)
+        .chartYScale(domain: lo...hi)
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .chartLegend(.hidden)
     }
 }
 

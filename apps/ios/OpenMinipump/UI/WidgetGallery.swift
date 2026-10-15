@@ -12,6 +12,23 @@ struct WidgetGallery: View {
         let snapshot = store.latest == nil ? WidgetSnapshot.placeholder : WidgetBridge.makeSnapshot(store: store)
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                if let latest = snapshot.latest {
+                    let state = GlucoseActivityAttributes.ContentState(
+                        mgdl: latest.mgdl, trendRate: snapshot.trendRate, delta: snapshot.delta, date: latest.date, iob: snapshot.iob,
+                        curve: GlucoseActivityAttributes.curve(from: snapshot.points, latest: latest.date))
+                    LiveActivityView(state: state)
+                        .padding(16)
+                        .frame(width: 364)
+                        .background(.black.opacity(0.75), in: RoundedRectangle(cornerRadius: 22))
+                        .environment(\.colorScheme, .dark)
+                    // Always-On (dimmed) variant
+                    LiveActivityView(state: state)
+                        .padding(16)
+                        .frame(width: 364)
+                        .background(.black, in: RoundedRectangle(cornerRadius: 22))
+                        .environment(\.colorScheme, .dark)
+                        .environment(\.isLuminanceReduced, true)
+                }
                 HStack(spacing: 16) {
                     tile(.systemSmall, snapshot, width: 170, height: 170)
                     VStack(spacing: 12) {
@@ -22,14 +39,6 @@ struct WidgetGallery: View {
                 tile(.accessoryRectangular, snapshot, width: 172, height: 76, lockScreen: true)
                 tile(.systemMedium, snapshot, width: 364, height: 170)
                 tile(.systemLarge, snapshot, width: 364, height: 382)
-                if let latest = snapshot.latest {
-                    LiveActivityView(state: .init(mgdl: latest.mgdl, trendRate: snapshot.trendRate, delta: snapshot.delta,
-                                                  date: latest.date, iob: snapshot.iob))
-                        .padding(16)
-                        .frame(width: 364)
-                        .background(.black.opacity(0.75), in: RoundedRectangle(cornerRadius: 22))
-                        .environment(\.colorScheme, .dark)
-                }
             }
             .padding()
         }

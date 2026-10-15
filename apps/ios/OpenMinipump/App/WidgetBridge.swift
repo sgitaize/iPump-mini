@@ -100,12 +100,15 @@ enum WidgetBridge {
         if readings.count >= 2, r.date.timeIntervalSince(readings[readings.count - 2].date) < 15 * 60 {
             delta = r.mgdl - readings[readings.count - 2].mgdl
         }
-        return .init(mgdl: r.mgdl, trendRate: r.trendMgdlPerMin, delta: delta, date: r.date, iob: store.snapshot.iob?.units)
+        let points = readings.suffix(48).map { WidgetSnapshot.Point(date: $0.date, mgdl: $0.mgdl) }
+        return .init(mgdl: r.mgdl, trendRate: r.trendMgdlPerMin, delta: delta, date: r.date, iob: store.snapshot.iob?.units,
+                     curve: GlucoseActivityAttributes.curve(from: points, latest: r.date))
     }
 
     private static func updateLiveActivity(_ s: WidgetSnapshot) {
         guard liveActivityEnabled, let latest = s.latest else { return }
-        let state = GlucoseActivityAttributes.ContentState(mgdl: latest.mgdl, trendRate: s.trendRate, delta: s.delta, date: latest.date, iob: s.iob)
+        let state = GlucoseActivityAttributes.ContentState(mgdl: latest.mgdl, trendRate: s.trendRate, delta: s.delta, date: latest.date, iob: s.iob,
+                                                                curve: GlucoseActivityAttributes.curve(from: s.points, latest: latest.date))
         for activity in Activity<GlucoseActivityAttributes>.activities {
             Task { await activity.update(ActivityContent(state: state, staleDate: latest.date.addingTimeInterval(15 * 60))) }
         }

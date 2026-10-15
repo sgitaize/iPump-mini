@@ -94,5 +94,19 @@ struct GlucoseActivityAttributes: ActivityAttributes {
         var delta: Int?
         var date: Date
         var iob: Double?
+        /// Last 3 h for the curve on the lock screen: minutes before `date` and mg/dL.
+        /// Compact on purpose (an update may be at most 4 KB).
+        var curve: [CurvePoint]?
+    }
+
+    struct CurvePoint: Codable, Hashable {
+        var m: Int   // minutes before the latest value
+        var v: Int   // mg/dL
+    }
+
+    /// Builds the curve from points sorted oldest first.
+    static func curve(from points: [WidgetSnapshot.Point], latest: Date, hours: Double = 3) -> [CurvePoint] {
+        points.filter { latest.timeIntervalSince($0.date) <= hours * 3600 }
+            .map { CurvePoint(m: Int((latest.timeIntervalSince($0.date) / 60).rounded()), v: $0.mgdl) }
     }
 }
