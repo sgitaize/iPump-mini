@@ -53,6 +53,26 @@ final class AppModel: ObservableObject {
         didSet { UserDefaults.standard.set(apiSecret, forKey: "apiSecret") }
     }
 
+    /// iOS suspends the app a few seconds after each pump wake-up; the local API (watch
+    /// faces poll it) would then not answer. A background task keeps it reachable for
+    /// ~25 s after every new value, so clients polling around that time get it.
+    private var apiKeepAlive: UIBackgroundTaskIdentifier = .invalid
+
+    func keepAPIAwake() {
+        guard UIApplication.shared.applicationState != .active, apiKeepAlive == .invalid else { return }
+        api.ensureRunning()
+        apiKeepAlive = UIApplication.shared.beginBackgroundTask(withName: "LocalAPI") { [weak self] in
+            self?.endAPIKeepAlive()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 25) { [weak self] in self?.endAPIKeepAlive() }
+    }
+
+    private func endAPIKeepAlive() {
+        guard apiKeepAlive != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(apiKeepAlive)
+        apiKeepAlive = .invalid
+    }
+
     init() {
         api = LocalAPIServer(shared: store.shared)
         uploader = NightscoutUploader(store: store, log: log)
@@ -63,7 +83,8 @@ final class AppModel: ObservableObject {
             uploader.historyAdded(oldestReading: oldest)
         })
         let store = store
-        store.onNewReading = {
+        store.onNewReading = { [weak self] in
+            self?.keepAPIAwake()
             uploader.newReading()
             if let latest = store.latest { AlarmEngine.shared.evaluate(latest) }
             WidgetBridge.update(store: store)
@@ -77,6 +98,9 @@ final class AppModel: ObservableObject {
         let log = log
         api.onLog = { text in
             Task { @MainActor in log.add(text, .warning) }
+        }
+        api.onRequest = { text in
+            Task { @MainActor in log.add(text) }
         }
         restartAPI()
         #if DEBUG

@@ -30,6 +30,9 @@ final class LocalAPIServer: @unchecked Sendable {
 
     var onStateChange: ((String) -> Void)?
     var onLog: ((String) -> Void)?
+    /// Request diagnostics (path and client), throttled: one entry per path and client per 10 min.
+    var onRequest: ((String) -> Void)?
+    private var lastRequestLog: [String: Date] = [:]
 
     init(shared: SharedData) {
         self.shared = shared
@@ -167,6 +170,12 @@ final class LocalAPIServer: @unchecked Sendable {
             return send(connection, status: "405 Method Not Allowed", json: ["error": "read-only API"])
         }
         let path = components.path.lowercased()
+        let client = (headers["user-agent"] ?? "?").prefix(40)
+        let logKey = "\(path)|\(client)"
+        if Date().timeIntervalSince(lastRequestLog[logKey] ?? .distantPast) > 600 {
+            lastRequestLog[logKey] = Date()
+            onRequest?("API-Anfrage \(path) von \(client)")
+        }
         let wantsHTML = path == "/status.html" || (path == "/" && (headers["accept"] ?? "").contains("text/html"))
         if wantsHTML {
             // Human-readable page: Basic Auth with the API secret as password (any user name).
