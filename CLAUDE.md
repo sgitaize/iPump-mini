@@ -7,7 +7,7 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 
 ## Harte Regeln (nicht verhandelbar)
 1. **Nur lesen.** Der Protokoll-Client nutzt eine Opcode-Allowlist. Alles andere wird hart blockiert und geloggt. Im Zweifel gilt eine Nachricht als verboten, dann Simon fragen.
-2. **Nur das Testgerät.** Bei `DEV_MODE=1` wird jede Seriennummer außer `TEST_PUMP_SERIAL` (aus `.env`) abgelehnt.
+2. **Nur das Testgerät.** Bei `DEV_MODE=1` wird jede Seriennummer außer `TEST_PUMP_SERIAL` (aus `.env`) abgelehnt. Entwickler-Builds laufen so. **Öffentliche Builds** (`DEV_MODE=0`, jede gekoppelte 780G) hat Simon am 15.10.2026 freigegeben.
 3. **Kein proprietäres Material im Repo.** APK/IPA, Dekompilate, Keys, Zertifikate und Assets gehören nach `_vendor/` (gitignored). Ins Repo kommen nur eigene Worte und eigener Code (Clean Room).
 4. **Secrets nie in Git.** Dafür gibt es `.env`, den Schlüsselbund und gitignorierte Ordner. Der Pre-Commit-Hook (`.githooks/pre-commit`) führt gitleaks aus.
 5. **Medtronic-Server:** Mitschnitte eigener Sitzungen sind erlaubt. Keine Angriffe, kein Fuzzing. Eigene Requests nur nach Rückfrage.

@@ -16,7 +16,7 @@ Stand: vorbereitet, **nicht aktiv**. Bevor etwas veröffentlicht wird, entscheid
 4. `Payload/OpenMinipump.app` → `iPump-mini-<version>.ipa`, dazu `source.json` mit Version, Datum, Größe und Download-URL.
 5. GitHub-Release als **Entwurf** (erst durch manuelles Veröffentlichen sichtbar).
 
-Eingabe **`allow_any_pump`** (Standard: aus): aus = gesperrter Build (`DEV_MODE=1` ohne Testpumpe, lehnt jede Pumpe ab), an = `DEV_MODE=0`. Anschalten nur mit Simons Freigabe.
+Eingabe **`allow_any_pump`** (Standard: an, freigegeben von Simon am 15.10.2026): an = `DEV_MODE=0`, jede gekoppelte 780G; aus = gesperrter Test-Build.
 
 Die Quelle könnte später über GitHub Pages ausgeliefert werden (`https://<user>.github.io/<repo>/altstore/source.json`); dafür muss das Repo öffentlich sein.
 
@@ -25,7 +25,7 @@ Die Quelle könnte später über GitHub Pages ausgeliefert werden (`https://<use
 - [x] **Name:** „iPump-mini“ als Anzeigename und Repo-Name (`sgitaize/iPump-mini`), Bundle-ID bleibt `de.sgitaize.openminipump`.
 - [x] **Website:** simongutjahr.de/dev/ipump-mini/ ist live (ohne GitHub-Link bis zur Veröffentlichung).
 - [x] **Nutzungsbedingungen:** müssen beim ersten Start akzeptiert werden (`TermsView.swift`, versioniert). Text von Simon freigegeben (15.10.).
-- [ ] **DEV_MODE:** Öffentliche Builds müssen jede (vom Nutzer gekoppelte) Pumpe akzeptieren, also `allow_any_pump`. Regel 2 des Projekt-Briefs gilt für die Entwicklung; Freigabe durch Simon nötig.
+- [x] **DEV_MODE:** Simon hat am 15.10.2026 öffentliche Builds für alle 780G-Pumpen freigegeben (`allow_any_pump`, Standard an). Eigene Entwickler-Builds bleiben über `.env` an die Testpumpe gebunden.
 - [ ] **Kompatibilitäts-Kennung:** Die App meldet sich gegenüber der Pumpe mit den Geräteinfos der offiziellen App (`PumpLink.compatSoftwareRevision`). Rechtliche Einschätzung vor Veröffentlichung.
 - [ ] **Repo öffentlich:** vorher Git-Historie von den Build-Artefakten bereinigen (siehe `docs/internal/tasks.md`).
 - [ ] **Probelauf:** Workflow einmal im privaten Repo starten (erzeugt nur einen Entwurf) und die IPA per AltStore installieren.

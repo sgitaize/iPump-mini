@@ -11,9 +11,9 @@ on:
         description: "Version (e.g. 0.2.0)"
         required: true
       allow_any_pump:
-        description: "DEV_MODE=0: accept any pump. Off = build locked (rejects every pump). Only with Simon's approval."
+        description: "DEV_MODE=0: accept any paired MiniMed 780G (approved by Simon 2026-10-15). Off = locked test build."
         type: boolean
-        default: false
+        default: true
 
 permissions:
   contents: write

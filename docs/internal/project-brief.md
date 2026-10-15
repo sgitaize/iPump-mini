@@ -80,3 +80,7 @@ Clean-Room-Prüfung des Repos, Lizenzentscheidung, Disclaimer, Security-Policy, 
 ---
 
 **Starte jetzt mit Phase 0.** Zeig mir zuerst die Tool-Liste und den geplanten Repo-Namen, bevor du installierst oder das Repo anlegst.
+
+
+## Nachtrag 2026-10-15
+Simon hat öffentliche Builds für alle MiniMed-780G-Pumpen freigegeben (`DEV_MODE=0` nur in der Release-Pipeline, Eingabe `allow_any_pump`). Regel 2 gilt weiter für Entwickler-Builds.
