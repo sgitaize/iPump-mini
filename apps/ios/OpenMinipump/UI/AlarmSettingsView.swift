@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import MiniMedKit
 import SwiftUI
+import UIKit
 
 struct AlarmSettingsView: View {
     @ObservedObject private var engine = AlarmEngine.shared
@@ -74,15 +75,29 @@ struct AlarmSettingsView: View {
 
             Section {
                 Button("Test-Alarm senden") { engine.sendTest() }
-                LabeledContent("Kritische Alarme", value: engine.criticalAvailable ? "verfügbar" : "nicht verfügbar")
+                StatusRow(title: "Mitteilungen", ok: engine.notificationsAllowed)
+                StatusRow(title: "Zeitkritische Mitteilungen", ok: engine.timeSensitiveAvailable)
+                Button("iPhone-Einstellungen öffnen") {
+                    if let url = URL(string: UIApplication.openNotificationSettingsURLString) { UIApplication.shared.open(url) }
+                }
+            } header: {
+                Text("Zustellung")
             } footer: {
-                Text(engine.criticalAvailable
-                     ? L10n.tr("„Dringend niedrig“ und dringende Pumpenmeldungen kommen auch bei Stummschalter und Fokus.")
-                     : engine.timeSensitiveAvailable
-                     ? L10n.tr("Kritische Alarme (durch Stummschalter) brauchen eine Freigabe von Apple. Bis dahin kommen dringende Alarme als „zeitkritisch“: Sie durchbrechen Fokus-Modi, folgen aber dem Stummschalter. In den iPhone-Einstellungen › Mitteilungen › iPump-mini „Zeitkritische Mitteilungen“ aktiviert lassen.")
-                     : L10n.tr("Kritische und zeitkritische Alarme sind in diesem Build nicht verfügbar (kostenloses Entwickler-Team). Alarme kommen als normale Mitteilungen: mit Ton, aber nicht durch Stummschalter oder Fokus-Modi. Für die Nacht den Fokus so einstellen, dass iPump-mini durchkommt."))
+                Text("Dringende Alarme („Dringend niedrig“, dringende Pumpenmeldungen) kommen als zeitkritische Mitteilung. Sie erscheinen sofort, bleiben länger auf dem Sperrbildschirm und kommen auch durch einen Fokus wie „Schlafen“, wenn du das erlaubst. Den Stummschalter durchbrechen sie nicht.")
+            }
+
+            Section("So richtest du es ein") {
+                GuideItem(icon: "bell.badge", title: "1. Mitteilungen erlauben",
+                          text: "iPhone-Einstellungen › Mitteilungen › iPump-mini: „Mitteilungen erlauben“, „Töne“ und „Zeitkritische Mitteilungen“ einschalten.")
+                GuideItem(icon: "moon", title: "2. Fokus und Schlafen",
+                          text: "Einstellungen › Fokus › z. B. „Schlafen“ › Apps: entweder iPump-mini zu den erlaubten Apps hinzufügen oder „Zeitkritische Mitteilungen“ für den Fokus erlauben. Für jeden Fokus, den du nutzt, wiederholen.")
+                GuideItem(icon: "speaker.wave.2", title: "3. Ton und Stummschalter",
+                          text: "Zeitkritische Mitteilungen folgen dem Stummschalter. Nachts das iPhone nicht stumm schalten, Lautstärke für Klingelton und Hinweise ausreichend hoch einstellen.")
+                GuideItem(icon: "checkmark.circle", title: "4. Testen",
+                          text: "„Test-Alarm senden“ antippen, iPhone sperren und prüfen, ob der Alarm mit Ton erscheint – am besten auch mit aktivem Fokus.")
             }
         }
+        .onAppear { engine.refreshSettings() }
         .navigationTitle("Alarme")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -128,5 +143,20 @@ private struct GlucoseRuleEditor: View {
         let mmol = String(format: "%.1f", rule.threshold / 18.0182)
         return kind == .high ? L10n.tr("ab %d mg/dL (%@ mmol/L)", Int(rule.threshold), mmol)
                              : L10n.tr("unter %d mg/dL (%@ mmol/L)", Int(rule.threshold), mmol)
+    }
+}
+
+/// Green check or orange warning for a delivery prerequisite.
+private struct StatusRow: View {
+    let title: LocalizedStringKey
+    let ok: Bool
+
+    var body: some View {
+        LabeledContent {
+            Label(ok ? "an" : "aus", systemImage: ok ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                .foregroundStyle(ok ? .green : .orange)
+        } label: {
+            Text(title)
+        }
     }
 }

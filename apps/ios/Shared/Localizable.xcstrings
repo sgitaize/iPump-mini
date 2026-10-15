@@ -110,6 +110,16 @@
         }
       }
     },
+    "1. Mitteilungen erlauben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Allow notifications"
+          }
+        }
+      }
+    },
     "1. Zweck" : {
       "localizations" : {
         "en" : {
@@ -137,6 +147,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mute 2 hours"
+          }
+        }
+      }
+    },
+    "2. Fokus und Schlafen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2. Focus and Sleep"
           }
         }
       }
@@ -171,6 +191,16 @@
         }
       }
     },
+    "3. Ton und Stummschalter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3. Sound and silent switch"
+          }
+        }
+      }
+    },
     "30 min stumm" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -188,6 +218,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "4. Limitations of the app"
+          }
+        }
+      }
+    },
+    "4. Testen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4. Test"
           }
         }
       }
@@ -506,6 +546,16 @@
         }
       }
     },
+    "an" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "on"
+          }
+        }
+      }
+    },
     "an (nur Testpumpe)" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -772,7 +822,18 @@
         }
       }
     },
+    "Bei stummgeschaltetem iPhone kommen Alarme ohne Ton – auch zeitkritische. Nachts das iPhone nicht stumm schalten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When the iPhone is silenced, alarms come without sound – time-sensitive ones too. Don't silence the iPhone at night."
+          }
+        }
+      }
+    },
     "Bei stummgeschaltetem iPhone kommen Alarme ohne Ton. Nur „kritische Alarme“ durchbrechen den Stummschalter; die braucht eine Freigabe von Apple, die selbst gebaute Versionen nicht haben." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -886,6 +947,16 @@
         }
       }
     },
+    "Damit dringende Alarme nachts durchkommen: in den iPhone-Einstellungen „Zeitkritische Mitteilungen“ für iPump-mini einschalten und im Schlaf-Fokus erlauben. Anleitung: Einstellungen › Alarme." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "So that urgent alarms get through at night: turn on “Time Sensitive Notifications” for iPump-mini in iPhone Settings and allow them in your Sleep Focus. Instructions: Settings › Alarms."
+          }
+        }
+      }
+    },
     "Damit nur passende Werte angezeigt werden. Später änderbar in den Einstellungen." : {
       "localizations" : {
         "en" : {
@@ -963,6 +1034,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Privacy"
+          }
+        }
+      }
+    },
+    "Datenschutzerklärung der App" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App privacy policy"
+          }
+        }
+      }
+    },
+    "Demo-Modus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo mode"
           }
         }
       }
@@ -1159,6 +1250,26 @@
         }
       }
     },
+    "Dringende Alarme („Dringend niedrig“, dringende Pumpenmeldungen) kommen als zeitkritische Mitteilung. Sie erscheinen sofort, bleiben länger auf dem Sperrbildschirm und kommen auch durch einen Fokus wie „Schlafen“, wenn du das erlaubst. Den Stummschalter durchbrechen sie nicht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Urgent alarms (“Urgent low”, urgent pump alerts) arrive as time-sensitive notifications. They appear immediately, stay longer on the Lock Screen and get through a Focus such as “Sleep” if you allow it. They do not break through the silent switch."
+          }
+        }
+      }
+    },
+    "Dringende Alarme kommen als zeitkritische Mitteilung. Einschalten unter iPhone-Einstellungen › Mitteilungen › iPump-mini › „Zeitkritische Mitteilungen“. Schritt für Schritt: Einstellungen › Alarme › So richtest du es ein." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Urgent alarms arrive as time-sensitive notifications. Turn them on under iPhone Settings › Notifications › iPump-mini › “Time Sensitive Notifications”. Step by step: Settings › Alarms › How to set it up."
+          }
+        }
+      }
+    },
     "Du nutzt die App auf eigene Verantwortung und prüfst selbst, ob die Nutzung in deinem Land zulässig ist. Sprich bei Fragen zu deiner Therapie mit deinem Diabetes-Team." : {
       "localizations" : {
         "en" : {
@@ -1179,7 +1290,18 @@
         }
       }
     },
+    "Ein Fokus (auch „Schlafen“) hält Mitteilungen zurück. Dringende Alarme kommen als zeitkritische Mitteilung durch, wenn du das im Fokus erlaubst: Einstellungen › Fokus › Schlafen › Apps › iPump-mini hinzufügen oder „Zeitkritische Mitteilungen“ erlauben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Focus (including “Sleep”) holds back notifications. Urgent alarms get through as time-sensitive notifications if you allow it in the Focus: Settings › Focus › Sleep › Apps › add iPump-mini or allow “Time Sensitive Notifications”."
+          }
+        }
+      }
+    },
     "Ein Fokus (auch „Schlafen“) hält normale Mitteilungen zurück. Füge iPump-mini im Fokus unter „Erlaubte Apps“ hinzu, sonst hörst du nachts keinen Alarm." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1235,6 +1357,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Settings"
+          }
+        }
+      }
+    },
+    "Einstellungen › Fokus › z. B. „Schlafen“ › Apps: entweder iPump-mini zu den erlaubten Apps hinzufügen oder „Zeitkritische Mitteilungen“ für den Fokus erlauben. Für jeden Fokus, den du nutzt, wiederholen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings › Focus › e.g. “Sleep” › Apps: either add iPump-mini to the allowed apps or allow “Time Sensitive Notifications” for the Focus. Repeat for every Focus you use."
           }
         }
       }
@@ -1427,6 +1559,7 @@
       }
     },
     "Füge iPump-mini in deinem Schlaf-Fokus unter „Erlaubte Apps“ hinzu, sonst bleiben Alarme nachts stumm." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1737,6 +1870,7 @@
       }
     },
     "Impressum und Datenschutz" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1783,6 +1917,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "IOB"
+          }
+        }
+      }
+    },
+    "iPhone-Einstellungen öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open iPhone Settings"
+          }
+        }
+      }
+    },
+    "iPhone-Einstellungen › Mitteilungen › iPump-mini: „Mitteilungen erlauben“, „Töne“ und „Zeitkritische Mitteilungen“ einschalten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone Settings › Notifications › iPump-mini: turn on “Allow Notifications”, “Sounds” and “Time Sensitive Notifications”."
           }
         }
       }
@@ -2085,33 +2239,12 @@
       }
     },
     "Kritische Alarme" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Critical alerts"
-          }
-        }
-      }
-    },
-    "Kritische Alarme (durch Stummschalter) brauchen eine Freigabe von Apple. Bis dahin kommen dringende Alarme als „zeitkritisch“: Sie durchbrechen Fokus-Modi, folgen aber dem Stummschalter. In den iPhone-Einstellungen › Mitteilungen › iPump-mini „Zeitkritische Mitteilungen“ aktiviert lassen." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Critical alerts (through the silent switch) need an approval from Apple. Until then, urgent alarms arrive as “time sensitive”: they break through Focus modes but follow the silent switch. Keep “Time Sensitive Notifications” on under iPhone Settings › Notifications › iPump-mini."
-          }
-        }
-      }
-    },
-    "Kritische und zeitkritische Alarme sind in diesem Build nicht verfügbar (kostenloses Entwickler-Team). Alarme kommen als normale Mitteilungen: mit Ton, aber nicht durch Stummschalter oder Fokus-Modi. Für die Nacht den Fokus so einstellen, dass iPump-mini durchkommt." : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Critical and time-sensitive alerts are not available in this build (free developer team). Alarms arrive as normal notifications: with sound, but not through the silent switch or Focus modes. For the night, set up your Focus so that iPump-mini is allowed."
           }
         }
       }
@@ -2404,6 +2537,7 @@
       }
     },
     "Mit einem bezahlten Entwickler-Account kommen dringende Alarme als „zeitkritisch“ auch durch Fokus-Modi. Mit dem kostenlosen Account nicht." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2419,6 +2553,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notify after"
+          }
+        }
+      }
+    },
+    "Mitteilungen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications"
           }
         }
       }
@@ -2722,6 +2866,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Without the app running, no values arrive from the pump. Tap here to open it again."
+          }
+        }
+      }
+    },
+    "Ohne Pumpe ansehen (Demo)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try without a pump (demo)"
           }
         }
       }
@@ -3278,6 +3432,26 @@
         }
       }
     },
+    "Simulierte Werte ohne Pumpe, zum Ausprobieren. Im Demo-Modus nutzt die App kein Bluetooth, speichert nichts, lädt nichts hoch und gibt keine Alarme. Ein- und Ausschalten mit gekoppelter Pumpe wirkt beim nächsten Start der App (im App-Umschalter schließen und neu öffnen)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulated values without a pump, to try the app. In demo mode the app uses no Bluetooth, saves nothing, uploads nothing and gives no alarms. With a paired pump, switching on or off takes effect on the next app start (close it in the app switcher and open it again)."
+          }
+        }
+      }
+    },
+    "Simulierte Werte, keine Pumpe verbunden. Beenden unter Einstellungen › Info." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulated values, no pump connected. Turn off under Settings › Info."
+          }
+        }
+      }
+    },
     "SmartGuard" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3361,6 +3535,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How to pair the pump"
+          }
+        }
+      }
+    },
+    "So richtest du es ein" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How to set it up"
           }
         }
       }
@@ -3959,6 +4143,16 @@
         }
       }
     },
+    "Zeitkritische Mitteilungen folgen dem Stummschalter. Nachts das iPhone nicht stumm schalten, Lautstärke für Klingelton und Hinweise ausreichend hoch einstellen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time-sensitive notifications follow the silent switch. Don't silence the iPhone at night, and set the ringer and alert volume high enough."
+          }
+        }
+      }
+    },
     "Zeitraum" : {
       "localizations" : {
         "en" : {
@@ -4025,6 +4219,16 @@
         }
       }
     },
+    "Zustellung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delivery"
+          }
+        }
+      }
+    },
     "Zustimmen" : {
       "localizations" : {
         "en" : {
@@ -4056,13 +4260,12 @@
       },
       "shouldTranslate" : false
     },
-    "„Dringend niedrig“ und dringende Pumpenmeldungen kommen auch bei Stummschalter und Fokus." : {
-      "extractionState" : "manual",
+    "„Test-Alarm senden“ antippen, iPhone sperren und prüfen, ob der Alarm mit Ton erscheint – am besten auch mit aktivem Fokus." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“Urgent low” and urgent pump alerts come through the silent switch and Focus too."
+            "value" : "Tap “Send test alarm”, lock the iPhone and check that the alarm appears with sound – ideally with a Focus active as well."
           }
         }
       }

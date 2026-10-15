@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Glucose and pump alarms as local notifications, with snooze like common CGM apps.
 //
-// Critical alerts (sound through mute switch and Focus) need an entitlement Apple grants
-// on request. Without it, urgent alarms are sent as time-sensitive notifications.
+// Urgent alarms (urgent low, urgent pump alerts) are time-sensitive notifications: they
+// break through Focus modes if the user allows it, but follow the silent switch. Critical
+// alerts (through the silent switch) would need an Apple entitlement and are not used.
 import Foundation
 import MiniMedKit
 import UserNotifications
@@ -97,9 +98,10 @@ final class AlarmEngine: ObservableObject {
     /// Global mute for all alarms except "urgent low".
     @Published private(set) var mutedUntil: Date?
     @Published private(set) var snoozedUntil: [String: Date] = [:]
-    @Published private(set) var criticalAvailable = false
-    /// Needs the time-sensitive entitlement (not offered to free personal teams).
+    /// Needs the time-sensitive entitlement (paid developer team) and the user's permission.
     @Published private(set) var timeSensitiveAvailable = false
+    /// Notifications allowed at all.
+    @Published private(set) var notificationsAllowed = false
 
     private var lastFired: [String: Date] = [:]
     private var seenPumpAlarms: [UInt16] = []
@@ -122,14 +124,19 @@ final class AlarmEngine: ObservableObject {
     }
 
     func requestAuthorization() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .criticalAlert]) { _, _ in
-            UNUserNotificationCenter.current().getNotificationSettings { settings in
-                let critical = settings.criticalAlertSetting == .enabled
-                let timeSensitive = settings.timeSensitiveSetting == .enabled
-                Task { @MainActor in
-                    self.criticalAvailable = critical
-                    self.timeSensitiveAvailable = timeSensitive
-                }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in
+            Task { @MainActor in self.refreshSettings() }
+        }
+    }
+
+    /// Reads the current notification settings (the user may change them in iOS Settings).
+    func refreshSettings() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            let allowed = settings.authorizationStatus == .authorized
+            let timeSensitive = settings.timeSensitiveSetting == .enabled
+            Task { @MainActor in
+                self.notificationsAllowed = allowed
+                self.timeSensitiveAvailable = timeSensitive
             }
         }
     }
@@ -139,6 +146,7 @@ final class AlarmEngine: ObservableObject {
     // MARK: Glucose
 
     func evaluate(_ reading: GlucoseReading, now: Date = Date()) {
+        guard !DemoMode.isOn else { return }   // no alarms for simulated values
         guard now.timeIntervalSince(reading.date) < 10 * 60 else { return }
         let g = Double(reading.mgdl)
         let urgent = config.glucose[.urgentLow]
@@ -158,7 +166,7 @@ final class AlarmEngine: ObservableObject {
                 ? L10n.tr("%d mg/dL, %@ mg/dL pro Minute", reading.mgdl, String(format: "%+.1f", reading.trendMgdlPerMin ?? 0))
                 : L10n.tr("%d mg/dL (%@ mmol/L)", reading.mgdl, String(format: "%.1f", g / 18.0182))
             fire(key: kind.rawValue, title: kind.title, body: body, urgent: kind == .urgentLow || kind == .low,
-                 critical: kind == .urgentLow, repeatMinutes: rule.repeatMinutes, now: now)
+                 ignoresMute: kind == .urgentLow, repeatMinutes: rule.repeatMinutes, now: now)
         }
     }
 
@@ -174,7 +182,7 @@ final class AlarmEngine: ObservableObject {
         guard config.pump[info.category] == true else { return }
         fire(key: "pump.\(id)", title: L10n.tr("Pumpe: %@", L10n.tr(info.title)),
              body: L10n.tr("Meldung der Pumpe um %@. Bitte an der Pumpe prüfen.", date.formatted(date: .omitted, time: .shortened)),
-             urgent: info.urgent, critical: info.urgent, repeatMinutes: 0, now: now)
+             urgent: info.urgent, ignoresMute: info.urgent, repeatMinutes: 0, now: now)
     }
 
     // MARK: Snooze
@@ -191,21 +199,22 @@ final class AlarmEngine: ObservableObject {
     }
 
     func sendTest() {
-        post(id: "alarm.test", key: "test", title: L10n.tr("Test-Alarm"), body: L10n.tr("So sieht ein Alarm von iPump-mini aus."), urgent: true, critical: true)
+        post(id: "alarm.test", key: "test", title: L10n.tr("Test-Alarm"), body: L10n.tr("So sieht ein Alarm von iPump-mini aus."), urgent: true)
     }
 
     // MARK: Internals
 
-    private func fire(key: String, title: String, body: String, urgent: Bool, critical: Bool, repeatMinutes: Int, now: Date) {
+    /// `ignoresMute`: urgent low and urgent pump alerts are not silenced by the global mute.
+    private func fire(key: String, title: String, body: String, urgent: Bool, ignoresMute: Bool, repeatMinutes: Int, now: Date) {
         if let until = snoozedUntil[key], until > now { return }
-        if !critical, let until = mutedUntil, until > now { return }
+        if !ignoresMute, let until = mutedUntil, until > now { return }
         if let last = lastFired[key] {
             if repeatMinutes == 0 { return }
             if now.timeIntervalSince(last) < Double(repeatMinutes) * 60 - 30 { return }
         }
         lastFired[key] = now
         save(lastFired, "alarmLastFired")
-        post(id: "alarm.\(key)", key: key, title: title, body: body, urgent: urgent, critical: critical)
+        post(id: "alarm.\(key)", key: key, title: title, body: body, urgent: urgent)
         log?.add("Alarm: \(title) – \(body)", .warning)
     }
 
@@ -215,19 +224,14 @@ final class AlarmEngine: ObservableObject {
         UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["alarm.\(key)"])
     }
 
-    private func post(id: String, key: String, title: String, body: String, urgent: Bool, critical: Bool) {
+    private func post(id: String, key: String, title: String, body: String, urgent: Bool) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.categoryIdentifier = Self.categoryID
         content.userInfo = ["alarmKey": key]
-        if critical && criticalAvailable {
-            content.sound = .defaultCriticalSound(withAudioVolume: 1.0)
-            content.interruptionLevel = .critical
-        } else {
-            content.sound = .default
-            content.interruptionLevel = urgent ? .timeSensitive : .active
-        }
+        content.sound = .default
+        content.interruptionLevel = urgent ? .timeSensitive : .active
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: nil))
     }
 

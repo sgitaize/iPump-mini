@@ -67,6 +67,16 @@ final class AppModel: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(LocalAPIServer.awakeWindow)) { [weak self] in self?.endAPIKeepAlive() }
     }
 
+    /// Starts demo mode right away (first start without a paired pump, e.g. App Review).
+    /// With a paired pump the switch only takes effect on the next start.
+    func enterDemo() {
+        DemoMode.isOn = true
+        guard !link.isPaired else { return }
+        link.stopForDemo()
+        store.loadDemoData()
+        WidgetBridge.update(store: store)
+    }
+
     private func endAPIKeepAlive() {
         guard apiKeepAlive != .invalid else { return }
         UIApplication.shared.endBackgroundTask(apiKeepAlive)
@@ -77,7 +87,8 @@ final class AppModel: ObservableObject {
         api = LocalAPIServer(shared: store.shared)
         uploader = NightscoutUploader(store: store, log: log)
         let uploader = uploader
-        link = PumpLink(config: config, store: store, log: log, onData: {
+        let demo = DemoMode.isOn
+        link = PumpLink(config: config, store: store, log: log, bluetooth: !demo, onData: {
             Watchdog.arm()
         }, onHistory: { oldest in
             uploader.historyAdded(oldestReading: oldest)
@@ -108,21 +119,16 @@ final class AppModel: ObservableObject {
             Task { @MainActor in PebbleMonitor.pebbleRequested() }
         }
         restartAPI()
-        #if DEBUG
-        let isDemo = ProcessInfo.processInfo.arguments.contains("-demoData")
-        #else
-        let isDemo = false
-        #endif
-        // Simulator tests with demo data skip the permission dialog (it blocks the UI).
-        // Asked during onboarding; afterwards refreshes the critical/time-sensitive state.
-        if !isDemo && Terms.isAccepted { AlarmEngine.shared.requestAuthorization() }
+        // Asked during onboarding; afterwards refreshes the time-sensitive state. Demo mode
+        // (simulator screenshots) skips the dialog, it would block the UI.
+        if !demo && Terms.isAccepted { AlarmEngine.shared.requestAuthorization() }
         Watchdog.configure(enabled: AlarmEngine.shared.config.noDataEnabled, minutes: AlarmEngine.shared.config.noDataMinutes)
         link.migrateHistoryIfNeeded()
-        #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-demoData") {
+        if demo {
             store.loadDemoData()
             WidgetBridge.update(store: store)
         }
+        #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-demoAlarm") {
             Task { @MainActor in
                 try? await Task.sleep(for: .seconds(2))
@@ -164,6 +170,7 @@ struct OpenMinipumpApp: App {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 Watchdog.appOpened()
+                AlarmEngine.shared.refreshSettings()
                 model.api.revive()
                 WidgetBridge.appBecameActive(store: model.store)
             }

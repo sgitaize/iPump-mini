@@ -61,8 +61,9 @@ final class PumpLink: NSObject, ObservableObject {
     /// New history data was merged; argument is the oldest newly added sensor value.
     private let onHistory: (Date?) -> Void
 
-    private var peripheralManager: CBPeripheralManager!
-    private var centralManager: CBCentralManager!
+    // nil in demo mode: no Bluetooth at all.
+    private var peripheralManager: CBPeripheralManager?
+    private var centralManager: CBCentralManager?
     private var sakePort: CBMutableCharacteristic?
     private var sake: SakeServer?
     private var pumpCentral: CBCentral?
@@ -114,7 +115,8 @@ final class PumpLink: NSObject, ObservableObject {
         }
     }
 
-    init(config: AppConfig, store: DataStore, log: EventLog,
+    /// `bluetooth: false` (demo mode): no Bluetooth managers at all, the pump is not touched.
+    init(config: AppConfig, store: DataStore, log: EventLog, bluetooth: Bool = true,
          onData: @escaping () -> Void, onHistory: @escaping (Date?) -> Void = { _ in }) {
         self.config = config
         self.keyDatabase = config.keyDatabase
@@ -130,6 +132,10 @@ final class PumpLink: NSObject, ObservableObject {
             defaults.set(advertisedName, forKey: "advertisedName")
         }
         super.init()
+        guard bluetooth else {
+            log.add("Demo-Modus: Bluetooth aus")
+            return
+        }
         peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: [
             CBPeripheralManagerOptionRestoreIdentifierKey: "openminipump.peripheral",
         ])
@@ -149,6 +155,17 @@ final class PumpLink: NSObject, ObservableObject {
     }
 
     /// A key database was imported in the settings.
+    /// Demo mode switched on while no pump is paired: release Bluetooth for this run.
+    func stopForDemo() {
+        guard !isPaired else { return }
+        peripheralManager?.stopAdvertising()
+        peripheralManager?.delegate = nil
+        centralManager?.delegate = nil
+        peripheralManager = nil
+        centralManager = nil
+        log.add("Demo-Modus: Bluetooth aus")
+    }
+
     func setKeyDatabase(_ db: KeyDatabase) {
         keyDatabase = db
         if case .failed = phase { phase = .waitingForPump }
@@ -198,7 +215,7 @@ final class PumpLink: NSObject, ObservableObject {
             updateAdvertising()
             return
         }
-        peripheralManager.removeAllServices()
+        peripheralManager?.removeAllServices()
         defaults.set(Self.gattVersion, forKey: "gattVersion")
         let port = CBMutableCharacteristic(type: CBUUID(string: PumpUUID.sakePort),
                                            properties: [.write, .notify], value: nil, permissions: [.writeable])
@@ -213,24 +230,24 @@ final class PumpLink: NSObject, ObservableObject {
             CBMutableCharacteristic(type: CBUUID(string: $0), properties: [.read], value: nil, permissions: [.readable])
         }
         // Same order as the official app: SAKE service first, then device information.
-        peripheralManager.add(sakeService)
-        peripheralManager.add(dis)
+        peripheralManager?.add(sakeService)
+        peripheralManager?.add(dis)
         log.add("GATT-Server registriert (SAKE 0xFE82, DIS 0x0900)")
     }
 
     private func updateAdvertising() {
-        guard peripheralManager.state == .poweredOn, sakePort != nil else { return }
-        peripheralManager.stopAdvertising()
+        guard peripheralManager?.state == .poweredOn, sakePort != nil else { return }
+        peripheralManager?.stopAdvertising()
         if case .blocked = phase { return }
         if pairingMode {
-            peripheralManager.startAdvertising([
+            peripheralManager?.startAdvertising([
                 CBAdvertisementDataServiceUUIDsKey: [CBUUID(string: PumpUUID.sakeService)],
                 CBAdvertisementDataLocalNameKey: "Mobile \(advertisedName)",
             ])
             if phase != .connected { phase = .pairing }
         } else if phase != .connected {
             // Reconnects work via the bond (IRK) as well, see lab notebook capture 2.
-            peripheralManager.startAdvertising([
+            peripheralManager?.startAdvertising([
                 CBAdvertisementDataServiceUUIDsKey: [CBUUID(string: PumpUUID.reconnectService)],
             ])
             if phase == .pairing { phase = .waitingForPump }
@@ -245,7 +262,7 @@ final class PumpLink: NSObject, ObservableObject {
     private func flushOutbox() {
         guard let port = sakePort, let central = pumpCentral else { return }
         while let next = outbox.first {
-            guard peripheralManager.updateValue(next, for: port, onSubscribedCentrals: [central]) else { return }
+            guard peripheralManager?.updateValue(next, for: port, onSubscribedCentrals: [central]) == true else { return }
             outbox.removeFirst()
         }
     }
@@ -280,15 +297,15 @@ final class PumpLink: NSObject, ObservableObject {
 
     private func connectAsGattClient() {
         phase = .connecting
-        guard centralManager.state == .poweredOn else { log.add("Central nicht bereit", .warning); return }
+        guard centralManager?.state == .poweredOn else { log.add("Central nicht bereit", .warning); return }
         var candidates: [CBPeripheral] = []
         if let id = pumpCentral?.identifier {
-            candidates = centralManager.retrievePeripherals(withIdentifiers: [id])
+            candidates = centralManager?.retrievePeripherals(withIdentifiers: [id]) ?? []
         }
         if candidates.isEmpty {
-            candidates = centralManager.retrieveConnectedPeripherals(withServices: [
+            candidates = centralManager?.retrieveConnectedPeripherals(withServices: [
                 CBUUID(string: PumpUUID.cgmService), CBUUID(string: PumpUUID.iddService),
-            ])
+            ]) ?? []
         }
         log.add("GATT-Client: \(candidates.count) Kandidat(en) gefunden")
         guard let peripheral = candidates.first else {
@@ -307,7 +324,7 @@ final class PumpLink: NSObject, ObservableObject {
         if peripheral.state == .connected {
             startDiscovery(peripheral)
         } else {
-            centralManager.connect(peripheral)
+            centralManager?.connect(peripheral)
         }
     }
 
@@ -330,13 +347,13 @@ final class PumpLink: NSObject, ObservableObject {
     private func resumeSavedSession() {
         guard crypt == nil, sake == nil else { return }
         let savedID = UserDefaults.standard.string(forKey: "pumpID").flatMap(UUID.init(uuidString:))
-        let known = pump ?? savedID.flatMap { centralManager.retrievePeripherals(withIdentifiers: [$0]).first }
+        let known = pump ?? savedID.flatMap { centralManager?.retrievePeripherals(withIdentifiers: [$0]).first }
 
         // One-time cleanup after the build that issued own connection requests: drop a
         // pending/own connection and ask the pump for a fresh handshake on its own link.
         if UserDefaults.standard.integer(forKey: "linkFixVersion") < Self.linkFixVersion {
             UserDefaults.standard.set(Self.linkFixVersion, forKey: "linkFixVersion")
-            if let known { centralManager.cancelPeripheralConnection(known) }
+            if let known { centralManager?.cancelPeripheralConnection(known) }
             pump = nil
             SessionStore.clear()
             log.add("Eigene Verbindungsanfrage zur Pumpe verworfen, warte auf Neuverbindung durch die Pumpe", .warning)
@@ -345,7 +362,7 @@ final class PumpLink: NSObject, ObservableObject {
         }
         // A pending connection request from an earlier run: cancel it.
         if let known, known.state == .connecting {
-            centralManager.cancelPeripheralConnection(known)
+            centralManager?.cancelPeripheralConnection(known)
             log.add("Hängende Verbindungsanfrage abgebrochen")
         }
         guard let saved = SessionStore.load(), let peripheral = known, peripheral.state == .connected else {
@@ -384,7 +401,7 @@ final class PumpLink: NSObject, ObservableObject {
         log.add("Keine gespeicherte Sitzung, fordere neuen Handshake an (GATT-Dienste neu registrieren)")
         sakePort = nil
         UserDefaults.standard.set(0, forKey: "gattVersion")
-        if peripheralManager.state == .poweredOn { setUpServices() }
+        if peripheralManager?.state == .poweredOn { setUpServices() }
     }
 
     private func resetClientState() {
@@ -448,11 +465,11 @@ final class PumpLink: NSObject, ObservableObject {
     private func block(_ reason: String) {
         log.add(reason, .blocked)
         phase = .blocked(reason)
-        if let pump { centralManager.cancelPeripheralConnection(pump) }
+        if let pump { centralManager?.cancelPeripheralConnection(pump) }
         pump = nil
         resetClientState()
         sake = nil
-        peripheralManager.stopAdvertising()
+        peripheralManager?.stopAdvertising()
     }
 
     // MARK: - Guarded access (hard rule 1)

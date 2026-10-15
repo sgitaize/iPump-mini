@@ -113,7 +113,7 @@ Keine Verbindung zu Medtronic. MiniMed, SmartGuard, Guardian, Simplera und CareL
 | Category | Medical (ehrlich; strengere Prüfung) – Alternative Health & Fitness |
 | Support URL | https://github.com/sgitaize/iPump-mini/issues |
 | Marketing URL | https://simongutjahr.de/dev/ipump-mini/ |
-| Privacy Policy URL | **fehlt noch** – eigener Abschnitt „iPump-mini“ in https://simongutjahr.de/impressum/#datenschutz |
+| Privacy Policy URL | https://simongutjahr.de/impressum/#ipump-mini (live seit 15.10.2026, DE/EN) |
 | Price | Free |
 | App Privacy („Nutrition Label“) | Data Not Collected |
 | Age Rating | 4+ (keine medizinischen Ratschläge im Sinne der Altersfreigabe; „Medical/Treatment Information: None“ prüfen) |

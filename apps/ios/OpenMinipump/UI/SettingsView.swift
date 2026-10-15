@@ -30,6 +30,7 @@ struct SettingsView: View {
     @AppStorage(Prefs.widgetHoursKey, store: Prefs.defaults) private var widgetHours = 3
     @State private var liveActivity = WidgetBridge.liveActivityEnabled
     @State private var pebbleMonitor = PebbleMonitor.enabled
+    @State private var demoChanged = false
     @State private var pebbleMinutes = PebbleMonitor.minutes
 
     var body: some View {
@@ -176,6 +177,16 @@ struct SettingsView: View {
                 }
 
                 Section("Info", isExpanded: $openInfo) {
+                    Toggle("Demo-Modus", isOn: Binding(
+                        get: { DemoMode.isOn },
+                        set: { on in
+                            if on { model.enterDemo() } else { DemoMode.isOn = false }
+                            demoChanged = true
+                        }))
+                    if demoChanged || DemoMode.isOn {
+                        Text("Simulierte Werte ohne Pumpe, zum Ausprobieren. Im Demo-Modus nutzt die App kein Bluetooth, speichert nichts, lädt nichts hoch und gibt keine Alarme. Ein- und Ausschalten mit gekoppelter Pumpe wirkt beim nächsten Start der App (im App-Umschalter schließen und neu öffnen).")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                     NavigationLink("Anleitung") { GuideView() }
                     NavigationLink("Nutzungsbedingungen") { TermsView() }
                     NavigationLink("Protokoll") { LogView() }

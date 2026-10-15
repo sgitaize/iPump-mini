@@ -15,6 +15,8 @@ struct OnboardingView: View {
     @State private var understoodAlarms = false
     @State private var notifications: UNAuthorizationStatus = .notDetermined
     @State private var showPairing = false
+    /// "Try without a pump": after accepting the terms, go straight to demo mode.
+    @State private var demoRequested = false
     let onFinish: () -> Void
 
     var body: some View {
@@ -60,6 +62,11 @@ struct OnboardingView: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            Button("Ohne Pumpe ansehen (Demo)") {
+                demoRequested = true
+                page = 1
+            }
+            .font(.subheadline)
         }
         .padding(24)
     }
@@ -84,7 +91,12 @@ struct OnboardingView: View {
                 }
                 Button {
                     Terms.accept()
-                    page = 2
+                    if demoRequested {
+                        model.enterDemo()
+                        onFinish()
+                    } else {
+                        page = 2
+                    }
                 } label: {
                     Text("Zustimmen").frame(maxWidth: .infinity)
                 }
@@ -115,7 +127,7 @@ struct OnboardingView: View {
                 }
                 Button {
                     Task {
-                        _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .criticalAlert])
+                        _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
                         AlarmEngine.shared.requestAuthorization()
                         await refreshNotificationStatus()
                     }
@@ -140,7 +152,7 @@ struct OnboardingView: View {
             }
             Section {
                 GuideItem(icon: "moon", title: "Fokus und Schlafmodus",
-                          text: "Füge iPump-mini in deinem Schlaf-Fokus unter „Erlaubte Apps“ hinzu, sonst bleiben Alarme nachts stumm.")
+                          text: "Damit dringende Alarme nachts durchkommen: in den iPhone-Einstellungen „Zeitkritische Mitteilungen“ für iPump-mini einschalten und im Schlaf-Fokus erlauben. Anleitung: Einstellungen › Alarme.")
                 GuideItem(icon: "iphone", title: "App nicht wegwischen",
                           text: "Nur im Hintergrund laufend bekommt die App alle 5 Minuten neue Werte.")
                 NavigationLink("Ganze Anleitung") { GuideView() }

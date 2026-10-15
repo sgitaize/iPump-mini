@@ -10,6 +10,7 @@ enum Publisher {
     static let websiteTitle = "simongutjahr.de"
     static let website = URL(string: "https://simongutjahr.de/dev/")!
     static let imprint = URL(string: "https://simongutjahr.de/impressum/")!
+    static let privacy = URL(string: "https://simongutjahr.de/impressum/#ipump-mini")!
     static let repository = URL(string: "https://github.com/sgitaize/iPump-mini")!
 }
 
@@ -37,7 +38,8 @@ struct AboutView: View {
                 Link(destination: URL(string: "mailto:\(Publisher.email)")!) { Label(Publisher.email, systemImage: "envelope") }
                 Link(destination: URL(string: "tel:\(Publisher.phone.filter(\.isNumber))")!) { Label(Publisher.phone, systemImage: "phone") }
                 Link(destination: Publisher.website) { Label(Publisher.websiteTitle, systemImage: "globe") }
-                Link(destination: Publisher.imprint) { Label("Impressum und Datenschutz", systemImage: "doc.text") }
+                Link(destination: Publisher.imprint) { Label("Impressum", systemImage: "doc.text") }
+                Link(destination: Publisher.privacy) { Label("Datenschutzerklärung der App", systemImage: "hand.raised") }
                 Text("Privates, nicht-kommerzielles Open-Source-Projekt.")
                     .font(.footnote).foregroundStyle(.secondary)
             }

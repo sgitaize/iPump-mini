@@ -56,9 +56,14 @@ final class DataStore: ObservableObject {
             .flatMap { abs($0.date.timeIntervalSince(date)) <= 300 ? $0.units : nil }
     }
 
-    #if DEBUG
-    /// Synthetic values for simulator tests (launch argument -demoData). Never in release builds.
+    /// false in demo mode: nothing is written to disk, so real data stays untouched.
+    private(set) var persistenceEnabled = true
+    private var demoTimer: Timer?
+
+    /// Synthetic values for demo mode (App Review, screenshots). Disables saving and adds a
+    /// new simulated value every 5 minutes so widgets and the Live Activity keep moving.
     func loadDemoData() {
+        persistenceEnabled = false
         let now = Date()
         readings = (0..<72).map { i in
             let t = Double(71 - i)
@@ -82,9 +87,29 @@ final class DataStore: ObservableObject {
                       value: [0.05, 0.1, 0.0, 0.15, 0.05][i % 5])
         }.filter { ($0.value ?? 0) > 0 }
         iobHistory = (0..<72).map { i in IOBSample(date: now.addingTimeInterval(-Double(71 - i) * 300), units: max(0, 3.2 - Double(i) * 0.03)) }
+        // Pump status from JSON (the types are Codable and otherwise only parsed from bytes).
+        func decode<T: Decodable>(_ json: String) -> T? { try? JSONDecoder().decode(T.self, from: Data(json.utf8)) }
+        var demo = snapshot
+        demo.status = decode(#"{"therapyControlState":85,"operationalState":150,"reservoirUnits":142,"reservoirAttached":true,"sensorConnectivity":1,"sensorMessageState":0}"#)
+        demo.iob = decode(#"{"units":1.85,"remainingDurationMinutes":150}"#)
+        demo.timeInRange = decode(#"{"notEnoughData":false,"abovePercent":14,"belowPercent":2,"inRangePercent":84,"smartGuardPercent":98}"#)
+        demo.algorithm = decode(#"{"shieldState":2,"readinessState":0}"#)
+        demo.basal = decode(#"{"profileNumber":1,"unitsPerHour":0.85}"#)
+        snapshot = demo
+        lastDataAt = now
         touched()
+        demoTimer?.invalidate()
+        demoTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
+            Task { @MainActor in self?.addDemoReading() }
+        }
     }
-    #endif
+
+    private func addDemoReading() {
+        let now = Date()
+        let t = now.timeIntervalSince1970 / 300
+        let mgdl = Int(130 + 50 * sin(t / 9))
+        add(GlucoseReading(date: now, mgdl: mgdl, trendMgdlPerMin: 50.0 / 45.0 * cos(t / 9), sessionOffsetMinutes: nil))
+    }
 
     func add(_ reading: GlucoseReading) {
         // Same sensor record (offset) or a value within 2 minutes counts as duplicate.
@@ -167,6 +192,7 @@ final class DataStore: ObservableObject {
     }
 
     private func save() {
+        guard persistenceEnabled else { return }
         let p = Persisted(readings: readings, snapshot: snapshot, lastDataAt: lastDataAt, treatments: treatments,
                           iobHistory: iobHistory)
         if let data = try? JSONEncoder().encode(p) {

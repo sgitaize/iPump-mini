@@ -29,11 +29,11 @@ struct GuideView: View {
                 GuideItem(icon: "bell.badge", title: "Mitteilungen erlauben",
                           text: "Ohne Erlaubnis kommen keine Alarme. Prüfen unter iPhone-Einstellungen › Mitteilungen › iPump-mini: Mitteilungen, Töne und Sperrbildschirm an.")
                 GuideItem(icon: "moon", title: "Fokus und Schlafmodus",
-                          text: "Ein Fokus (auch „Schlafen“) hält normale Mitteilungen zurück. Füge iPump-mini im Fokus unter „Erlaubte Apps“ hinzu, sonst hörst du nachts keinen Alarm.")
+                          text: "Ein Fokus (auch „Schlafen“) hält Mitteilungen zurück. Dringende Alarme kommen als zeitkritische Mitteilung durch, wenn du das im Fokus erlaubst: Einstellungen › Fokus › Schlafen › Apps › iPump-mini hinzufügen oder „Zeitkritische Mitteilungen“ erlauben.")
                 GuideItem(icon: "speaker.slash", title: "Stummschalter",
-                          text: "Bei stummgeschaltetem iPhone kommen Alarme ohne Ton. Nur „kritische Alarme“ durchbrechen den Stummschalter; die braucht eine Freigabe von Apple, die selbst gebaute Versionen nicht haben.")
+                          text: "Bei stummgeschaltetem iPhone kommen Alarme ohne Ton – auch zeitkritische. Nachts das iPhone nicht stumm schalten.")
                 GuideItem(icon: "clock.badge.exclamationmark", title: "Zeitkritische Mitteilungen",
-                          text: "Mit einem bezahlten Entwickler-Account kommen dringende Alarme als „zeitkritisch“ auch durch Fokus-Modi. Mit dem kostenlosen Account nicht.")
+                          text: "Dringende Alarme kommen als zeitkritische Mitteilung. Einschalten unter iPhone-Einstellungen › Mitteilungen › iPump-mini › „Zeitkritische Mitteilungen“. Schritt für Schritt: Einstellungen › Alarme › So richtest du es ein.")
                 GuideItem(icon: "zzz", title: "Stummschalten",
                           text: "Einzelne Alarme lassen sich direkt in der Mitteilung für 15, 30 oder 60 Minuten stummschalten. „Dringend niedrig“ lässt sich nicht global stummschalten.")
             }

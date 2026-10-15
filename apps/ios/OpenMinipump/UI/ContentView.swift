@@ -36,7 +36,11 @@ struct ContentView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    if !Self.screenshotMode { StatusBanner(showPairing: $showPairing) }
+                    if DemoMode.isOn && !Self.screenshotMode {
+                        DemoBanner()
+                    } else if !Self.screenshotMode {
+                        StatusBanner(showPairing: $showPairing)
+                    }
                     MuteBanner()
                     SensorTypeCard()
                     GlucoseHeader()
@@ -718,5 +722,22 @@ struct GlucosePointDetail: View {
         }
         .padding(10)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+/// Shown instead of the connection status while demo mode is on.
+struct DemoBanner: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "play.rectangle.on.rectangle").foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Demo-Modus").font(.headline)
+                Text("Simulierte Werte, keine Pumpe verbunden. Beenden unter Einstellungen › Info.")
+                    .font(.subheadline).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding()
+        .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
     }
 }

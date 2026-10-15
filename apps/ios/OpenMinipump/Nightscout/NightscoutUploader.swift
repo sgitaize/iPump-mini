@@ -98,7 +98,8 @@ final class NightscoutUploader: ObservableObject {
     }
 
     func sync() async {
-        guard enabled, !running, let base = baseURL else { return }
+        // Never upload simulated values.
+        guard enabled, !running, !DemoMode.isOn, let base = baseURL else { return }
         running = true
         defer { running = false }
         let bgTask = UIApplication.shared.beginBackgroundTask(withName: "nightscout-upload")
