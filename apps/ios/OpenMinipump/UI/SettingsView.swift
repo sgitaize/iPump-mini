@@ -40,8 +40,10 @@ struct SettingsView: View {
                     LabeledContent("Name in der Pumpe", value: "Mobile \(link.advertisedName)")
                     LabeledContent("Seriennummer", value: link.pumpSerial ?? "–")
                     LabeledContent("Firmware", value: link.pumpFirmware ?? "–")
-                    LabeledContent("Verbindung", value: link.phase.label)
-                    LabeledContent("Entwicklermodus", value: model.config.devGuard.devMode ? L10n.tr("an (nur Testpumpe)") : L10n.tr("aus"))
+                    LabeledContent("Verbindung", value: DemoMode.isOn ? L10n.tr("Demo-Modus") : link.phase.label)
+                    if model.config.devGuard.devMode {
+                        LabeledContent("Entwicklermodus", value: L10n.tr("an (nur Testpumpe)"))
+                    }
                     NavigationLink("Schlüsseldatenbank") { KeyImportView() }
                 }
 

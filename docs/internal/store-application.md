@@ -118,7 +118,7 @@ Keine Verbindung zu Medtronic. MiniMed, SmartGuard, Guardian, Simplera und CareL
 | App Privacy („Nutrition Label“) | Data Not Collected |
 | Age Rating | 4+ (keine medizinischen Ratschläge im Sinne der Altersfreigabe; „Medical/Treatment Information: None“ prüfen) |
 | Copyright | 2026 Simon Gutjahr |
-| Export compliance | Die App verwendet Verschlüsselung (AES/CMAC für das Bluetooth-Protokoll der Pumpe). Vor Einreichung `ITSAppUsesNonExemptEncryption` klären; vermutlich Ausnahme für Standardalgorithmen. |
+| Export compliance | Siehe Abschnitt 9. |
 
 ### App Review Information – Notes (EN)
 ```
@@ -137,7 +137,7 @@ PRIVACY
 No account, no analytics, no data collection. Data stays on the device. An optional upload goes only to a Nightscout server the user operates.
 
 HOW TO REVIEW WITHOUT A PUMP
-The app requires a MiniMed 780G pump. For review, a demo mode with simulated values is available: [TODO: Demo-Modus für Release-Builds einbauen, z. B. Einstellungen › Info › 7× auf Version tippen, oder Startbildschirm „Ohne Pumpe ansehen“]. Demo mode shows the graph, widgets, Live Activity and settings with generated data and does not use Bluetooth.
+The app requires a MiniMed 780G pump. For review, a demo mode with simulated values is available: on the first screen tap "Try without a pump (demo)", accept the terms, and the app shows simulated values (a new one every 5 minutes). It can also be switched on under Settings › Info › Demo mode. Demo mode does not use Bluetooth, saves nothing, uploads nothing and gives no alarms; widgets and the Live Activity show the simulated values.
 
 INTEROPERABILITY
 The app is an independent, open-source implementation (GPL-3.0) for interoperability with the user's own device. It contains no code or assets of the manufacturer. Source: https://github.com/sgitaize/iPump-mini
@@ -169,28 +169,9 @@ Please report problems with the log (Settings › Info › Log › Share).
 
 ---
 
-## 4. Antrag „Critical Alerts Entitlement“ (Apple)
+## 4. Kritische Alarme – zurückgestellt
 
-Formular: developer.apple.com/contact/request/notifications-critical-alerts-entitlement
-
-**App name:** iPump-mini
-**Bundle ID:** de.sgitaize.openminipump
-
-**Explain why your app needs critical alerts (EN):**
-```
-iPump-mini is used by people with type 1 diabetes who wear a MiniMed 780G insulin pump with a continuous glucose sensor. The app reads the user's own pump over Bluetooth and can warn about an urgent low glucose value (default 55 mg/dL / 3.1 mmol/L) and about pump alerts such as "no insulin delivery".
-
-A severe low glucose level is a medical emergency that can lead to unconsciousness, especially during sleep. Many users keep their iPhone silenced or in a Sleep Focus at night. Without critical alerts, an urgent-low warning would be silent exactly when it matters most.
-
-Critical alerts are used only for:
-- urgent low glucose (user-configurable threshold, default 55 mg/dL), and
-- urgent pump alerts (e.g. insulin delivery stopped).
-All other notifications (low, high, rapid change, reminders) are regular or time-sensitive notifications. Users can turn critical alerts off at any time in the app and in iOS Settings.
-
-The app does not replace the pump's own alarms; it is an additional safety net that users explicitly opt into. It is free, open source and collects no data.
-```
-
-**Hinweis:** Apple vergibt das Entitlement meist an Apps mit klarem medizinischem oder Sicherheitszweck. Eine Ablehnung ist möglich, weil die App kein Medizinprodukt ist. Dann bleibt „zeitkritisch“.
+Simon (15.10.2026): vorerst **keine** kritischen Alarme beantragen. Dringende Alarme sind zeitkritische Mitteilungen; die App erklärt unter Einstellungen › Alarme › „So richtest du es ein“, wie man sie einschaltet und im Fokus erlaubt. Der Antragstext liegt in der Git-Historie dieser Datei, falls er später gebraucht wird.
 
 ---
 
@@ -225,16 +206,27 @@ Treatment always happens on the pump. iPump-mini cannot deliver or suggest a dos
 ```
 The app is an independent implementation for interoperability with the user's own device, based on public research (OpenMinimed, GPL-3.0) and the public Bluetooth SIG specifications (Insulin Delivery Service, CGM Service). It contains no code or assets of the manufacturer. Trademarks are used only descriptively to state compatibility, with a clear non-affiliation notice.
 ```
-**„How can we test the app?“** → Demo-Modus (siehe Abschnitt 2, To-do).
+**„How can we test the app?“** → Demo-Modus (siehe Review-Notes in Abschnitt 2).
 
 ---
 
-## 8. Offene Punkte vor der ersten Einreichung
+## 8. Stand vor der ersten Einreichung
 
-1. **Demo-Modus für Review** auch in Release-Builds (ohne Bluetooth, simulierte Werte, klar gekennzeichnet).
-2. **Datenschutzerklärung** mit eigenem Abschnitt iPump-mini auf simongutjahr.de (kein Tracking, keine Daten, optional Nightscout des Nutzers, Schlüsseldatenbank-Abruf von GitHub).
-3. **Code-Doku:** Doku-Kommentare für öffentliche Typen in MiniMedKit und die App-Kerne, `docs/en/architecture.md` (Aufbau, Datenfluss, Sicherheitsgrenzen), Protokollmeldungen und Statusseite der lokalen API auf Englisch bzw. lokalisiert.
-4. **Screenshots** in den App-Store-Größen (6,9″: 1320 × 2868) mit Demo-Daten, DE und EN.
-5. **Export-Compliance** (Verschlüsselung) klären.
-6. **Rechtliche Kurzprüfung** (Medizinprodukte-Verordnung, Kompatibilitäts-Kennung) vor App Store; AltStore Classic und TestFlight sind davon weniger betroffen.
-7. Kritische Alarme beantragen (Abschnitt 4).
+- [x] Demo-Modus für Review (Startbildschirm „Ohne Pumpe ansehen (Demo)“, Einstellungen › Info)
+- [x] Datenschutzerklärung: https://simongutjahr.de/impressum/#ipump-mini
+- [x] Screenshots 6,9″ DE/EN: `docs/store/screenshots/`
+- [x] Code-Doku: MiniMedKit vollständig mit Doku-Kommentaren, `docs/en/architecture.md`
+- [x] Zeitkritische Alarme mit Einrichtungsanleitung; kritische Alarme zurückgestellt
+- [ ] Export-Compliance beantworten (Abschnitt 9)
+- [ ] Rechtliche Kurzprüfung (Medizinprodukte-Verordnung, Kompatibilitäts-Kennung) vor dem App Store; TestFlight und AltStore Classic sind weniger betroffen
+- [ ] Optional: Protokollmeldungen der App englisch bzw. lokalisiert, Statusseite der lokalen API zweisprachig
+
+## 9. Verschlüsselung (Export-Compliance)
+
+Apple fragt bei jeder Einreichung, ob die App Verschlüsselung verwendet (US-Exportrecht, EAR Kategorie 5 Teil 2). iPump-mini verwendet:
+
+1. **SAKE-Protokoll zur Pumpe:** AES-128 im CTR-Modus und AES-CMAC (Authentifizierung), um die Bluetooth-Verbindung mit der Pumpe zu verschlüsseln. Standardalgorithmen, umgesetzt mit Apples CommonCrypto, aber außerhalb von Apples Netzwerk-APIs – deshalb zählt das als „eigene“ Verwendung von Verschlüsselung.
+2. **HTTPS** über Apples `URLSession` (Nightscout, GitHub) – fällt unter Apples eigene Verschlüsselung.
+3. **Schlüsselbund** (iOS) für Secrets.
+
+Antworten in App Store Connect (Vorschlag, keine Rechtsberatung): „Uses encryption: **Yes**“ → „Standard encryption algorithms instead of, or in addition to, Apple's: **Yes**“. Danach fragt Apple, ob eine Ausnahme greift; die Verschlüsselung dient hier der Kommunikation mit einem medizinischen Gerät des Nutzers, nicht der allgemeinen Datenverschlüsselung. Ob das als Ausnahme („medical end-use“) oder als Massenmarkt-Verschlüsselung einzuordnen ist, vor der ersten Einreichung kurz prüfen. Ergebnis als `ITSAppUsesNonExemptEncryption` in `project.yml` (Info.plist) eintragen, dann fragt Apple nicht bei jedem Build erneut. Für TestFlight intern und AltStore Classic spielt das keine Rolle.

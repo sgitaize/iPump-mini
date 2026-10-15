@@ -718,17 +718,6 @@
         }
       }
     },
-    "aus" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "off"
-          }
-        }
-      }
-    },
     "Aussehen" : {
       "localizations" : {
         "en" : {

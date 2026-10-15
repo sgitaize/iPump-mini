@@ -15,6 +15,11 @@ struct ContentView: View {
     @State private var showOnboarding = Terms.needsOnboarding
     /// Debug: `-screenshot` hides the status card (the simulator has no Bluetooth).
     #if DEBUG
+    private static let debugScreen: String? = {
+        let a = ProcessInfo.processInfo.arguments
+        guard let i = a.firstIndex(of: "-screen"), i + 1 < a.count else { return nil }
+        return a[i + 1]
+    }()
     private static let screenshotMode = ProcessInfo.processInfo.arguments.contains("-screenshot")
     #else
     private static let screenshotMode = false
@@ -24,6 +29,20 @@ struct ContentView: View {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-widgetGallery") {
             WidgetGallery()
+        } else if let screen = Self.debugScreen {
+            // Screenshots: open a screen directly (-screen alarms|settings|guide|terms|about).
+            switch screen {
+            case "settings": SettingsView()
+            default:
+                NavigationStack {
+                    switch screen {
+                    case "alarms": AlarmSettingsView()
+                    case "guide": GuideView()
+                    case "terms": TermsView()
+                    default: AboutView()
+                    }
+                }
+            }
         } else {
             main
         }
