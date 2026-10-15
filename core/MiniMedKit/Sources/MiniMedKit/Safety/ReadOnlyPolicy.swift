@@ -10,11 +10,13 @@
 // forbidden.
 import Foundation
 
+/// A write the app wants to send to the pump, in plaintext (before encryption).
 public struct WriteRequest: Sendable, Equatable {
     public let service: String
     public let characteristic: String
     public let plaintext: [UInt8]
 
+    /// Creates a request; UUIDs are compared case-insensitively.
     public init(service: String, characteristic: String, plaintext: [UInt8]) {
         self.service = service.uppercased()
         self.characteristic = characteristic.uppercased()
@@ -22,6 +24,7 @@ public struct WriteRequest: Sendable, Equatable {
     }
 }
 
+/// Result of the policy check: allowed, or blocked with a reason for the log.
 public enum PolicyDecision: Equatable, Sendable {
     case allowed(String)
     case blocked(String)
@@ -29,6 +32,7 @@ public enum PolicyDecision: Equatable, Sendable {
     public var isAllowed: Bool { if case .allowed = self { true } else { false } }
 }
 
+/// Hard rule 1: the app only reads. Every write to the pump must pass `check`; only report/read requests on the allowlist are allowed, everything else is blocked.
 public enum ReadOnlyPolicy {
     /// Characteristics we may subscribe to (CCCD write). Subscribing only asks the
     /// pump to report values and does not change therapy or settings.
@@ -46,6 +50,7 @@ public enum ReadOnlyPolicy {
         PumpUUID.gstBatteryLevel, PumpUUID.sensorExpiration,
     ].map { $0.uppercased() })
 
+    /// Decides whether a write may be sent. Unknown characteristics or opcodes are always blocked.
     public static func check(_ request: WriteRequest) -> PolicyDecision {
         let p = request.plaintext
         switch (request.service, request.characteristic) {
@@ -89,10 +94,12 @@ public enum ReadOnlyPolicy {
         }
     }
 
+    /// Whether reading this characteristic is allowed.
     public static func mayRead(_ characteristic: String) -> Bool {
         readable.contains(characteristic.uppercased())
     }
 
+    /// Whether subscribing to notifications/indications of this characteristic is allowed.
     public static func maySubscribe(_ characteristic: String) -> Bool {
         subscribable.contains(characteristic.uppercased())
     }
@@ -103,6 +110,7 @@ public struct DevModeGuard: Sendable {
     public let devMode: Bool
     public let testPumpSerial: String
 
+    /// `devMode` locks the app to `testPumpSerial` (developer builds); public builds use `devMode: false`.
     public init(devMode: Bool, testPumpSerial: String) {
         self.devMode = devMode
         self.testPumpSerial = testPumpSerial
@@ -117,6 +125,7 @@ public struct DevModeGuard: Sendable {
         return s.filter { $0.isLetter || $0.isNumber }
     }
 
+    /// Whether the app may talk to a pump with this serial number.
     public func accepts(serial: String?) -> Bool {
         guard devMode else { return true }
         guard let serial, !testPumpSerial.isEmpty else { return false }

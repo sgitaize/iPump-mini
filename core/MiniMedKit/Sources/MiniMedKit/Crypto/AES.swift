@@ -3,6 +3,7 @@
 import CommonCrypto
 import Foundation
 
+/// Errors of the CommonCrypto wrappers (AES-ECB, AES-CTR, AES-CMAC).
 public enum CryptoError: Error, Equatable {
     case invalidKeyLength
     case invalidBlockLength

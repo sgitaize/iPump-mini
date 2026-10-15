@@ -7,12 +7,16 @@
 import Foundation
 import Security
 
+/// Source of random bytes (injectable for tests with captured handshakes).
 public protocol RandomSource {
     func bytes(_ count: Int) -> [UInt8]
 }
 
+/// Cryptographically secure random bytes from the system (SecRandomCopyBytes).
 public struct SystemRandom: RandomSource {
+    /// Creates the system random source.
     public init() {}
+    /// Returns `count` random bytes.
     public func bytes(_ count: Int) -> [UInt8] {
         var out = [UInt8](repeating: 0, count: count)
         let status = SecRandomCopyBytes(kSecRandomDefault, count, &out)
@@ -21,6 +25,7 @@ public struct SystemRandom: RandomSource {
     }
 }
 
+/// Server side of the SAKE handshake (the phone; the pump is the client). Six 20-byte messages; afterwards `crypt` encrypts the session.
 public final class SakeServer {
     public static let messageSize = 20
     static let defaultMsg4Pad: UInt8 = 0x69
@@ -44,6 +49,7 @@ public final class SakeServer {
     /// directions (separate tx/rx counters), as in the reference implementation.
     public private(set) var crypt: SeqCrypt?
 
+    /// Creates a server for a new handshake with the given key database.
     public init(keyDatabase: KeyDatabase,
                 localDeviceType: SakeDeviceType = .mobileApplication,
                 random: RandomSource = SystemRandom()) {

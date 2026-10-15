@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import Foundation
 
+/// CRC-32 (key database) and the Bluetooth E2E-CRC (CRC-16/CCITT-FALSE) used by CGM and IDD records.
 public enum Checksums {
     /// CRC-32 (IEEE 802.3, zlib), used for the SAKE key database header.
     public static func crc32(_ data: [UInt8]) -> UInt32 {

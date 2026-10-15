@@ -6,6 +6,7 @@
 // IV/CMAC prefix: seq (5 bytes BE) || sessionNonce (8 bytes) || 00 00 00
 import Foundation
 
+/// Errors of the SAKE handshake and the session cipher.
 public enum SakeError: Error, Equatable {
     case invalidMessageLength(Int)
     case unexpectedHandshakeStart
@@ -17,6 +18,7 @@ public enum SakeError: Error, Equatable {
     case sequenceExhausted
 }
 
+/// SAKE session cipher: AES-CTR with a sequence number in the nonce and a truncated AES-CMAC (2 bytes). Separate counters for sending and receiving.
 public final class SeqCrypt {
     static let maxRxDelta = 128
     static let maxSeq: UInt64 = 1 << 40
@@ -52,6 +54,7 @@ public final class SeqCrypt {
         rxSeq = state.rxSeq
     }
 
+    /// Encrypts and authenticates a message and advances the send counter.
     public func encrypt(_ plaintext: [UInt8]) throws -> [UInt8] {
         let seq = txSeq
         guard seq < Self.maxSeq else { throw SakeError.sequenceExhausted }
@@ -62,6 +65,7 @@ public final class SeqCrypt {
         return ciphertext + [UInt8((seq >> 1) & 0xFF), tag[0], tag[1]]
     }
 
+    /// Checks and decrypts a message; accepts sequence numbers slightly ahead of the receive counter.
     public func decrypt(_ message: [UInt8]) throws -> [UInt8] {
         guard message.count >= 3 else { throw SakeError.invalidMessageLength(message.count) }
         let seqByte = Int(message[message.count - 3])

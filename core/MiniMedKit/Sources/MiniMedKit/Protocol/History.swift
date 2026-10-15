@@ -4,6 +4,7 @@
 // Documentation/idd-service.md). Records arrive SAKE-encrypted and are decrypted first.
 import Foundation
 
+/// Decoded IDD history event types the app uses (Medtronic types 0xF0xx and IDS types).
 public enum HistoryEvent: Equatable, Sendable {
     /// Pump clock reference (local time, no time zone). Later records count their
     /// relative offset (seconds) from the latest reference.
@@ -29,6 +30,7 @@ public enum HistoryEvent: Equatable, Sendable {
     case other(type: UInt16)
 }
 
+/// One IDD history record: event type, sequence number, offset to the reference time and the decoded event.
 public struct HistoryRecord: Equatable, Sendable {
     public let eventType: UInt16
     public let sequence: UInt32
@@ -36,6 +38,7 @@ public struct HistoryRecord: Equatable, Sendable {
     public let relativeOffset: UInt16
     public let event: HistoryEvent
 
+    /// Parses a decrypted history record (after the E2E-CRC check).
     public init(_ data: [UInt8]) throws {
         var r = ByteReader(data)
         eventType = try r.u16()
@@ -138,6 +141,7 @@ public struct TimedHistoryEvent: Equatable, Sendable {
     public let event: HistoryEvent
 }
 
+/// Turns relative history offsets into absolute dates using the NGP reference time events.
 public enum HistoryTimeline {
     /// Resolves absolute times. `reference` is the latest reference time known before the
     /// first record (sequence + pump clock). Records before any reference are dropped.

@@ -15,6 +15,7 @@ public struct CGMMeasurement: Equatable, Sendable, Codable {
     /// Quality as raw value; meaning on the 780G not yet verified.
     public let quality: Double?
 
+    /// Parses a measurement record; throws on short data or a wrong E2E-CRC.
     public init(_ data: [UInt8], hasE2ECRC: Bool = true) throws {
         guard data.count >= (hasE2ECRC ? 8 : 6) else { throw ParseError.tooShort }
         if hasE2ECRC, !Checksums.hasValidE2ECRC(data) { throw ParseError.crcMismatch }
@@ -39,6 +40,7 @@ public struct CGMSessionStartTime: Equatable, Sendable {
     public let timeZoneOffsetMinutes: Int?
     public let dstOffsetMinutes: Int?
 
+    /// Parses the session start time; throws on short data or a wrong E2E-CRC.
     public init(_ data: [UInt8]) throws {
         guard data.count == 11 else { throw ParseError.lengthMismatch }
         guard Checksums.hasValidE2ECRC(data) else { throw ParseError.crcMismatch }

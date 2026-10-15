@@ -31,7 +31,9 @@ public func statusReaderResponseOpcode(_ data: [UInt8]) -> UInt16? {
 
 /// IDD Status characteristic.
 public struct PumpStatus: Equatable, Sendable, Codable {
+    /// IDS therapy control state (run, pause, stop).
     public enum TherapyControlState: UInt8, Codable, Sendable { case undetermined = 0x0F, stop = 0x33, pause = 0x3C, run = 0x55 }
+    /// IDS operational state of the pump.
     public enum OperationalState: UInt8, Codable, Sendable {
         case undetermined = 0x0F, off = 0x33, standby = 0x3C, preparing = 0x55, priming = 0x5A, waiting = 0x66, ready = 0x96
     }
@@ -43,6 +45,7 @@ public struct PumpStatus: Equatable, Sendable, Codable {
     public let sensorConnectivity: UInt8
     public let sensorMessageState: UInt8
 
+    /// Parses the decrypted payload; throws if it is too short or malformed.
     public init(_ data: [UInt8]) throws {
         guard data.count == 9 else { throw ParseError.lengthMismatch }
         var r = ByteReader(data)
@@ -84,10 +87,12 @@ public struct PumpStatus: Equatable, Sendable, Codable {
     }
 }
 
+/// Active insulin (IOB) as reported by the pump's status reader.
 public struct InsulinOnBoard: Equatable, Sendable, Codable {
     public let units: Double
     public let remainingDurationMinutes: UInt16?
 
+    /// Parses the decrypted payload; throws if it is too short or malformed.
     public init(_ data: [UInt8]) throws {
         var r = ByteReader(data)
         let opcode = try r.u16()
@@ -100,6 +105,7 @@ public struct InsulinOnBoard: Equatable, Sendable, Codable {
     }
 }
 
+/// Time in range statistics from the pump (percent of today).
 public struct TimeInRange: Equatable, Sendable, Codable {
     public let notEnoughData: Bool
     public let abovePercent: UInt8
@@ -107,6 +113,7 @@ public struct TimeInRange: Equatable, Sendable, Codable {
     public let inRangePercent: UInt8
     public let smartGuardPercent: UInt8
 
+    /// Parses the decrypted payload; throws if it is too short or malformed.
     public init(_ data: [UInt8]) throws {
         guard data.count == 7 else { throw ParseError.lengthMismatch }
         var r = ByteReader(data)
@@ -120,7 +127,9 @@ public struct TimeInRange: Equatable, Sendable, Codable {
     }
 }
 
+/// SmartGuard algorithm state (Medtronic status reader opcode).
 public struct TherapyAlgorithmStates: Equatable, Sendable, Codable {
+    /// Mode of the closed loop: manual (open loop), SmartGuard auto basal or safe basal.
     public enum ShieldState: UInt8, Codable, Sendable { case openLoop = 1, autoBasal = 2, safeBasal = 3 }
 
     public let shieldState: ShieldState?
@@ -128,6 +137,7 @@ public struct TherapyAlgorithmStates: Equatable, Sendable, Codable {
     public let tempTargetMinutes: UInt16?
     public let safeBasalMinutes: UInt16?
 
+    /// Parses the decrypted payload; throws if it is too short or malformed.
     public init(_ data: [UInt8]) throws {
         var r = ByteReader(data)
         let opcode = try r.u16()
@@ -158,12 +168,14 @@ public struct TherapyAlgorithmStates: Equatable, Sendable, Codable {
     }
 }
 
+/// Active basal rate and a running temporary basal, if any.
 public struct ActiveBasalRate: Equatable, Sendable, Codable {
     public let profileNumber: UInt8
     public let unitsPerHour: Double
     public let tempBasalUnitsPerHour: Double?
     public let tempBasalRemainingMinutes: UInt16?
 
+    /// Parses the decrypted payload; throws if it is too short or malformed.
     public init(_ data: [UInt8]) throws {
         var r = ByteReader(data)
         let opcode = try r.u16()
@@ -189,7 +201,9 @@ public struct ActiveBasalRate: Equatable, Sendable, Codable {
 /// IDD Status Changed (decrypted): flags. Bit 3 = annunciation status changed (IDS).
 public struct StatusChangedFlags: OptionSet, Sendable {
     public let rawValue: UInt16
+    /// Creates flags from the raw 16-bit value.
     public init(rawValue: UInt16) { self.rawValue = rawValue }
+    /// Reads the flags from a decrypted Status Changed payload; nil if too short.
     public init?(_ data: [UInt8]) {
         guard data.count >= 2 else { return nil }
         rawValue = UInt16(data[0]) | UInt16(data[1]) << 8

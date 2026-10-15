@@ -3,6 +3,7 @@
 // status, pebble). Field names follow cgm-remote-monitor.
 import Foundation
 
+/// One sensor glucose value as shown and uploaded by the app.
 public struct GlucoseReading: Codable, Equatable, Sendable {
     public let date: Date
     public let mgdl: Int
@@ -10,6 +11,7 @@ public struct GlucoseReading: Codable, Equatable, Sendable {
     /// Sensor session time offset; identifies the record together with the session start.
     public let sessionOffsetMinutes: UInt16?
 
+    /// Creates a reading. `sessionOffsetMinutes` is the CGM record offset, used to detect duplicates.
     public init(date: Date, mgdl: Int, trendMgdlPerMin: Double?, sessionOffsetMinutes: UInt16?) {
         self.date = date
         self.mgdl = mgdl
@@ -18,6 +20,7 @@ public struct GlucoseReading: Codable, Equatable, Sendable {
     }
 }
 
+/// Latest pump status as read in the last update cycle; every part is optional because reads can fail individually.
 public struct PumpSnapshot: Codable, Equatable, Sendable {
     public var updatedAt: Date
     public var status: PumpStatus?
@@ -31,9 +34,11 @@ public struct PumpSnapshot: Codable, Equatable, Sendable {
     public var sensorEnd: Date?
     public var sensorExpiresInMinutes: Int?
 
+    /// Empty snapshot; `updatedAt` stays `.distantPast` until the first status read.
     public init(updatedAt: Date = .distantPast) { self.updatedAt = updatedAt }
 }
 
+/// Mapping to the Nightscout API v1 JSON shapes (entries, devicestatus, treatments, status, /pebble).
 public enum Nightscout {
     public static let device = "openMinipump"
 
@@ -57,8 +62,9 @@ public enum Nightscout {
         return f
     }()
 
-    // ISO8601DateFormatter is thread-safe for formatting (Foundation docs).
+    /// ISO8601DateFormatter is thread-safe for formatting (Foundation docs).
     public static func isoString(_ date: Date) -> String { iso.string(from: date) }
+    /// Milliseconds since 1970, as Nightscout uses them in `date` fields.
     public static func millis(_ date: Date) -> Int64 { Int64((date.timeIntervalSince1970 * 1000).rounded()) }
 
     /// - Parameter includeId: local API only. For uploads Nightscout assigns its own id.
@@ -81,6 +87,7 @@ public enum Nightscout {
         return e
     }
 
+    /// `devicestatus` document: reservoir, IOB, battery, suspend state and Medtronic extras under `pump.extended`.
     public static func deviceStatus(_ s: PumpSnapshot, uploaderBattery: Int?) -> [String: Any] {
         var pump: [String: Any] = ["clock": isoString(s.updatedAt)]
         if let status = s.status {
@@ -149,6 +156,7 @@ public enum Nightscout {
         return ["status": [["now": millis(now)]], "bgs": bgs, "cals": [] as [Any]]
     }
 
+    /// `/api/v1/status.json` answer of the local server (read-only, mg/dl).
     public static func status(version: String, now: Date = Date()) -> [String: Any] {
         [
             "status": "ok",

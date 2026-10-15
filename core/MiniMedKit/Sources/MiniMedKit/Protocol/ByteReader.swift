@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import Foundation
 
+/// Errors while parsing pump payloads.
 public enum ParseError: Error, Equatable {
     case tooShort
     case crcMismatch
@@ -49,7 +50,9 @@ struct ByteReader {
     }
 }
 
+/// IEEE-11073 SFLOAT (16 bit) and FLOAT (32 bit), as used by the Bluetooth health services.
 public enum MedFloat {
+    /// Decodes an SFLOAT: 12-bit mantissa, 4-bit exponent (base 10); special values become NaN/infinity.
     public static func decode16(_ raw: UInt16) -> Double {
         var e = Int((raw >> 12) & 0x0F)
         var m = Int(raw & 0x0FFF)
@@ -58,6 +61,7 @@ public enum MedFloat {
         return scaled(m, e)
     }
 
+    /// Decodes a FLOAT: 24-bit mantissa, 8-bit exponent (base 10).
     public static func decode32(_ raw: UInt32) -> Double {
         var e = Int((raw >> 24) & 0xFF)
         var m = Int(raw & 0x00FF_FFFF)

@@ -3,6 +3,7 @@ import Foundation
 
 /// Therapy event from the pump history, as shown in the chart and uploaded to Nightscout.
 public struct Treatment: Codable, Equatable, Sendable, Identifiable {
+    /// Kinds of treatments derived from the pump history.
     public enum Kind: String, Codable, Sendable {
         /// User-initiated bolus (manual or bolus wizard, usually with carbs).
         case bolus
@@ -20,6 +21,7 @@ public struct Treatment: Codable, Equatable, Sendable, Identifiable {
     /// Units (bolus, auto basal), grams (carbs), mg/dL (BG, calibration), U/h (basal).
     public let value: Double?
 
+    /// Creates a treatment; `id` is the history sequence number (stable across re-reads).
     public init(id: UInt32, date: Date, kind: Kind, value: Double?) {
         self.id = id
         self.date = date
@@ -43,6 +45,7 @@ public struct Treatment: Codable, Equatable, Sendable, Identifiable {
         }
     }
 
+    /// Converts a history event into a treatment, or nil for events that are not treatments.
     public init?(_ e: TimedHistoryEvent) {
         switch e.event {
         case .bolusDelivered(_, let fast, let ext, _):

@@ -55,7 +55,7 @@ core/MiniMedKit/   Swift package: SAKE, protocol parsers, read-only allowlist, N
 docs/              en/ and de/: guides and API · internal/: working notes (German)
 research/          own analysis scripts
 ```
-More: [Documentation](docs/README.md) · [API](docs/en/api.md) · [Translating](docs/en/translating.md) · [Working notes](docs/internal/README.md) (German: lab notebook, research, decisions)
+More: [Documentation](docs/README.md) · [Architecture](docs/en/architecture.md) · [API](docs/en/api.md) · [Translating](docs/en/translating.md) · [Working notes](docs/internal/README.md) (German: lab notebook, research, decisions)
 
 ## Legal
 Reverse engineering only to achieve interoperability with one's own device (Art. 6 Directive 2009/24/EC, § 69e UrhG) and data access under the EU Data Act (Regulation (EU) 2023/2854). The repository contains only own code and own descriptions (clean room) – no code, keys or assets of the manufacturer. MiniMed, SmartGuard, Guardian, Simplera and CareLink are trademarks of their owners.

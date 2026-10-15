@@ -4,6 +4,7 @@ import SwiftUI
 import UIKit
 import UserNotifications
 
+/// Notification delegate: shows alarms in the foreground and handles the snooze actions.
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
@@ -35,6 +36,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     }
 }
 
+/// Composition root: creates the data store, the pump link, the local API server and the
+/// Nightscout uploader and wires them together. Every new sensor value
+/// (`DataStore.onNewReading`) fans out to: wake schedule and keep-alive of the local API,
+/// Pebble monitor, Nightscout upload, alarm evaluation and widgets/Live Activity.
 @MainActor
 final class AppModel: ObservableObject {
     let config = AppConfig.load()

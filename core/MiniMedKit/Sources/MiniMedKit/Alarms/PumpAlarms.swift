@@ -4,6 +4,7 @@
 // texts are our own wording.
 import Foundation
 
+/// Groups of pump alerts the user can switch on or off as app notifications.
 public enum PumpAlarmCategory: String, CaseIterable, Codable, Sendable, Identifiable {
     case delivery      // insulin delivery stopped / occlusion / faults
     case supplies      // reservoir, battery
@@ -30,6 +31,7 @@ public enum PumpAlarmCategory: String, CaseIterable, Codable, Sendable, Identifi
     }
 }
 
+/// Display data for one pump alert type: title (German source text, localised by the app), category and urgency.
 public struct PumpAlarmInfo: Sendable {
     public let title: String
     public let category: PumpAlarmCategory
@@ -37,7 +39,9 @@ public struct PumpAlarmInfo: Sendable {
     public let urgent: Bool
 }
 
+/// Table of known 780G annunciation types (IDS annunciation `type & 0x0FFF`).
 public enum PumpAlarms {
+    /// Info for an annunciation type; unknown types get a generic title in the category `.other`.
     public static func info(for type: UInt16) -> PumpAlarmInfo {
         table[type] ?? PumpAlarmInfo(title: String(format: "Pumpenmeldung 0x%04X", type), category: .other, urgent: false)
     }

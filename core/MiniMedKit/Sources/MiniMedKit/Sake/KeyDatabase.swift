@@ -3,6 +3,7 @@
 // The database itself is NOT part of this repository; the app loads it from a local file.
 import Foundation
 
+/// SAKE device types (OpenMinimed key_databases.md).
 public enum SakeDeviceType: UInt8, Sendable {
     case insulinPump = 1
     case glucoseSensor = 2
@@ -14,6 +15,7 @@ public enum SakeDeviceType: UInt8, Sendable {
     case primaryDisplay = 8
 }
 
+/// Static keys for one remote device type, as stored in the key database.
 public struct StaticKeys: Sendable {
     public let derivationKey: [UInt8]
     public let handshakeAuthKey: [UInt8]
@@ -22,6 +24,7 @@ public struct StaticKeys: Sendable {
     public let handshakePayload: [UInt8]
 }
 
+/// Errors while parsing a key database.
 public enum KeyDatabaseError: Error, Equatable {
     case invalidHex
     case tooShort
@@ -30,10 +33,12 @@ public enum KeyDatabaseError: Error, Equatable {
     case unknownDeviceType(UInt8)
 }
 
+/// SAKE key database: local device type and static keys per remote device type. Not part of the repository; loaded at runtime.
 public struct KeyDatabase: Sendable {
     public let localDeviceType: SakeDeviceType
     public let remoteDevices: [SakeDeviceType: StaticKeys]
 
+    /// Parses the binary database (CRC-32, local type, count, entries of 81 bytes).
     public init(bytes: [UInt8]) throws {
         guard bytes.count >= 6 else { throw KeyDatabaseError.tooShort }
         let crc = UInt32(bytes[0]) << 24 | UInt32(bytes[1]) << 16 | UInt32(bytes[2]) << 8 | UInt32(bytes[3])
@@ -58,6 +63,7 @@ public struct KeyDatabase: Sendable {
         remoteDevices = remotes
     }
 
+    /// Parses the database from hex text; whitespace is ignored.
     public init(hex: String) throws {
         guard let bytes = [UInt8](hex: hex) else { throw KeyDatabaseError.invalidHex }
         try self.init(bytes: bytes)
