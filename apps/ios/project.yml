@@ -27,8 +27,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: $(OMP_BUNDLE_ID)
         PRODUCT_NAME: OpenMinipump
         CODE_SIGN_ENTITLEMENTS: $(OMP_APP_ENTITLEMENTS)
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "2"
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
@@ -79,8 +79,8 @@ targets:
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "2"
     info:
       path: Widgets/Info.plist
       properties:
