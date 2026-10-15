@@ -9,7 +9,7 @@
 - [x] Privates GitHub-Repo sgitaize/openMinipump
 
 ## Phase 1 – Recherche ✅ (wartet auf Go)
-- [x] docs/landscape.md
+- [x] docs/internal/landscape.md
 - [x] Empfehlung: ADR 0003 (vorgeschlagen)
 - [x] Simon: ADR 0003, GPL-3.0, Key-DB lokal aus _vendor/ (angenommen)
 - [ ] Simon: Discord OpenMinimed beitreten / vorstellen (optional, eigener Account)
@@ -26,7 +26,7 @@
 - [x] ReadOnlyPolicy (Allowlist) + DevModeGuard, mit Tests
 - [x] iOS-App: GATT-Server (DIS 0x0900, SAKE FE82), Advertising, Handshake, GATT-Client, Werteanzeige
 - [x] Kopplungsanleitung, Erinnerung bei fehlenden Daten / beendeter App
-- [x] Lokale Nightscout-kompatible API (Port 17580), docs/api.md
+- [x] Lokale Nightscout-kompatible API (Port 17580), docs/en/api.md
 - [x] Über & Impressum mit Quellenangaben
 - [ ] Simon: Impressumsdaten + Website-URL bestätigen (apps/ios/OpenMinipump/UI/AboutView.swift)
 - [x] Simon: Signing-Team (lokal in Local.xcconfig), App aufs iPhone
@@ -91,8 +91,8 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
   - Widgets (klein/mittel/groß/Sperrbildschirm) + Live Activity/Dynamic Island, Live Activity startet im Simulator
   - Tippen auf Sensorwert → Details mit IOB-Verlauf und Abgaben im 5-min-Fenster
   - Import der Schlüsseldatenbank in der App (für spätere öffentliche Builds)
-  - README + Build-Anleitung, AltStore-Vorbereitung (`docs/release-altstore.md`, `altstore/source.json`, manuelle Draft-Pipeline)
-- Designvorschlag iPump-mini: `docs/design/ipump-mini.md`, `docs/design/icon-proposals.png` (Empfehlung Variante A)
+  - README + Build-Anleitung, AltStore-Vorbereitung (`docs/internal/release-altstore.md`, `altstore/source.json`, manuelle Draft-Pipeline)
+- Designvorschlag iPump-mini: `docs/internal/design/ipump-mini.md`, `docs/internal/design/icon-proposals.png` (Empfehlung Variante A)
 - Website: Entwurf der openMinipump-Karte (oben auf /dev/) im VPS-Projekt `simongutjahr-website/drafts/`, **nicht deployt**
 - **Für Simon am Morgen:**
   1. In Xcode mit angemeldetem Account Signing & Capabilities prüfen (App Groups, Time Sensitive). Falls verfügbar, in `Local.xcconfig` die zwei leeren `OMP_*_ENTITLEMENTS`-Zeilen entfernen.
@@ -106,7 +106,7 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - Nutzungsbedingungen von Simon freigegeben; `feature/onboarding-l10n` nach main gemergt (`53e3a56`), main ist auf Simons iPhone.
 - Impressum in der App wie auf simongutjahr.de (Simon Gutjahr, Anschrift, Mail, Telefon, Link zu /impressum/ und /dev/).
 - GitHub-Repo umbenannt: **sgitaize/iPump-mini** (privat, alte URLs leiten weiter; Remote auf HTTPS). Beschreibung, Website, Topics gesetzt. Lokaler Ordner bleibt `~/Dev/openMinipump`, Xcode-Target/Bundle-ID bleiben.
-- README neu (Englisch, `README.de.md` Deutsch) mit Screenshots aus Demo-Daten (`docs/images/`, Debug `-screenshot`), Bauanleitung `docs/building.md` (en) / `docs/setup-ios.md` (de).
+- README neu (Englisch, `README.de.md` Deutsch) mit Screenshots aus Demo-Daten (`docs/images/`, Debug `-screenshot`), Bauanleitung `docs/en/building.md` (en) / `docs/de/selbst-bauen.md` (de).
 - Website live: Karte „Aktuelles Projekt“ ganz oben auf simongutjahr.de/dev/ und Projektseite /dev/ipump-mini/ (DE/EN, Bilder, Get started, Hinweis); Impressum-Geltungsbereich um die App ergänzt. **Ohne GitHub-Link**, solange das Repo privat ist.
 - Offen für die Veröffentlichung: `allow_any_pump`/DEV_MODE, Kompatibilitäts-Kennung, Git-Historie bereinigen, Repo öffentlich, Probelauf Workflow → dann GitHub-Links auf Website und in der App-Karte ergänzen.
 
@@ -117,9 +117,9 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
   - **Schlüsseldatenbank laden**: „Von OpenMinimed laden“ (öffentliche key_databases.md), eigene URL oder Einfügen; `KeyDatabase.findHex` mit Test gegen die echte Seite.
   - **Aussehen**: Hell/Dunkel/System, Sprache, mg/dL oder mmol/L, Zielbereich; Akzentfarbe Petrol.
   - **Widgets** überarbeitet (Kurve, Statuszeile, Stil schlicht/farbig, 3/6 h, Sperrbildschirm mit Kurve und IOB), Live-Aktivität mit Bereichsfarbe und IOB, Debug-Galerie `-widgetGallery`.
-  - **Englisch** (383 Texte, `docs/localization.md`), Umschalter in der App, Erkennung der Gerätesprache.
+  - **Englisch** (383 Texte, `docs/en/translating.md`), Umschalter in der App, Erkennung der Gerätesprache.
   - **Graph durchwischen**: waagerecht wischen bewegt die Auswahl, letzte bleibt stehen.
-  - `docs/getting-started.md` (de/en), README aktualisiert; Website-Entwurf auf dem VPS aktualisiert (nicht live).
+  - `docs/en/getting-started.md` (de/en), README aktualisiert; Website-Entwurf auf dem VPS aktualisiert (nicht live).
   - Release-Pipeline: öffentlicher Build ohne `.env`/Schlüsseldatenbank (Prüfschritt), Ad-hoc-Signatur mit App Group, Eingabe `allow_any_pump` (Standard gesperrt).
 - Schlüsseldatenbank zusätzlich gesichert: macOS-Schlüsselbund (Account `sakeKeyDatabase`) und iCloud Drive `openMinipump-Backup/` (mit LIESMICH). Identisch mit dem OpenMinimed-Block.
 - **Offen / für Simon:**

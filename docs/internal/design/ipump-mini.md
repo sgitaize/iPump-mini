@@ -8,7 +8,7 @@ Stand: Entwurf zur Entscheidung durch Simon. Noch nichts davon ist in der App um
 - Repo-Name kann später umbenannt werden (GitHub leitet alte URLs weiter).
 - Hinweis: Namen mit vorangestelltem „i“ werden mit Apple-Produkten assoziiert. Für den App Store wäre das heikel; für eine Open-Source-Seitenverteilung (AltStore) unkritischer. Bitte bewusst entscheiden.
 
-## Icon-Varianten (`docs/design/icon-proposals.png`)
+## Icon-Varianten (`docs/internal/design/icon-proposals.png`)
 | | Idee | Wirkung |
 |---|---|---|
 | 0 | aktuell: Tropfen mit CGM-Kurve auf Türkis→Blau | freundlich, eher „Glukose-App“ |
@@ -16,7 +16,7 @@ Stand: Entwurf zur Entscheidung durch Simon. Noch nichts davon ist in der App um
 | B | „i“, dessen Punkt ein Tropfen ist | sehr reduziert, starker Bezug zum Namen |
 | C | Ring (Sensor/Anzeige) mit Kurve, dunkel | technisch, gut als Widget-/Watch-Motiv |
 
-Empfehlung: **A** als App-Icon, Motiv C für Widgets/Komplikationen. Die Skripte zum Erzeugen: `docs/design/render-proposals.swift`, finales Icon über `apps/ios/Scripts/render-icon.swift`.
+Empfehlung: **A** als App-Icon, Motiv C für Widgets/Komplikationen. Die Skripte zum Erzeugen: `docs/internal/design/render-proposals.swift`, finales Icon über `apps/ios/Scripts/render-icon.swift`.
 
 ## Designsprache: schlicht, aber schick, kein generischer „AI-Look“
 - **Farben:** eine Akzentfarbe (Petrol `#0F766E`), sonst Systemfarben. Bedeutungsfarben fest:

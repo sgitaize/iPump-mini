@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // BLE link to the pump.
 //
-// Roles (see docs/landscape.md): the pump is the BLE central and SAKE client, the phone
+// Roles (see docs/internal/landscape.md): the pump is the BLE central and SAKE client, the phone
 // is the BLE peripheral and SAKE server. After the SAKE handshake the phone additionally
 // acts as GATT client on the same link to read the pump's services.
 //
@@ -186,7 +186,7 @@ final class PumpLink: NSObject, ObservableObject {
     }()
 
     /// Software revision reported to the pump. The pump may check the companion app
-    /// version; we report the version seen in capture 1. See docs/lab-notebook.md.
+    /// version; we report the version seen in capture 1. See docs/internal/lab-notebook.md.
     static let compatSoftwareRevision = "3.3.0(80)"
 
     /// Bump when the GATT table changes, so restored (old) services get replaced.

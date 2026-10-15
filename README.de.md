@@ -6,7 +6,7 @@
 
 <p align="center">
   Eine quelloffene iPhone-App, die eine Insulinpumpe <b>MiniMed 780G ausschließlich lesend</b> per Bluetooth ausliest – ohne Hersteller-Cloud.<br>
-  <a href="docs/getting-started.md"><b>Get started</b></a> · <a href="docs/setup-ios.md">Selbst bauen</a> · <a href="README.md">English</a>
+  <a href="docs/de/erste-schritte.md"><b>Erste Schritte</b></a> · <a href="docs/de/selbst-bauen.md">Selbst bauen</a> · <a href="README.md">English</a>
 </p>
 
 <p align="center">
@@ -32,10 +32,10 @@
 Die App sendet keine Befehle, die Therapie, Einstellungen oder Zustand der Pumpe verändern. Jeder Schreibzugriff läuft über eine einzige Funktion und eine Allowlist von Abfragen ([`ReadOnlyPolicy.swift`](core/MiniMedKit/Sources/MiniMedKit/Safety/ReadOnlyPolicy.swift)); alles andere wird blockiert und protokolliert. Insulin abgeben oder Alarme quittieren kann sie nicht.
 
 ## Installieren
-- **AltStore / SideStore:** in Vorbereitung (siehe [docs/release-altstore.md](docs/release-altstore.md)).
-- **Selbst bauen** mit Mac, Xcode und kostenloser Apple-ID: [docs/setup-ios.md](docs/setup-ios.md).
+- **AltStore / SideStore:** in Vorbereitung.
+- **Selbst bauen** mit Mac, Xcode und kostenloser Apple-ID: [docs/de/selbst-bauen.md](docs/de/selbst-bauen.md).
 
-Danach [Get started](docs/getting-started.md) folgen: Nutzungsbedingungen, Schlüsseldatenbank laden, Mitteilungen erlauben, Pumpe koppeln.
+Danach den [ersten Schritten](docs/de/erste-schritte.md) folgen: Nutzungsbedingungen, Schlüsseldatenbank laden, Mitteilungen erlauben, Pumpe koppeln.
 
 ## Wie es funktioniert
 Die Pumpe ist der Bluetooth-Central, das iPhone der Peripheral. Nach der Kopplung baut die Pumpe die Verbindung auf und handelt mit der App eine verschlüsselte Sitzung aus (Medtronic-Protokoll „SAKE“). Über dieselbe Verbindung liest die App die Bluetooth-Standarddienste der Pumpe (Insulin Delivery Service, CGM Service) mit Medtronic-Erweiterungen. Die Sitzung wird gespeichert; Updates und Neustarts brauchen keine neue Kopplung.
@@ -52,15 +52,15 @@ Das Protokollwissen stammt von **[OpenMinimed](https://github.com/OpenMinimed)**
 ```
 apps/ios/          SwiftUI-App und Widgets (XcodeGen: project.yml)
 core/MiniMedKit/   Swift-Paket: SAKE, Protokoll-Parser, Allowlist, Nightscout-Format, Tests
-docs/              Anleitungen, API, Protokoll, Entscheidungen (ADRs), Laborbuch
+docs/              en/ und de/: Anleitungen und API · internal/: Arbeitsnotizen (Deutsch)
 research/          eigene Analyse-Skripte
 ```
-Mehr: [API](docs/api.md) · [Sprachen](docs/localization.md) · [Recherche](docs/landscape.md) · [Laborbuch](docs/lab-notebook.md)
+Mehr: [Dokumentation](docs/README.md) · [API](docs/de/api.md) · [Arbeitsnotizen](docs/internal/README.md) (Laborbuch, Recherche, Entscheidungen)
 
 ## Rechtsrahmen
 Reverse Engineering ausschließlich zur Herstellung der Interoperabilität mit dem eigenen Gerät (Art. 6 RL 2009/24/EG, § 69e UrhG) und Datenzugang nach dem EU Data Act (VO (EU) 2023/2854). Das Repository enthält nur eigenen Code und eigene Beschreibungen (Clean Room) – keinen Code, keine Schlüssel und keine Assets des Herstellers. MiniMed, SmartGuard, Guardian, Simplera und CareLink sind Marken ihrer Inhaber.
 
 ## Lizenz und Dank
-GPL-3.0, siehe [LICENSE](LICENSE) und [ADR 0002](docs/decisions/0002-lizenz.md). Dank an [OpenMinimed](https://github.com/OpenMinimed), [Nightscout](https://github.com/nightscout/cgm-remote-monitor) und [xDrip+](https://github.com/NightscoutFoundation/xDrip).
+GPL-3.0, siehe [LICENSE](LICENSE) und [ADR 0002](docs/internal/decisions/0002-lizenz.md). Dank an [OpenMinimed](https://github.com/OpenMinimed), [Nightscout](https://github.com/nightscout/cgm-remote-monitor) und [xDrip+](https://github.com/NightscoutFoundation/xDrip).
 
 Von [Simon Gutjahr](https://simongutjahr.de/dev/) · [Impressum](https://simongutjahr.de/impressum/)

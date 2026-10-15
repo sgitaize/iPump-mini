@@ -1,6 +1,6 @@
 # iPump-mini selbst bauen
 
-*English: [building.md](building.md)*
+*English: [building.md](../en/building.md)*
 
 ## Voraussetzungen
 - Xcode, XcodeGen (`brew install xcodegen`)

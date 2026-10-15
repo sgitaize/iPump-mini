@@ -19,7 +19,7 @@ Du bist mein Engineering-Partner für dieses Projekt und arbeitest auf meinem Ma
 ## Arbeitsweise
 - Arbeite in Phasen. Am Ende jeder Phase: kurze Zusammenfassung, Entscheidungen, offene Fragen. Dann warte auf mein Go.
 - Führ eine Aufgabenliste und halte sie aktuell.
-- **Wissen gehört ins Repo:** Erkenntnisse sofort in `docs/` festhalten, nicht nur im Chat. Entscheidungen als kurze ADRs in `docs/decisions/`. Ein laufendes Laborbuch in `docs/lab-notebook.md` (Datum, was getestet, Ergebnis, Mitschnitt-Datei).
+- **Wissen gehört ins Repo:** Erkenntnisse sofort in `docs/` festhalten, nicht nur im Chat. Entscheidungen als kurze ADRs in `docs/internal/decisions/`. Ein laufendes Laborbuch in `docs/internal/lab-notebook.md` (Datum, was getestet, Ergebnis, Mitschnitt-Datei).
 - Kleine, sinnvolle Commits mit Conventional Commits. Push nach jedem abgeschlossenen Schritt.
 - Lege eine `CLAUDE.md` im Repo an, die Ziel, harte Regeln, Repo-Struktur und den aktuellen Stand enthält. Halte sie aktuell, damit spätere Sessions nahtlos weitermachen können.
 
@@ -39,7 +39,7 @@ Du bist mein Engineering-Partner für dieses Projekt und arbeitest auf meinem Ma
 3. `.gitignore`, `.env.example`, Pre-Commit-Hook mit gitleaks, README mit Disclaimer („nicht für Therapieentscheidungen, keine Medizinprodukt-Zulassung“). Lizenz zunächst offen lassen, aber Optionen in einem ADR dokumentieren.
 
 ## Phase 1 – Recherche: Was gibt es schon, was ist wiederverwendbar?
-Recherchiere gründlich im Web und auf GitHub. Lies Code und Issues, nicht nur READMEs. Ergebnis ist `docs/landscape.md` mit einer Matrix aus Projekt, Gerät/Protokoll, Status, Lizenz, Wiederverwendbarkeit und relevanten Erkenntnissen. Mindestens:
+Recherchiere gründlich im Web und auf GitHub. Lies Code und Issues, nicht nur READMEs. Ergebnis ist `docs/internal/landscape.md` mit einer Matrix aus Projekt, Gerät/Protokoll, Status, Lizenz, Wiederverwendbarkeit und relevanten Erkenntnissen. Mindestens:
 - `pazaan/600SeriesAndroidUploader`, besonders Issue #296 (770G/780G-Protokoll, USB-„Blue Adapter“ 1003910) und alle Forks/Folgeprojekte der Beteiligten (z. B. ondrej1024)
 - `nightscout/minimed-connect-to-nightscout`, CareLink-Follower in xDrip+ und Nightscout-Connect
 - xDrip+, AndroidAPS, Loop/Trio, OpenAPS: Medtronic-Support, BLE-Abstraktionen, Treiber-Architektur
@@ -53,7 +53,7 @@ Danach gibst du eine Empfehlung: anschließen, forken oder neu aufbauen.
 ## Phase 2 – Statische Analyse der MiniMed-Mobile-App
 - **Android zuerst:** Ich installiere die offizielle App auf einem Test-Android-Gerät. Zieh die APK per `adb` vom Gerät (inkl. Split-APKs) nach `_vendor/`. Analysiere mit jadx/apktool: BLE-GATT-Services und -Characteristics, Pairing-Flow, Kryptografie (Key-Exchange, Session-Keys, Algorithmen), Nachrichtenformate/Opcodes, Cloud-Endpunkte im Pairing-Prozess, Zertifikats-Pinning, native Libraries (`.so`, ggf. mit Ghidra).
 - **iOS:** IPAs aus dem App Store sind FairPlay-verschlüsselt. Bewerte nur, ob eine iOS-Analyse zusätzlichen Erkenntnisgewinn bringt. Kein Jailbreak ohne Rücksprache.
-- Dokumentiere alles in eigenen Worten in `docs/protocol/`. Keine Code-Kopien aus dem Dekompilat ins Repo.
+- Dokumentiere alles in eigenen Worten in `docs/internal/`. Keine Code-Kopien aus dem Dekompilat ins Repo.
 
 ## Phase 3 – Dynamische Analyse: Kopplung mitschneiden
 Plane mit mir eine Pairing-Session mit der Test-Pumpe und schneide gleichzeitig mit:

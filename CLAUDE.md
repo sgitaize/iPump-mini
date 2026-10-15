@@ -1,6 +1,6 @@
 # CLAUDE.md – openMinipump
 
-Der vollständige Projekt-Brief steht in `docs/project-brief.md`. Er ist verbindlich, lies ihn zu Beginn jeder Session.
+Der vollständige Projekt-Brief steht in `docs/internal/project-brief.md`. Er ist verbindlich, lies ihn zu Beginn jeder Session.
 
 ## Ziel
 Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per BLE aus und stellt die Daten lokal per REST-API bereit, ohne CareLink-Cloud. Später sollen die Daten auch in Simons Nightscout bzw. supercgm fließen. **Der Fokus liegt aktuell auf iOS.**
@@ -15,7 +15,7 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 
 ## Arbeitsweise
 - Gearbeitet wird in Phasen. Am Ende jeder Phase gibt es eine Zusammenfassung, dann wird auf Simons Go gewartet.
-- Aufgaben: `docs/tasks.md`. Laborbuch: `docs/lab-notebook.md`. ADRs: `docs/decisions/NNNN-*.md`. Protokoll: `docs/protocol/`.
+- Aufgaben: `docs/internal/tasks.md`. Laborbuch: `docs/internal/lab-notebook.md`. ADRs: `docs/internal/decisions/NNNN-*.md`. Protokoll: `docs/internal/`.
 - Conventional Commits, Push nach jedem abgeschlossenen Schritt. Commit-Mail ist die GitHub-noreply-Adresse (lokal konfiguriert).
 - Physische Schritte an der Pumpe macht Simon. Sag ihm jeweils genau, was er wann tun soll.
 
@@ -27,12 +27,12 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 - Der iOS-Simulator hat kein Bluetooth, deshalb braucht es einen Replay-Transport aus echten Mitschnitten.
 
 ## Aktueller Stand
-- Phase 3/4: Die iOS-App läuft auf Simons iPhone mit der Testpumpe. Werte, Pumpenstatus, Pumpenhistorie (Behandlungen), Hintergrundbetrieb, Nightscout-Upload/-Nachladen, lokale API mit Statusseite. Offene Punkte: `docs/tasks.md`.
+- Phase 3/4: Die iOS-App läuft auf Simons iPhone mit der Testpumpe. Werte, Pumpenstatus, Pumpenhistorie (Behandlungen), Hintergrundbetrieb, Nightscout-Upload/-Nachladen, lokale API mit Statusseite. Offene Punkte: `docs/internal/tasks.md`.
 - `core/MiniMedKit` (Swift-Paket): SAKE-Port, Parser inkl. History, `ReadOnlyPolicy` (Allowlist, Änderungen nur mit Simon; letzte Freigabe 15.10.: IDD-RACP-Report-Befehle), `DevModeGuard`, Nightscout-Mapping. `swift test` prüft den Handshake gegen den echten 780G-Trace.
-- `apps/ios`: XcodeGen, Setup `docs/setup-ios.md`, Signing lokal in `Config/Local.xcconfig`. Alle Schreibzugriffe auf die Pumpe laufen über `PumpLink.guardedWrite`. Protokolldatei auf dem iPhone: `Application Support/openminipump.log` (per `xcrun devicectl device copy from … --domain-type appDataContainer`).
+- `apps/ios`: XcodeGen, Setup `docs/de/selbst-bauen.md`, Signing lokal in `Config/Local.xcconfig`. Alle Schreibzugriffe auf die Pumpe laufen über `PumpLink.guardedWrite`. Protokolldatei auf dem iPhone: `Application Support/openminipump.log` (per `xcrun devicectl device copy from … --domain-type appDataContainer`).
 - Erkenntnisse im Laborbuch: DIS-Werte wie die offizielle App, 5-min-Trigger (GST Battery + IDD Status Changed), Sitzung wird gespeichert, ohne Sitzung GATT-Dienste neu registrieren, CGM-RACP „≥ Offset“ nicht unterstützt.
-- Anzeigename und Repo **iPump-mini** (Bundle-ID und lokaler Ordner bleiben). Alles Fertige ist in main (Ersteinrichtung, Nutzungsbedingungen, Englisch, Aussehen, Widgets, Release-Pipeline). Website: simongutjahr.de/dev/ipump-mini/ (VPS-Projekt simongutjahr-website). Stand in `docs/tasks.md`.
-- Sprachen: Deutsch ist Quellsprache, Übersetzungen in `Shared/Localizable.xcstrings`; neue Texte → `docs/localization.md`. Texte aus Code über `L10n.tr`.
+- Anzeigename und Repo **iPump-mini** (Bundle-ID und lokaler Ordner bleiben). Alles Fertige ist in main (Ersteinrichtung, Nutzungsbedingungen, Englisch, Aussehen, Widgets, Release-Pipeline). Website: simongutjahr.de/dev/ipump-mini/ (VPS-Projekt simongutjahr-website). Stand in `docs/internal/tasks.md`.
+- Sprachen: Deutsch ist Quellsprache, Übersetzungen in `Shared/Localizable.xcstrings`; neue Texte → `docs/en/translating.md`. Texte aus Code über `L10n.tr`.
 - Signing: kostenloses Team kann App Groups, keine zeitkritischen Mitteilungen. Neue Berechtigungen brauchen einmal ⌘R in Xcode (Profil), danach geht die Kommandozeile.
 - Installieren aufs iPhone ohne Xcode-GUI: `xcodebuild -project apps/ios/OpenMinipump.xcodeproj -scheme OpenMinipump -destination 'id=<UDID>' -allowProvisioningUpdates build`, dann `xcrun devicectl device install app --device <UDID> <…/Debug-iphoneos/OpenMinipump.app>`. Simon lässt die App laufen; die Sitzung zur Pumpe wird über Updates hinweg fortgesetzt.
 - casiocgm-Testversion mit Datenquelle openMinipump: VPS-Projekt `casiocgm`, Branch `feature/openminipump-source`; auf der echten Uhr noch nicht funktionsfähig.

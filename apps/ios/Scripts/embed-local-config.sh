@@ -44,5 +44,5 @@ elif [ -f "$KEYDB" ]; then
   cp "$KEYDB" "$DEST/mobile-pump.keydb.hex"
 else
   rm -f "$DEST/mobile-pump.keydb.hex"
-  echo "warning: Schlüsseldatenbank fehlt ($KEYDB) – die App kann keinen SAKE-Handshake durchführen. Siehe docs/setup-ios.md"
+  echo "warning: Schlüsseldatenbank fehlt ($KEYDB) – die App kann keinen SAKE-Handshake durchführen. Siehe docs/de/selbst-bauen.md"
 fi

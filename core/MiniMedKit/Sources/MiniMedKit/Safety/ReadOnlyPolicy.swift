@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// HARD RULE 1 (docs/project-brief.md): read only.
+// HARD RULE 1 (docs/internal/project-brief.md): read only.
 //
 // Every GATT write towards the pump has to pass this policy. It is an allowlist:
 // anything that is not listed here explicitly is blocked. Writes are checked on the

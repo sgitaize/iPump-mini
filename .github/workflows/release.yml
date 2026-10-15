@@ -1,7 +1,7 @@
 # Builds an IPA for AltStore/SideStore (they re-sign it with the user's Apple ID).
 # Manual only; creates a DRAFT release. Nothing is published automatically.
 # The SAKE key database is never part of the build: users load it in the app
-# (Settings › Pump › Key database). See docs/release-altstore.md.
+# (Settings › Pump › Key database). See docs/internal/release-altstore.md.
 name: Release IPA
 
 on:

@@ -1,6 +1,6 @@
 # Build iPump-mini yourself
 
-*Deutsch: [setup-ios.md](setup-ios.md)*
+*Deutsch: [selbst-bauen.md](../de/selbst-bauen.md)*
 
 You need a Mac with **Xcode**, an **iPhone** with iOS 17+ and an **Apple ID**. The free personal team is enough; the app then has to be reinstalled every 7 days.
 
@@ -53,5 +53,5 @@ The SAKE tests replay a real 780G handshake; they are skipped if the key databas
 
 ## Notes
 - The generated Xcode project is not committed; edit `apps/ios/project.yml` instead.
-- Translations: [localization.md](localization.md). Local API: [api.md](api.md).
+- Translations: [translating.md](translating.md). Local API: [api.md](api.md).
 - Never commit `.env`, `_vendor/`, `captures/` or keys – they are gitignored on purpose.

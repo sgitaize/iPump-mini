@@ -7,7 +7,7 @@
   python3 Scripts/l10n.py apply en.json   merge {"German key": "English"} into the catalog
 
 SwiftUI texts are extracted by the compiler (SWIFT_EMIT_LOC_STRINGS) and merged with
-`xcrun xcstringstool sync` – see docs/localization.md.
+`xcrun xcstringstool sync` – see docs/en/translating.md.
 """
 import json, pathlib, re, sys
 

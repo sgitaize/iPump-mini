@@ -1,5 +1,5 @@
 // Renders the app icon (1024×1024 PNG, opaque). Usage: swift Scripts/render-icon.swift <out.png>
-// Design "iPump-mini" (variant A, docs/design/ipump-mini.md): a small petrol device whose
+// Design "iPump-mini" (variant A, docs/internal/design/ipump-mini.md): a small petrol device whose
 // screen shows a CGM trace ending in the current value.
 import AppKit
 import CoreGraphics

@@ -27,5 +27,5 @@ Die Quelle könnte später über GitHub Pages ausgeliefert werden (`https://<use
 - [x] **Nutzungsbedingungen:** müssen beim ersten Start akzeptiert werden (`TermsView.swift`, versioniert). Text von Simon freigegeben (15.10.).
 - [ ] **DEV_MODE:** Öffentliche Builds müssen jede (vom Nutzer gekoppelte) Pumpe akzeptieren, also `allow_any_pump`. Regel 2 des Projekt-Briefs gilt für die Entwicklung; Freigabe durch Simon nötig.
 - [ ] **Kompatibilitäts-Kennung:** Die App meldet sich gegenüber der Pumpe mit den Geräteinfos der offiziellen App (`PumpLink.compatSoftwareRevision`). Rechtliche Einschätzung vor Veröffentlichung.
-- [ ] **Repo öffentlich:** vorher Git-Historie von den Build-Artefakten bereinigen (siehe `docs/tasks.md`).
+- [ ] **Repo öffentlich:** vorher Git-Historie von den Build-Artefakten bereinigen (siehe `docs/internal/tasks.md`).
 - [ ] **Probelauf:** Workflow einmal im privaten Repo starten (erzeugt nur einen Entwurf) und die IPA per AltStore installieren.

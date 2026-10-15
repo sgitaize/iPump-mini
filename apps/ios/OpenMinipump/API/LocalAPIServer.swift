@@ -7,7 +7,7 @@
 // with the secret as password). `/status.html` is a human-readable page (Basic Auth).
 //
 // Note: iOS suspends the app in the background between Bluetooth events. While
-// suspended the server does not answer. See docs/api.md.
+// suspended the server does not answer. See docs/en/api.md.
 import CryptoKit
 import Foundation
 import MiniMedKit

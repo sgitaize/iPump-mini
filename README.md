@@ -6,7 +6,7 @@
 
 <p align="center">
   An open-source iPhone app that reads a <b>MiniMed 780G</b> insulin pump <b>strictly read-only</b> over Bluetooth – no manufacturer cloud.<br>
-  <a href="docs/getting-started.md"><b>Get started</b></a> · <a href="docs/building.md">Build it yourself</a> · <a href="README.de.md">Deutsch</a>
+  <a href="docs/en/getting-started.md"><b>Get started</b></a> · <a href="docs/en/building.md">Build it yourself</a> · <a href="README.de.md">Deutsch</a>
 </p>
 
 <p align="center">
@@ -32,10 +32,10 @@
 The app never sends commands that change therapy, settings or the state of the pump. Every write to the pump goes through one function and an allowlist of report requests ([`ReadOnlyPolicy.swift`](core/MiniMedKit/Sources/MiniMedKit/Safety/ReadOnlyPolicy.swift)); everything else is blocked and logged. It cannot deliver insulin or clear alarms.
 
 ## Install
-- **AltStore / SideStore:** in preparation (see [docs/release-altstore.md](docs/release-altstore.md)).
-- **Build it yourself** with a Mac, Xcode and a free Apple ID: [docs/building.md](docs/building.md).
+- **AltStore / SideStore:** in preparation.
+- **Build it yourself** with a Mac, Xcode and a free Apple ID: [docs/en/building.md](docs/en/building.md).
 
-Then follow [Get started](docs/getting-started.md): accept the terms, load the key database, allow notifications, pair the pump.
+Then follow [Get started](docs/en/getting-started.md): accept the terms, load the key database, allow notifications, pair the pump.
 
 ## How it works
 The pump is the Bluetooth central, the iPhone the peripheral. After pairing, the pump connects to the app and both negotiate an encrypted session (Medtronic's “SAKE” protocol). Over the same link the app reads the standard Bluetooth services of the pump (Insulin Delivery Service, CGM Service) and their Medtronic extensions. The session is stored, so the app survives updates and restarts without pairing again.
@@ -52,10 +52,10 @@ The protocol knowledge comes from **[OpenMinimed](https://github.com/OpenMinimed
 ```
 apps/ios/          SwiftUI app and widgets (XcodeGen: project.yml)
 core/MiniMedKit/   Swift package: SAKE, protocol parsers, read-only allowlist, Nightscout format, tests
-docs/              guides, API, protocol notes, decisions (ADRs), lab notebook
+docs/              en/ and de/: guides and API · internal/: working notes (German)
 research/          own analysis scripts
 ```
-More: [API](docs/api.md) · [Localisation](docs/localization.md) · [Protocol landscape](docs/landscape.md) · [Lab notebook](docs/lab-notebook.md)
+More: [Documentation](docs/README.md) · [API](docs/en/api.md) · [Translating](docs/en/translating.md) · [Working notes](docs/internal/README.md) (German: lab notebook, research, decisions)
 
 ## Legal
 Reverse engineering only to achieve interoperability with one's own device (Art. 6 Directive 2009/24/EC, § 69e UrhG) and data access under the EU Data Act (Regulation (EU) 2023/2854). The repository contains only own code and own descriptions (clean room) – no code, keys or assets of the manufacturer. MiniMed, SmartGuard, Guardian, Simplera and CareLink are trademarks of their owners.

@@ -10,7 +10,7 @@ func loadPumpKeyDatabase() throws -> KeyDatabase {
         .deletingLastPathComponent().deletingLastPathComponent()
     let url = repo.appendingPathComponent("_vendor/keys/mobile-pump.keydb.hex")
     guard let hex = try? String(contentsOf: url, encoding: .utf8) else {
-        throw XCTSkip("Schlüsseldatenbank fehlt: \(url.path) (siehe docs/setup-ios.md)")
+        throw XCTSkip("Schlüsseldatenbank fehlt: \(url.path) (siehe docs/de/selbst-bauen.md)")
     }
     return try KeyDatabase(hex: hex)
 }

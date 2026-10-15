@@ -4,7 +4,7 @@
 - Datum: 2026-10-14
 
 ## Kontext
-Die Recherche in Phase 1 (`docs/landscape.md`) zeigt: Protokoll und SAKE-Krypto der 700er-Serie sind durch OpenMinimed (GPL-3.0) öffentlich verstanden und implementiert (Python, Java, PebbleOS-C). Eine iOS-Implementierung existiert nicht.
+Die Recherche in Phase 1 (`docs/internal/landscape.md`) zeigt: Protokoll und SAKE-Krypto der 700er-Serie sind durch OpenMinimed (GPL-3.0) öffentlich verstanden und implementiert (Python, Java, PebbleOS-C). Eine iOS-Implementierung existiert nicht.
 
 ## Entscheidung
 1. Wir schließen uns der OpenMinimed-Community an (Discord) und nutzen deren Dokumentation als Protokollquelle.

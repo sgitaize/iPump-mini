@@ -1,5 +1,5 @@
 // Renders icon proposals for "iPump-mini" (1024×1024 PNG).
-// Usage: swift docs/design/render-proposals.swift <out-dir>
+// Usage: swift docs/internal/design/render-proposals.swift <out-dir>
 import AppKit
 import CoreGraphics
 

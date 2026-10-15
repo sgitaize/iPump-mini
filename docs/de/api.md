@@ -1,6 +1,8 @@
 # Lokale API (Nightscout-kompatibel)
 
-Die iOS-App stellt die gelesenen Daten über einen kleinen HTTP-Server bereit. Er spricht dieselben Pfade und JSON-Formen wie Nightscout API v1, sodass vorhandene Clients (Watchfaces, Widgets, supercgm) ohne Änderung funktionieren sollen.
+*English: [api.md](../en/api.md)*
+
+Die iOS-App stellt die gelesenen Daten über einen kleinen HTTP-Server bereit. Er spricht dieselben Pfade und JSON-Formen wie Nightscout API v1, sodass vorhandene Clients (Watchfaces, Widgets) ohne Änderung funktionieren.
 
 - **Port:** `17580`, wie der lokale Webserver von xDrip+.
 - **Standard:** nur auf dem iPhone selbst erreichbar (`http://127.0.0.1:17580`).
@@ -17,9 +19,9 @@ Die iOS-App stellt die gelesenen Daten über einen kleinen HTTP-Server bereit. E
 | `/api/v1/entries.json?count=N` (auch `/api/v1/entries/sgv.json`, `/sgv.json`) | Sensorwerte, neueste zuerst (Standard 10). Filter `find[date][$gte\|$gt\|$lte\|$lt]=<ms>` |
 | `/api/v1/entries/current.json` | letzter Sensorwert |
 | `/api/v1/devicestatus.json` | Pumpenstatus: `pump.reservoir`, `pump.iob.iob`, `pump.battery.percent`, `pump.status.suspended`, `pump.extended` (Modus, Basalrate, TIR, Transmitter, Sensorablauf), `uploaderBattery` |
-| `/api/v1/treatments.json` | vorerst leer `[]` (kommt mit der IDD-History) |
+| `/api/v1/treatments.json?count=N` | Behandlungen aus der Pumpenhistorie: Boli, SmartGuard-Autokorrekturen, Kohlenhydrate, BZ-Messungen, Kalibrierungen, Basaländerungen, Pause/Fortsetzen |
 | `/api/v1/status.json` | Serverstatus, Einheit mg/dl |
-| `/pebble` | klassischer Pebble-Endpunkt (`bgs[0].sgv`, `trend`, `direction`, `bgdelta`, `iob`, `battery`) |
+| `/pebble?count=N&units=mmol` | klassischer Pebble-Endpunkt (`bgs[0].sgv`, `trend`, `direction`, `bgdelta`, `iob`, `battery`) |
 
 ### Beispiel-Eintrag
 
@@ -37,4 +39,4 @@ Die Pumpe liefert eine Änderungsrate in mg/dL/min. Medtronic zeigt einen Pfeil 
 
 iOS hält die App im Hintergrund nur wach, solange ein Bluetooth-Ereignis verarbeitet wird (Pumpe meldet sich etwa alle 5 min). Dazwischen ist die App pausiert und **der Server antwortet nicht**. Verlässlich funktioniert die API, solange die App im Vordergrund ist.
 
-Für den Dauerbetrieb ist deshalb der **Upload zu Nightscout** (Phase 4) der richtige Weg: Er läuft bei jedem Bluetooth-Ereignis mit, auch im Hintergrund.
+Für den Dauerbetrieb ist deshalb der **Upload zu Nightscout** der richtige Weg: Er läuft bei jedem Bluetooth-Ereignis mit, auch im Hintergrund.
