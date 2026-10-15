@@ -85,7 +85,8 @@ final class AppModel: ObservableObject {
         let isDemo = false
         #endif
         // Simulator tests with demo data skip the permission dialog (it blocks the UI).
-        if !isDemo { AlarmEngine.shared.requestAuthorization() }
+        // Asked during onboarding; afterwards refreshes the critical/time-sensitive state.
+        if !isDemo && Terms.isAccepted { AlarmEngine.shared.requestAuthorization() }
         Watchdog.configure(enabled: AlarmEngine.shared.config.noDataEnabled, minutes: AlarmEngine.shared.config.noDataMinutes)
         link.migrateHistoryIfNeeded()
         #if DEBUG
@@ -118,6 +119,8 @@ struct OpenMinipumpApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var model = AppModel()
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage(Prefs.languageKey, store: Prefs.defaults) private var language = AppLanguage.system.rawValue
+    @AppStorage(Prefs.themeKey, store: Prefs.defaults) private var theme = AppTheme.system.rawValue
 
     var body: some Scene {
         WindowGroup {
@@ -127,6 +130,7 @@ struct OpenMinipumpApp: App {
                 .environmentObject(model.link)
                 .environmentObject(model.log)
                 .environmentObject(model.uploader)
+                .appPreferences(language: language, theme: theme)
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {

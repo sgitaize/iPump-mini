@@ -83,3 +83,26 @@ extension Array where Element == UInt8 {
 
     public var hex: String { map { String(format: "%02x", $0) }.joined() }
 }
+
+extension KeyDatabase {
+    /// Finds a database in a text: plain hex, or a page with several hex blocks such as
+    /// OpenMinimed's key_databases.md (blocks in <code>…</code>, hex groups separated by
+    /// spaces). Returns the hex of the first block that parses and passes `accept`.
+    public static func findHex(in text: String, accept: (KeyDatabase) -> Bool) -> String? {
+        var candidates: [String] = []
+        var rest = text[...]
+        while let open = rest.range(of: "<code>"),
+              let close = rest.range(of: "</code>", range: open.upperBound..<rest.endIndex) {
+            candidates.append(String(rest[open.upperBound..<close.lowerBound]))
+            rest = rest[close.upperBound...]
+        }
+        candidates.append(text)
+        for candidate in candidates {
+            let clean = candidate.filter { !$0.isWhitespace }
+            guard !clean.isEmpty, clean.allSatisfy(\.isHexDigit),
+                  let db = try? KeyDatabase(hex: clean), accept(db) else { continue }
+            return clean
+        }
+        return nil
+    }
+}

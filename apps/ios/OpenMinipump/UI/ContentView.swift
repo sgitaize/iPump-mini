@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var insulinSelection: Date?
     /// Selected sensor value (its timestamp).
     @State private var glucoseSelection: Date?
+    @State private var showOnboarding = Terms.needsOnboarding
 
     var body: some View {
         NavigationStack {
@@ -54,6 +55,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showPairing) { PairingGuideView() }
             .sheet(isPresented: $showSettings) { SettingsView() }
+            .fullScreenCover(isPresented: $showOnboarding) {
+                OnboardingView { showOnboarding = false }
+            }
         }
     }
 }
@@ -131,6 +135,10 @@ struct StatusBanner: View {
 
 struct GlucoseHeader: View {
     @EnvironmentObject private var store: DataStore
+    @AppStorage(Prefs.unitKey, store: Prefs.defaults) private var unitRaw = GlucoseUnit.mgdl.rawValue
+    @AppStorage(Prefs.lowKey, store: Prefs.defaults) private var low = 70
+    @AppStorage(Prefs.highKey, store: Prefs.defaults) private var high = 180
+    private var unit: GlucoseUnit { GlucoseUnit(rawValue: unitRaw) ?? .mgdl }
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
@@ -138,15 +146,16 @@ struct GlucoseHeader: View {
                 if let r = store.latest {
                     let age = context.date.timeIntervalSince(r.date)
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text("\(r.mgdl)")
+                        Text(verbatim: unit.format(r.mgdl))
                             .font(.system(size: 72, weight: .bold, design: .rounded))
-                            .foregroundStyle(age > 15 * 60 ? .secondary : .primary)
+                            .monospacedDigit()
+                            .foregroundStyle(age > 15 * 60 ? Color.secondary : RangeColor.color(r.mgdl, low: low, high: high, neutral: .primary))
                             .strikethrough(age > 15 * 60)
                         Text(arrow(r.trendMgdlPerMin)).font(.system(size: 40))
                     }
                     HStack(spacing: 12) {
-                        Text("mg/dL")
-                        if let d = delta { Text(d > 0 ? "+\(d)" : "\(d)") }
+                        Text(verbatim: unit.label)
+                        if let d = delta { Text(verbatim: unit.formatDelta(d)) }
                         Text(ageText(age))
                     }
                     .font(.subheadline)
@@ -169,7 +178,7 @@ struct GlucoseHeader: View {
 
     private func ageText(_ age: TimeInterval) -> String {
         let minutes = Int(age / 60)
-        return minutes < 1 ? "gerade eben" : "vor \(minutes) min"
+        return minutes < 1 ? L10n.tr("gerade eben") : L10n.tr("vor %d min", minutes)
     }
 
     /// Medtronic arrows: 1 from 1 mg/dL/min, 2 from 2, 3 from 3.
@@ -184,6 +193,10 @@ struct GlucoseHeader: View {
 struct GlucoseChart: View {
     @EnvironmentObject private var store: DataStore
     @AppStorage("chartHours") private var hours = 3
+    @AppStorage(Prefs.unitKey, store: Prefs.defaults) private var unitRaw = GlucoseUnit.mgdl.rawValue
+    @AppStorage(Prefs.lowKey, store: Prefs.defaults) private var low = 70
+    @AppStorage(Prefs.highKey, store: Prefs.defaults) private var high = 180
+    private var unit: GlucoseUnit { GlucoseUnit(rawValue: unitRaw) ?? .mgdl }
     @Binding var insulinSelection: Date?
     @Binding var glucoseSelection: Date?
 
@@ -229,6 +242,12 @@ struct GlucoseChart: View {
         return out
     }
 
+    /// Axis lines every 50 mg/dL, or at whole mmol/L steps (3, 6, 9 …) in mmol mode.
+    private func axisValues(_ yMax: Int) -> [Double] {
+        if unit == .mgdl { return stride(from: 50, through: Double(yMax), by: 50).map { $0 } }
+        return stride(from: 3.0, through: Double(yMax) / 18.0182, by: 3).map { $0 * 18.0182 }
+    }
+
     private func block(for date: Date) -> (start: Date, end: Date) {
         let start = (date.timeIntervalSince1970 / binSize).rounded(.down) * binSize
         return (Date(timeIntervalSince1970: start), Date(timeIntervalSince1970: start + binSize))
@@ -246,7 +265,7 @@ struct GlucoseChart: View {
         }
         .pickerStyle(.segmented)
         Chart {
-            RectangleMark(yStart: .value("", 70), yEnd: .value("", 180))
+            RectangleMark(yStart: .value("", low), yEnd: .value("", high))
                 .foregroundStyle(.green.opacity(0.12))
             RuleMark(y: .value("", Self.bandTop))
                 .foregroundStyle(.secondary.opacity(0.3))
@@ -269,7 +288,7 @@ struct GlucoseChart: View {
             ForEach(points, id: \.date) { r in
                 PointMark(x: .value("Zeit", r.date), y: .value("mg/dL", r.mgdl))
                     .symbolSize(r.date == glucoseSelection ? 90 : hours > 6 ? 10 : 24)
-                    .foregroundStyle(r.mgdl < 70 ? .red : r.mgdl > 180 ? .orange : .primary)
+                    .foregroundStyle(RangeColor.color(r.mgdl, low: low, high: high, neutral: .primary))
             }
             ForEach(events.filter { $0.kind == .suspend || $0.kind == .resume }) { t in
                 RuleMark(x: .value("Zeit", t.date))
@@ -304,7 +323,14 @@ struct GlucoseChart: View {
         }
         .chartYScale(domain: 0...yMax)
         .chartYAxis {
-            AxisMarks(position: .trailing, values: Array(stride(from: 50, through: yMax, by: 50)))
+            AxisMarks(position: .trailing, values: axisValues(yMax)) { value in
+                AxisGridLine()
+                AxisValueLabel {
+                    if let v = value.as(Double.self) {
+                        Text(verbatim: unit == .mgdl ? "\(Int(v))" : String(format: "%.0f", v / 18.0182))
+                    }
+                }
+            }
         }
         .chartXScale(domain: from...Date())
         .chartXAxis {
@@ -352,7 +378,7 @@ struct GlucoseChart: View {
             if points.isEmpty { Text("Keine Werte in diesem Zeitraum").font(.caption).foregroundStyle(.secondary) }
         }
         if let g = glucoseSelection, let r = store.readings.first(where: { $0.date == g }) {
-            GlucosePointDetail(reading: r, iob: store.iob(at: r.date),
+            GlucosePointDetail(reading: r, unit: unit, iob: store.iob(at: r.date),
                                insulin: store.treatments.filter {
                                    [.autoBasal, .autoCorrection, .bolus].contains($0.kind)
                                        && $0.date > r.date.addingTimeInterval(-300) && $0.date <= r.date
@@ -523,9 +549,9 @@ enum SensorType: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .unknown: "Nicht festgelegt"
-        case .simplera: "Simplera Sync (ohne Transmitter)"
-        case .guardian: "Guardian 4 (mit Transmitter)"
+        case .unknown: L10n.tr("Nicht festgelegt")
+        case .simplera: L10n.tr("Simplera Sync (ohne Transmitter)")
+        case .guardian: L10n.tr("Guardian 4 (mit Transmitter)")
         }
     }
 }
@@ -578,6 +604,7 @@ struct MuteBanner: View {
 /// delivered in its 5-minute window.
 struct GlucosePointDetail: View {
     let reading: GlucoseReading
+    let unit: GlucoseUnit
     let iob: Double?
     let insulin: [Treatment]
     let carbs: [Treatment]
@@ -587,11 +614,11 @@ struct GlucosePointDetail: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(reading.date.formatted(date: .omitted, time: .shortened)).font(.subheadline.weight(.semibold))
                 Spacer()
-                Text("\(reading.mgdl) mg/dL").font(.title3.weight(.semibold)).monospacedDigit()
+                Text(verbatim: "\(unit.format(reading.mgdl)) \(unit.label)").font(.title3.weight(.semibold)).monospacedDigit()
                 Text(TrendArrow.text(reading.trendMgdlPerMin))
             }
             HStack(spacing: 14) {
-                Label(String(format: "%.1f mmol/L", Double(reading.mgdl) / 18), systemImage: "drop")
+                Label(unit == .mgdl ? String(format: "%.1f mmol/L", Double(reading.mgdl) / 18.0182) : "\(reading.mgdl) mg/dL", systemImage: "drop")
                 if let rate = reading.trendMgdlPerMin {
                     Label(String(format: "%+.1f/min", rate), systemImage: "arrow.up.right")
                 }
