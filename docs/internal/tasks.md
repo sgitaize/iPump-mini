@@ -102,6 +102,11 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - **Morgen 15.10. erledigt:** Simon hat geprüft: das kostenlose Team bietet App Groups (App und Widget), aber **keine** zeitkritischen Mitteilungen. Standard-Entitlements jetzt nur App Group, `OpenMinipump-paid.entitlements` mit Time Sensitive für bezahlte Teams. Alarme kommen beim kostenlosen Team als normale Mitteilungen (Hinweis in den Alarm-Einstellungen). Icon Variante A umgesetzt, Anzeigename „iPump-mini“ (Bundle-ID unverändert).
   - Offen: neues Profil mit App Group braucht einmal **Run in Xcode** (Kommandozeile hat keinen Account), danach Test von Alarmen, Widgets, Dynamic Island auf dem iPhone, dann Merge nach main.
 
+## 15.10.2026, bezahlter Apple-Developer-Account
+- Simon ist (wieder) im Apple Developer Program, gleiche Team-ID `V7GQKCH73F`. `Local.xcconfig` nutzt jetzt `OpenMinipump-paid.entitlements` (zeitkritische Mitteilungen + App Group). Profil gültig bis 15.10.2027, Bundle-ID unverändert, Sitzung zur Pumpe blieb bestehen.
+- Offen: kritische Alarme bei Apple beantragen (Formular „Critical Alerts Entitlement“), danach Entitlement ergänzen. TestFlight, AltStore PAL (Notarisierung) als nächste Wege; App Store für iPump-mini erst nach rechtlicher Einschätzung (MDR).
+- Pebble/casiocgm 2.4.1-Testbuild (VPS, Branch feature/openminipump-source): langer Request-Timeout, schnelle Wiederholung; App hält API 25 s wach und protokolliert Anfragen. Simon testet auf der Uhr.
+
 ## 15.10.2026, Veröffentlichung Repo
 - Simon: Freigabe öffentliche Builds für alle 780G (`allow_any_pump`, Standard an). Doku nach Sprachen getrennt (`docs/en`, `docs/de`, `docs/internal`).
 - Historie bereinigt (git filter-repo): Build-Artefakte entfernt (76 → 2 MB), Pumpen-Seriennummer im Kommentar ersetzt; Prüfung aller Commits: keine Schlüssel, Secrets, Hosts, Adressen. Backup: `~/Dev/openMinipump-backup-20261015-0859.bundle`.
