@@ -102,6 +102,24 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 - **Morgen 15.10. erledigt:** Simon hat geprüft: das kostenlose Team bietet App Groups (App und Widget), aber **keine** zeitkritischen Mitteilungen. Standard-Entitlements jetzt nur App Group, `OpenMinipump-paid.entitlements` mit Time Sensitive für bezahlte Teams. Alarme kommen beim kostenlosen Team als normale Mitteilungen (Hinweis in den Alarm-Einstellungen). Icon Variante A umgesetzt, Anzeigename „iPump-mini“ (Bundle-ID unverändert).
   - Offen: neues Profil mit App Group braucht einmal **Run in Xcode** (Kommandozeile hat keinen Account), danach Test von Alarmen, Widgets, Dynamic Island auf dem iPhone, dann Merge nach main.
 
+## Vormittag 15.10.2026 (Simon testet mit)
+- Alarme, Widgets, Test-Alarm auf dem iPhone von Simon bestätigt → `feature/alarms-widgets` nach main gemergt (`051e6ad`).
+- Branch **`feature/onboarding-l10n`** (gepusht, auf Simons iPhone installiert, App Group aktiv):
+  - Ersteinrichtung: Sprache, **Nutzungsbedingungen mit Haftungsausschluss** (Pflicht, versioniert: `Terms.version`), Checkliste (Schlüsseldatenbank, Mitteilungen, Sensor, Koppeln), Fallstricke zu Mitteilungen. Anleitung und Bedingungen unter Einstellungen › Info.
+  - **Schlüsseldatenbank laden**: „Von OpenMinimed laden“ (öffentliche key_databases.md), eigene URL oder Einfügen; `KeyDatabase.findHex` mit Test gegen die echte Seite.
+  - **Aussehen**: Hell/Dunkel/System, Sprache, mg/dL oder mmol/L, Zielbereich; Akzentfarbe Petrol.
+  - **Widgets** überarbeitet (Kurve, Statuszeile, Stil schlicht/farbig, 3/6 h, Sperrbildschirm mit Kurve und IOB), Live-Aktivität mit Bereichsfarbe und IOB, Debug-Galerie `-widgetGallery`.
+  - **Englisch** (383 Texte, `docs/localization.md`), Umschalter in der App, Erkennung der Gerätesprache.
+  - **Graph durchwischen**: waagerecht wischen bewegt die Auswahl, letzte bleibt stehen.
+  - `docs/getting-started.md` (de/en), README aktualisiert; Website-Entwurf auf dem VPS aktualisiert (nicht live).
+  - Release-Pipeline: öffentlicher Build ohne `.env`/Schlüsseldatenbank (Prüfschritt), Ad-hoc-Signatur mit App Group, Eingabe `allow_any_pump` (Standard gesperrt).
+- Schlüsseldatenbank zusätzlich gesichert: macOS-Schlüsselbund (Account `sakeKeyDatabase`) und iCloud Drive `openMinipump-Backup/` (mit LIESMICH). Identisch mit dem OpenMinimed-Block.
+- **Offen / für Simon:**
+  1. Branch testen (Ersteinrichtung, Englisch, Dunkelmodus, Widgets, Wischen im Graphen), dann nach main mergen.
+  2. Nutzungsbedingungen inhaltlich prüfen (Entwurf, keine Rechtsberatung).
+  3. Entscheidungen für die Veröffentlichung: `allow_any_pump`/DEV_MODE, Kompatibilitäts-Kennung, Repo öffentlich (Historie bereinigen), Probelauf des Workflows.
+  4. Statusseite der lokalen API (`StatusPage.swift`) ist noch nur deutsch.
+
 ## Stand am Ende der Sitzung (15.10.2026, ~00:50)
 - main (`bb71a98`) ist auf Simons iPhone installiert und läuft: Werte, Historie, Behandlungen, Nightscout, API, antippbarer Insulin-Graph.
 - Offene Arbeit: Phase 5 (Branch `wip/alarms-widgets`), Phase 6 (Veröffentlichung), Pebble-Test debuggen.
