@@ -1,0 +1,12 @@
+{
+  "privacyPolicyUrl": "https://simongutjahr.de/impressum/#ipump-mini",
+  "supportUrl": "https://github.com/sgitaize/iPump-mini/issues",
+  "marketingUrl": "https://simongutjahr.de/dev/ipump-mini/",
+  "locale": "en-US",
+  "name": "iPump-mini",
+  "subtitle": "Read-only view of your pump",
+  "promotionalText": "See your own MiniMed 780G on your iPhone – glucose, active insulin, history, widgets and Dynamic Island. Read-only, local, open source. Not for treatment decisions.",
+  "description": "iPump-mini shows the data of your own MiniMed 780G insulin pump on your iPhone – directly over Bluetooth, without a cloud.\n\nWHAT YOU SEE\n• Sensor glucose with trend arrow and change, every 5 minutes, also in the background\n• Active insulin, reservoir, pump battery, SmartGuard state, basal rate, time in range\n• Pump history: boluses, SmartGuard auto corrections, carbs, BG checks, calibrations\n• Graph up to 24 hours – tap or slide for details\n• Widgets for Home and Lock Screen, Live Activity and Dynamic Island\n• Optional reminders for low/high values and pump alerts\n• Optional upload to your own Nightscout, and a local Nightscout-compatible interface for watches\n• German and English, light and dark mode, mg/dL or mmol/L\n\nREAD-ONLY BY DESIGN\niPump-mini only reads. It cannot deliver insulin, change settings or clear alarms. Every request to the pump goes through an allowlist of read queries; everything else is blocked.\n\nIMPORTANT\niPump-mini is not a medical device and must not be used for treatment decisions. Values may be late, wrong or missing. Your pump's displays and alarms are always authoritative – keep them turned on. The app's reminders are an additional, non-binding convenience.\n\nPRIVACY\nYour data stays on your iPhone. The developer receives no data. Nothing is sent anywhere unless you set up your own Nightscout server.\n\nREQUIREMENTS\nA MiniMed 780G insulin pump with Simplera Sync or Guardian 4 sensor. The pump accepts one mobile device; pairing iPump-mini replaces a pairing with another app.\n\nOpen source (GPL-3.0): github.com/sgitaize/iPump-mini\nNot affiliated with or endorsed by Medtronic. MiniMed, SmartGuard, Guardian, Simplera and CareLink are trademarks of their respective owners.",
+  "keywords": "diabetes,insulin pump,cgm,glucose,nightscout,widget,smartguard,780g,type 1,open source",
+  "screenshots": "screenshots/en"
+}

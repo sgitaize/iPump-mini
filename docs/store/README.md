@@ -2,7 +2,8 @@
 
 | What | Where |
 |---|---|
-| Texts (name, subtitle, descriptions DE/EN, keywords, review notes, TestFlight, AltStore, answers to review questions) | [../internal/store-application.md](../internal/store-application.md) |
+| Texts as uploaded (per locale, app, review) | [metadata/](metadata/) |
+| Background, review answers, TestFlight, AltStore | [../internal/store-application.md](../internal/store-application.md) |
 | Screenshots 6.9″ (1320 × 2868), German | [screenshots/de/](screenshots/de/) |
 | Screenshots 6.9″ (1320 × 2868), English | [screenshots/en/](screenshots/en/) |
 | App icon 1024 × 1024 (no alpha) | [../../apps/ios/OpenMinipump/Assets.xcassets/AppIcon.appiconset/AppIcon.png](../../apps/ios/OpenMinipump/Assets.xcassets/AppIcon.appiconset/AppIcon.png) |
@@ -20,3 +21,6 @@ Screenshots (all with simulated demo data, iPhone 18 Pro Max simulator, public b
 6. `06-onboarding` – first start
 
 Regenerate: `apps/ios` → build with `OMP_PUBLIC_BUILD=1 OMP_PUBLIC_DEV_MODE=0` for the simulator, launch with `-demoData -screenshot -sensorType simplera -appLanguage de|en` plus `-selectPoint`, `-widgetGallery`, `-screen alarms|settings|guide|terms|about` or `-onboarding`; status bar via `xcrun simctl status_bar … override --time 9:41`.
+
+## Upload to App Store Connect
+`apps/ios/Scripts/asc_metadata.py` uploads texts, category, review details and screenshots via the App Store Connect API (key in `~/.appstoreconnect/`, never in git). App Privacy, pricing/availability and the age rating are set by hand.
