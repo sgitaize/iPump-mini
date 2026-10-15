@@ -211,6 +211,9 @@ struct GlucoseChart: View {
     private var unit: GlucoseUnit { GlucoseUnit(rawValue: unitRaw) ?? .mgdl }
     @Binding var insulinSelection: Date?
     @Binding var glucoseSelection: Date?
+    /// What a running drag scrubs through; decided by its first movement.
+    @State private var scrub: Scrub?
+    private enum Scrub { case glucose, insulin, ignore }
 
     /// Height of the insulin band below the glucose values, in chart units (mg/dL scale).
     private static let band: Double = 36
@@ -252,6 +255,21 @@ struct GlucoseChart: View {
             }
         }
         return out
+    }
+
+    /// Date and y value (mg/dL scale) under a point of the overlay.
+    private func chartValue(at location: CGPoint, proxy: ChartProxy, geo: GeometryProxy) -> (Date, Double)? {
+        guard let frame = proxy.plotFrame else { return nil }
+        let origin = geo[frame].origin
+        guard let date: Date = proxy.value(atX: location.x - origin.x),
+              let y: Double = proxy.value(atY: location.y - origin.y) else { return nil }
+        return (date, y)
+    }
+
+    /// Nearest sensor value; for taps only if it is close enough to count as "on" it.
+    private func nearestPoint(to date: Date, in points: [GlucoseReading], anyDistance: Bool = false) -> GlucoseReading? {
+        guard let nearest = points.min(by: { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }) else { return nil }
+        return anyDistance || abs(nearest.date.timeIntervalSince(date)) < Double(hours) * 90 ? nearest : nil
     }
 
     /// Axis lines every 50 mg/dL, or at whole mmol/L steps (3, 6, 9 …) in mmol mode.
@@ -360,12 +378,9 @@ struct GlucoseChart: View {
             GeometryReader { geo in
                 Rectangle().fill(.clear).contentShape(Rectangle())
                     .onTapGesture { location in
-                        guard let frame = proxy.plotFrame else { return }
-                        let origin = geo[frame].origin
-                        guard let date: Date = proxy.value(atX: location.x - origin.x),
-                              let y: Double = proxy.value(atY: location.y - origin.y) else { return }
+                        guard let (date, y) = chartValue(at: location, proxy: proxy, geo: geo) else { return }
                         // Taps in the insulin band select a block, taps above select the
-                        // nearest sensor value; anywhere else clears the selection.
+                        // nearest sensor value; tapping the selection again or anywhere else clears it.
                         if y <= Self.bandTop, segments.contains(where: { block(for: $0.start).start == block(for: date).start }) {
                             glucoseSelection = nil
                             if let current = insulinSelection, block(for: current).start == block(for: date).start {
@@ -373,9 +388,7 @@ struct GlucoseChart: View {
                             } else {
                                 insulinSelection = date
                             }
-                        } else if y > Self.bandTop,
-                                  let nearest = points.min(by: { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }),
-                                  abs(nearest.date.timeIntervalSince(date)) < Double(hours) * 90 {
+                        } else if y > Self.bandTop, let nearest = nearestPoint(to: date, in: points) {
                             insulinSelection = nil
                             glucoseSelection = glucoseSelection == nearest.date ? nil : nearest.date
                         } else {
@@ -383,8 +396,39 @@ struct GlucoseChart: View {
                             glucoseSelection = nil
                         }
                     }
+                    // Sliding the finger sideways moves the selection along the values (or the
+                    // insulin blocks if the drag starts in the band); the last one stays selected.
+                    // Vertical drags are left to the page scroll.
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 8)
+                            .onChanged { drag in
+                                if scrub == nil {
+                                    let horizontal = abs(drag.translation.width) > abs(drag.translation.height)
+                                    let startY = chartValue(at: drag.startLocation, proxy: proxy, geo: geo)?.1 ?? 0
+                                    scrub = !horizontal ? .ignore : startY <= Self.bandTop ? .insulin : .glucose
+                                }
+                                guard let (date, _) = chartValue(at: drag.location, proxy: proxy, geo: geo) else { return }
+                                switch scrub {
+                                case .glucose:
+                                    if let nearest = nearestPoint(to: date, in: points, anyDistance: true) {
+                                        insulinSelection = nil
+                                        glucoseSelection = nearest.date
+                                    }
+                                case .insulin:
+                                    if segments.contains(where: { block(for: $0.start).start == block(for: date).start }) {
+                                        glucoseSelection = nil
+                                        insulinSelection = date
+                                    }
+                                default:
+                                    break
+                                }
+                            }
+                            .onEnded { _ in scrub = nil }
+                    )
             }
         }
+        .sensoryFeedback(.selection, trigger: glucoseSelection)
+        .sensoryFeedback(.selection, trigger: insulinSelection.map { block(for: $0).start })
         .frame(height: 240)
         .overlay {
             if points.isEmpty { Text("Keine Werte in diesem Zeitraum").font(.caption).foregroundStyle(.secondary) }
