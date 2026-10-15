@@ -23,7 +23,7 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 `docs/` Wissen · `research/` eigene Skripte · `captures/` (ignored) Mitschnitte · `_vendor/` (ignored) Vendor-Material · `proto/` Referenz/Prototypen (bleak entfällt, siehe ADR 0003) · `core/` gemeinsame Protokoll-Lib · `apps/ios/` SwiftUI · `apps/android/` Kotlin
 
 ## Umgebung
-- Repo: `~/Dev/openMinipump` (bewusst nicht in iCloud, siehe ADR 0001), GitHub: `sgitaize/openMinipump` (privat)
+- Repo: `~/Dev/openMinipump` (bewusst nicht in iCloud, siehe ADR 0001), GitHub: `sgitaize/iPump-mini` (privat; bis 15.10. `openMinipump`, GitHub leitet weiter)
 - Der iOS-Simulator hat kein Bluetooth, deshalb braucht es einen Replay-Transport aus echten Mitschnitten.
 
 ## Aktueller Stand

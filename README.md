@@ -1,75 +1,66 @@
-# iPump-mini
+<p align="center">
+  <img src="apps/ios/OpenMinipump/Assets.xcassets/AppIcon.appiconset/AppIcon.png" width="96" alt="iPump-mini icon">
+</p>
 
-*Project and repository name: openMinipump.*
+<h1 align="center">iPump-mini</h1>
 
-**→ [Get started](docs/getting-started.md)** (Deutsch / English)
+<p align="center">
+  An open-source iPhone app that reads a <b>MiniMed 780G</b> insulin pump <b>strictly read-only</b> over Bluetooth – no manufacturer cloud.<br>
+  <a href="docs/getting-started.md"><b>Get started</b></a> · <a href="docs/building.md">Build it yourself</a> · <a href="README.de.md">Deutsch</a>
+</p>
 
-**English summary.** An open-source iPhone app that reads a Medtronic MiniMed 780G insulin pump **strictly read-only** over Bluetooth LE, without the manufacturer cloud. It shows sensor glucose, insulin on board, reservoir, SmartGuard state and the pump history (boluses, auto corrections, carbs, calibrations). Optionally it uploads to your own Nightscout and serves a local Nightscout-compatible API. It builds on the protocol research of [OpenMinimed](https://github.com/OpenMinimed). Not a medical device, not affiliated with Medtronic, not for treatment decisions.
+<p align="center">
+  <img src="docs/images/home-light.png" width="230" alt="Home screen">
+  <img src="docs/images/home-dark.png" width="230" alt="Home screen, dark">
+  <img src="docs/images/widgets.png" width="230" alt="Widgets">
+</p>
 
----
+> [!WARNING]
+> **Not a medical device. Not for treatment decisions.** Values may be wrong, late or missing. The pump's displays and alarms are always authoritative – keep them on. Not affiliated with or endorsed by Medtronic. Use at your own risk.
 
-Eine quelloffene iPhone-App, die eine Insulinpumpe der Reihe **MiniMed 780G ausschließlich lesend** per Bluetooth LE ausliest, ohne Hersteller-Cloud.
+## Features
+- **Live values every 5 minutes, also in the background:** sensor glucose with trend, active insulin, reservoir, pump battery, SmartGuard state, basal, time in range, sensor status and expiry.
+- **Pump history:** boluses, SmartGuard auto corrections, auto basal, carbs, BG and calibrations, suspend/resume. Gaps in the sensor curve are filled from the pump.
+- **Graph** (3/6/12/24 h) with treatments and an insulin band. Tap or slide along it for details (time, value, IOB, insulin in that window).
+- **Alarms:** urgent low, low, high, rapid changes, pump alerts, “no data”, with snooze and presets.
+- **Widgets** for the Home and Lock Screen, **Live Activity / Dynamic Island**.
+- **Nightscout upload** (optional) and a **local Nightscout-compatible API** on port 17580 (incl. `/pebble`).
+- **German and English**, light/dark, mg/dL or mmol/L, your own target range.
+- **First-run setup** with terms of use, a checklist and an in-app guide.
 
-> ⚠️ **Wichtig**
->
-> - **Nicht für Therapieentscheidungen.** Die angezeigten Daten können falsch, veraltet oder unvollständig sein. Maßgeblich sind immer die Anzeigen und Alarme der Pumpe.
-> - **Kein Medizinprodukt**, keine Zulassung, keine CE-Kennzeichnung.
-> - **Keine Verbindung zum Hersteller.** Medtronic, MiniMed, CareLink, SmartGuard, Guardian und Simplera sind Marken ihrer Inhaber. Das Projekt wird von ihnen weder unterstützt noch geprüft.
-> - **Nur lesend.** Die App sendet keine Befehle, die Therapie, Einstellungen oder Zustand der Pumpe verändern. Das ist im Code durch eine Allowlist erzwungen (`core/MiniMedKit/Sources/MiniMedKit/Safety/ReadOnlyPolicy.swift`).
-> - Nutzung auf eigenes Risiko.
+## Read-only by design
+The app never sends commands that change therapy, settings or the state of the pump. Every write to the pump goes through one function and an allowlist of report requests ([`ReadOnlyPolicy.swift`](core/MiniMedKit/Sources/MiniMedKit/Safety/ReadOnlyPolicy.swift)); everything else is blocked and logged. It cannot deliver insulin or clear alarms.
 
-## Was die App kann
+## Install
+- **AltStore / SideStore:** in preparation (see [docs/release-altstore.md](docs/release-altstore.md)).
+- **Build it yourself** with a Mac, Xcode and a free Apple ID: [docs/building.md](docs/building.md).
 
-- **Live-Werte** alle 5 Minuten, auch im Hintergrund: Sensorwert mit Trend, aktives Insulin, Reservoir, Pumpenbatterie, Modus (SmartGuard/Manuell), Basal, Zeit im Zielbereich, Sensorstatus und Sensorablauf.
-- **Pumpenhistorie:** Boli, SmartGuard-Autokorrekturen, Auto-Basal, Kohlenhydrate, BZ-Messungen und Kalibrierungen, Pausen. Fehlende Sensorwerte werden aus der Pumpe nachgetragen.
-- **Graph** (3/6/12/24 h) mit Mahlzeiten, Boli und Insulin-Band. Antippen eines Werts oder Zeitblocks zeigt Details (Uhrzeit, Wert, aktives Insulin, Abgaben).
-- **Nightscout-Upload** (optional): Werte sofort bei neuem Wert, Pumpenstatus, Behandlungen.
-- **Lokale API** im Nightscout-Format auf Port 17580 (wie xDrip+), inkl. `/pebble` und einer Statusseite mit Passwort; optional im WLAN.
-- **Alarme:** dringend niedrig, niedrig, hoch, schnelle Änderungen, Meldungen der Pumpe, „keine Daten“, mit Stummschalten und Voreinstellungen.
-- **Widgets** (Home- und Sperrbildschirm) und **Live-Aktivität/Dynamic Island**.
-- **Deutsch und Englisch**, hell/dunkel, mg/dL oder mmol/L, eigener Zielbereich.
-- **Ersteinrichtung** mit Nutzungsbedingungen, Checkliste und Anleitung in der App.
+Then follow [Get started](docs/getting-started.md): accept the terms, load the key database, allow notifications, pair the pump.
 
-## Wie es funktioniert
+## How it works
+The pump is the Bluetooth central, the iPhone the peripheral. After pairing, the pump connects to the app and both negotiate an encrypted session (Medtronic's “SAKE” protocol). Over the same link the app reads the standard Bluetooth services of the pump (Insulin Delivery Service, CGM Service) and their Medtronic extensions. The session is stored, so the app survives updates and restarts without pairing again.
 
-Die Pumpe ist der Bluetooth-Central, das iPhone der Peripheral. Nach der Kopplung baut die Pumpe die Verbindung auf und handelt mit der App eine verschlüsselte Sitzung aus (Medtronic-Protokoll „SAKE“). Die App liest dann über dieselbe Verbindung die Bluetooth-Standarddienste der Pumpe (Insulin Delivery Service, CGM Service) mit Medtronic-Erweiterungen.
+The protocol knowledge comes from **[OpenMinimed](https://github.com/OpenMinimed)** (GPL-3.0). The SAKE implementation in `core/MiniMedKit` is a Swift port of their PythonSake/JavaSake and is tested against a real 780G capture. The SAKE key database is **not** part of this repository or the app; the app loads it from the public OpenMinimed documentation on request.
 
-Das Protokollwissen stammt aus der Arbeit von **[OpenMinimed](https://github.com/OpenMinimed)** (GPL-3.0). Die Verschlüsselung in `core/MiniMedKit` ist ein Swift-Port von deren PythonSake/JavaSake und wird gegen einen echten 780G-Mitschnitt getestet. Details: [`docs/landscape.md`](docs/landscape.md), [`docs/lab-notebook.md`](docs/lab-notebook.md).
+## Limitations
+- iOS suspends the app between pump updates; the local API does not answer then. For watches, the Nightscout upload is more reliable.
+- If the app is swiped away, no more data arrives. A notification reminds you to open it.
+- Critical alerts (through the silent switch) need an Apple entitlement; time-sensitive alerts need a paid developer account. Otherwise alarms are normal notifications – allow the app in your Sleep Focus.
+- Tested with one 780G (firmware 6.23W) and Simplera Sync.
 
-## Selbst bauen
-
-Voraussetzungen: Mac mit Xcode, [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`), ein iPhone und eine Apple-ID (das kostenlose Entwickler-Team genügt; die App läuft dann jeweils 7 Tage).
-
-1. **Repository klonen**, dann `git config core.hooksPath .githooks` (Secret-Scan vor jedem Commit, braucht `gitleaks`).
-2. **Schlüsseldatenbank:** Die App braucht die SAKE-Schlüsseldatenbank „Mobile Application ↔ Insulin Pump“. Sie ist **nicht** in diesem Repository. Am einfachsten lädt die App sie selbst aus der [OpenMinimed-Dokumentation](https://github.com/OpenMinimed/Documentation/blob/main/key_databases.md) (Ersteinrichtung bzw. Einstellungen › Pumpe › Schlüsseldatenbank). Für eigene Builds kannst du sie stattdessen als eine Zeile Hex in `_vendor/keys/mobile-pump.keydb.hex` ablegen (Ordner ist gitignored); dann wird sie ins App-Paket übernommen.
-3. **`.env`** aus `.env.example` anlegen. Im Entwicklermodus (`DEV_MODE=1`) akzeptiert die App nur die Pumpe mit der Seriennummer aus `TEST_PUMP_SERIAL`.
-4. **Signing:** `apps/ios/Config/Local.xcconfig.example` nach `Local.xcconfig` kopieren und `DEVELOPMENT_TEAM` eintragen. Mit dem kostenlosen Team eine eigene `OMP_BUNDLE_ID` wählen. Das kostenlose Team kann App Groups (Standard), aber keine zeitkritischen Mitteilungen; mit bezahltem Account `OMP_APP_ENTITLEMENTS = OpenMinipump/OpenMinipump-paid.entitlements`. Beim ersten Build mit neuer Berechtigung einmal in Xcode starten (⌘R), damit Xcode das Profil holt.
-5. **Bauen:** `cd apps/ios && xcodegen && open OpenMinipump.xcodeproj`, iPhone wählen, starten. Auf dem iPhone den Entwicklermodus aktivieren (Einstellungen › Datenschutz & Sicherheit).
-6. **Koppeln:** Ist die offizielle MiniMed-Mobile-App gekoppelt, diese Kopplung an der Pumpe entfernen (die Pumpe nimmt nur ein Mobilgerät an). Dann in der App „Pumpe koppeln“ öffnen und der Anleitung folgen.
-
-Tests der Protokoll-Bibliothek: `cd core/MiniMedKit && swift test`. Ausführlicher: [`docs/setup-ios.md`](docs/setup-ios.md), API: [`docs/api.md`](docs/api.md).
-
-## Grenzen
-
-- iOS pausiert die App im Hintergrund zwischen den Pumpen-Updates. Die lokale API antwortet dann nicht; für Uhren und andere Geräte ist der Nightscout-Upload zuverlässiger.
-- Wird die App weggewischt, kommen keine Daten mehr. Die App erinnert per Mitteilung daran, sie wieder zu öffnen.
-- Kritische Alarme (durch den Stummschalter) erfordern eine Apple-Freigabe; ohne sie sind Alarme „zeitkritisch“.
-- Getestet mit einer 780G (Firmware 6.23W) und Simplera Sync.
-
-## Struktur
-
+## Repository
 ```
-core/MiniMedKit/   Swift-Paket: SAKE, Protokoll-Parser, Allowlist, Nightscout-Format, Tests
-apps/ios/          SwiftUI-App, Widgets (XcodeGen: project.yml)
-docs/              Recherche, Entscheidungen (ADRs), Laborbuch, API, Aufgaben
-research/          eigene Analyse-Skripte
-captures/, _vendor/  gitignored: Mitschnitte, Schlüssel, Fremdmaterial
+apps/ios/          SwiftUI app and widgets (XcodeGen: project.yml)
+core/MiniMedKit/   Swift package: SAKE, protocol parsers, read-only allowlist, Nightscout format, tests
+docs/              guides, API, protocol notes, decisions (ADRs), lab notebook
+research/          own analysis scripts
 ```
+More: [API](docs/api.md) · [Localisation](docs/localization.md) · [Protocol landscape](docs/landscape.md) · [Lab notebook](docs/lab-notebook.md)
 
-## Rechtsrahmen
+## Legal
+Reverse engineering only to achieve interoperability with one's own device (Art. 6 Directive 2009/24/EC, § 69e UrhG) and data access under the EU Data Act (Regulation (EU) 2023/2854). The repository contains only own code and own descriptions (clean room) – no code, keys or assets of the manufacturer. MiniMed, SmartGuard, Guardian, Simplera and CareLink are trademarks of their owners.
 
-Reverse Engineering ausschließlich zur Herstellung der Interoperabilität mit dem eigenen Gerät (Art. 6 RL 2009/24/EG, § 69e UrhG) und Datenzugang nach dem EU Data Act (VO (EU) 2023/2854). Das Repository enthält nur eigenen Code und eigene Beschreibungen (Clean Room), keinen Code und keine Assets des Herstellers.
+## License and credits
+GPL-3.0, see [LICENSE](LICENSE). Thanks to [OpenMinimed](https://github.com/OpenMinimed), [Nightscout](https://github.com/nightscout/cgm-remote-monitor) and [xDrip+](https://github.com/NightscoutFoundation/xDrip).
 
-## Lizenz
-
-GPL-3.0, siehe [LICENSE](LICENSE) und [ADR 0002](docs/decisions/0002-lizenz.md). Dank an [OpenMinimed](https://github.com/OpenMinimed), [Nightscout](https://github.com/nightscout/cgm-remote-monitor) und [xDrip+](https://github.com/NightscoutFoundation/xDrip).
+Made by [Simon Gutjahr](https://simongutjahr.de/dev/) · [Imprint](https://simongutjahr.de/impressum/)

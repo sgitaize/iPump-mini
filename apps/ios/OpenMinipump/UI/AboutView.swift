@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import SwiftUI
 
-/// Publisher details shown in "Über & Impressum". Edit here.
+/// Publisher details shown in "Über & Impressum" (same as the imprint on simongutjahr.de).
 enum Publisher {
-    static let name = "Simon"            // TODO(Simon): vollständiger Name für das Impressum
-    static let contact = ""              // TODO(Simon): E-Mail oder Kontaktadresse, leer = ausgeblendet
-    static let websiteTitle = "aize-it.de"
-    static let website = URL(string: "https://aize-it.de")!   // TODO(Simon): bestätigen
-    static let repository = URL(string: "https://github.com/sgitaize/openMinipump")!
+    static let name = "Simon Gutjahr"
+    static let address = "Sachsenstr. 1\n76137 Karlsruhe\nDeutschland"
+    static let email = "kontakt@simongutjahr.de"
+    static let phone = "0157 81640322"
+    static let websiteTitle = "simongutjahr.de"
+    static let website = URL(string: "https://simongutjahr.de/dev/")!
+    static let imprint = URL(string: "https://simongutjahr.de/impressum/")!
+    static let repository = URL(string: "https://github.com/sgitaize/iPump-mini")!
 }
 
 struct AboutView: View {
@@ -27,9 +30,14 @@ struct AboutView: View {
             }
 
             Section("Impressum") {
-                Text(Publisher.name)
-                if !Publisher.contact.isEmpty { Text(Publisher.contact) }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(verbatim: Publisher.name).font(.body.weight(.semibold))
+                    Text(verbatim: Publisher.address).foregroundStyle(.secondary)
+                }
+                Link(destination: URL(string: "mailto:\(Publisher.email)")!) { Label(Publisher.email, systemImage: "envelope") }
+                Link(destination: URL(string: "tel:\(Publisher.phone.filter(\.isNumber))")!) { Label(Publisher.phone, systemImage: "phone") }
                 Link(destination: Publisher.website) { Label(Publisher.websiteTitle, systemImage: "globe") }
+                Link(destination: Publisher.imprint) { Label("Impressum und Datenschutz", systemImage: "doc.text") }
                 Text("Privates, nicht-kommerzielles Open-Source-Projekt.")
                     .font(.footnote).foregroundStyle(.secondary)
             }

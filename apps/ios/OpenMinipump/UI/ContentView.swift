@@ -13,6 +13,12 @@ struct ContentView: View {
     /// Selected sensor value (its timestamp).
     @State private var glucoseSelection: Date?
     @State private var showOnboarding = Terms.needsOnboarding
+    /// Debug: `-screenshot` hides the status card (the simulator has no Bluetooth).
+    #if DEBUG
+    private static let screenshotMode = ProcessInfo.processInfo.arguments.contains("-screenshot")
+    #else
+    private static let screenshotMode = false
+    #endif
 
     var body: some View {
         #if DEBUG
@@ -30,7 +36,7 @@ struct ContentView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    StatusBanner(showPairing: $showPairing)
+                    if !Self.screenshotMode { StatusBanner(showPairing: $showPairing) }
                     MuteBanner()
                     SensorTypeCard()
                     GlucoseHeader()

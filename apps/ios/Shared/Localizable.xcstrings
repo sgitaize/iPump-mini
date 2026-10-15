@@ -1725,6 +1725,16 @@
         }
       }
     },
+    "Impressum und Datenschutz" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imprint and privacy"
+          }
+        }
+      }
+    },
     "In diesen 5 Minuten keine Abgabe" : {
       "localizations" : {
         "en" : {

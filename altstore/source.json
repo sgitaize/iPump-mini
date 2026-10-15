@@ -1,16 +1,16 @@
 {
   "name": "iPump-mini",
-  "identifier": "de.sgitaize.openminipump.source",
+  "identifier": "de.sgitaize.ipumpmini.source",
   "subtitle": "MiniMed 780G – read-only, no cloud",
-  "website": "https://github.com/sgitaize/openMinipump",
+  "website": "https://simongutjahr.de/dev/",
   "apps": [
     {
       "name": "iPump-mini",
       "bundleIdentifier": "de.sgitaize.openminipump",
-      "developerName": "Simon",
+      "developerName": "Simon Gutjahr",
       "subtitle": "Reads the MiniMed 780G via Bluetooth – read-only.",
       "localizedDescription": "Open-source app that reads a MiniMed 780G strictly read-only via Bluetooth: sensor glucose, trend, active insulin, reservoir, SmartGuard state and pump history, with alarms, widgets and Live Activity. Optional Nightscout upload and a local Nightscout-compatible API. German and English. Not a medical device, not for treatment decisions, not affiliated with Medtronic. On first start the app loads the SAKE key database from the public OpenMinimed documentation.",
-      "iconURL": "https://raw.githubusercontent.com/sgitaize/openMinipump/main/apps/ios/OpenMinipump/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+      "iconURL": "https://raw.githubusercontent.com/sgitaize/iPump-mini/main/apps/ios/OpenMinipump/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
       "tintColor": "#0F766E",
       "category": "utilities",
       "screenshots": [],

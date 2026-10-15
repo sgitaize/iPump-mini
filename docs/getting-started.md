@@ -7,7 +7,7 @@
 ## Was du brauchst
 - iPhone mit iOS 17 oder neuer
 - MiniMed 780G (getestet mit Firmware 6.23W) mit Simplera Sync oder Guardian 4
-- Zum Installieren: AltStore/SideStore (sobald veröffentlicht) oder einen Mac mit Xcode (siehe [README › Selbst bauen](../README.md#selbst-bauen))
+- Zum Installieren: AltStore/SideStore (sobald veröffentlicht) oder einen Mac mit Xcode (siehe [Selbst bauen](setup-ios.md))
 
 ## 1. Installieren und Nutzungsbedingungen
 Beim ersten Start wählst du die Sprache (Deutsch/English, Standard: wie das iPhone) und stimmst den Nutzungsbedingungen zu. Sie sind später unter Einstellungen › Info nachlesbar.
@@ -54,7 +54,7 @@ Die App enthält dieselbe Anleitung unter Einstellungen › Info › Anleitung.
 
 > **Important:** iPump-mini is not a medical device and not intended for treatment decisions. The pump's displays and alarms are always authoritative; keep the pump's alarms turned on. You have to accept the terms of use on first start.
 
-**You need:** an iPhone with iOS 17 or later; a MiniMed 780G (tested with firmware 6.23W) with Simplera Sync or Guardian 4; AltStore/SideStore (once released) or a Mac with Xcode to build it yourself.
+**You need:** an iPhone with iOS 17 or later; a MiniMed 780G (tested with firmware 6.23W) with Simplera Sync or Guardian 4; AltStore/SideStore (once released) or a Mac with Xcode ([build it yourself](building.md)).
 
 1. **Install and accept the terms.** Pick the language (German/English; default follows the iPhone).
 2. **Load the key database.** Setup or Settings › Pump › Key database › **“Load from OpenMinimed”**. The app downloads the public [key_databases.md](https://github.com/OpenMinimed/Documentation/blob/main/key_databases.md) page and picks the “Mobile Application ↔ Insulin Pump” block (checked by checksum and device type). You can also enter another address or paste the hex block.
