@@ -9,10 +9,16 @@ struct WidgetSnapshot: Codable, Equatable {
         let mgdl: Int
     }
 
-    var points: [Point]           // last 3 h, oldest first
+    var points: [Point]           // last 6 h, oldest first
     var trendRate: Double?
     var iob: Double?
     var updatedAt: Date
+    // Pump status for the larger widgets (optional: older files lack them).
+    var reservoir: Double?
+    var pumpBattery: Int?
+    /// "smartguard", "safe" or "manual".
+    var mode: String?
+    var sensorEnd: Date?
 
     var latest: Point? { points.last }
 
@@ -26,7 +32,8 @@ struct WidgetSnapshot: Codable, Equatable {
 
     static let placeholder = WidgetSnapshot(
         points: (0..<36).map { Point(date: Date().addingTimeInterval(Double($0 - 35) * 300), mgdl: 120 + Int(30 * sin(Double($0) / 6))) },
-        trendRate: 0.4, iob: 1.2, updatedAt: Date())
+        trendRate: 0.4, iob: 1.2, updatedAt: Date(), reservoir: 142, pumpBattery: 80, mode: "smartguard",
+        sensorEnd: Date().addingTimeInterval(3 * 86400))
 }
 
 enum SharedStore {
@@ -71,5 +78,6 @@ struct GlucoseActivityAttributes: ActivityAttributes {
         var trendRate: Double?
         var delta: Int?
         var date: Date
+        var iob: Double?
     }
 }

@@ -46,8 +46,8 @@ struct Provider: TimelineProvider {
 struct GlucoseWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "glucose", provider: Provider()) { entry in
-            GlucoseWidgetView(entry: entry)
-                .containerBackground(.background, for: .widget)
+            GlucoseWidgetView(date: entry.date, snapshot: entry.snapshot)
+                .environment(\.locale, L10n.locale)
         }
         .configurationDisplayName("Glukose")
         .description("Aktueller Sensorwert mit Trend, groß mit Verlauf.")
@@ -56,148 +56,52 @@ struct GlucoseWidget: Widget {
     }
 }
 
-struct GlucoseWidgetView: View {
-    @Environment(\.widgetFamily) private var family
-    let entry: GlucoseEntry
-
-    private var latest: WidgetSnapshot.Point? { entry.snapshot?.latest }
-    private var stale: Bool { latest.map { entry.date.timeIntervalSince($0.date) > 15 * 60 } ?? true }
-
-    var body: some View {
-        switch family {
-        case .accessoryInline:
-            Text(latest.map { "\($0.mgdl) \(TrendArrow.text(entry.snapshot?.trendRate)) \(formatDelta(entry.snapshot?.delta))" } ?? "–")
-        case .accessoryCircular:
-            VStack(spacing: 0) {
-                Text(latest.map { "\($0.mgdl)" } ?? "–").font(.title3.weight(.semibold)).strikethrough(stale)
-                Text(TrendArrow.text(entry.snapshot?.trendRate)).font(.caption)
-            }
-        case .accessoryRectangular:
-            VStack(alignment: .leading, spacing: 1) {
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    Text(latest.map { "\($0.mgdl)" } ?? "–").font(.title2.weight(.semibold)).strikethrough(stale)
-                    Text(TrendArrow.text(entry.snapshot?.trendRate))
-                    Text(formatDelta(entry.snapshot?.delta)).font(.caption)
-                }
-                if let l = latest { Text(l.date, style: .relative).font(.caption2) }
-            }
-        case .systemSmall:
-            small
-        default:
-            large
-        }
-    }
-
-    private var valueColor: Color {
-        guard let v = latest?.mgdl, !stale else { return .secondary }
-        return v < 70 ? .red : v > 180 ? .orange : .primary
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(latest.map { "\($0.mgdl)" } ?? "–")
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
-                    .foregroundStyle(valueColor)
-                    .strikethrough(stale)
-                    .minimumScaleFactor(0.6)
-                Text(TrendArrow.text(entry.snapshot?.trendRate)).font(.title2)
-            }
-            HStack(spacing: 6) {
-                Text(formatDelta(entry.snapshot?.delta))
-                if let l = latest { Text(l.date, style: .relative) }
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
-        }
-    }
-
-    private var small: some View {
-        VStack(alignment: .leading) {
-            Text("mg/dL").font(.caption2).foregroundStyle(.secondary)
-            Spacer(minLength: 0)
-            header
-            if let iob = entry.snapshot?.iob {
-                Text(String(format: "IOB %.2f IE", iob)).font(.caption2).foregroundStyle(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var large: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top) {
-                header
-                Spacer()
-                if let iob = entry.snapshot?.iob {
-                    VStack(alignment: .trailing) {
-                        Text("IOB").font(.caption2).foregroundStyle(.secondary)
-                        Text(String(format: "%.2f IE", iob)).font(.subheadline.weight(.semibold))
-                    }
-                }
-            }
-            if let points = entry.snapshot?.points, !points.isEmpty {
-                Chart {
-                    RectangleMark(yStart: .value("", 70), yEnd: .value("", 180)).foregroundStyle(.green.opacity(0.12))
-                    ForEach(points, id: \.date) { p in
-                        PointMark(x: .value("Zeit", p.date), y: .value("mg/dL", p.mgdl))
-                            .symbolSize(family == .systemLarge ? 18 : 10)
-                            .foregroundStyle(p.mgdl < 70 ? .red : p.mgdl > 180 ? .orange : .primary)
-                    }
-                }
-                .chartYScale(domain: 40...max(250, (points.map(\.mgdl).max() ?? 0) + 20))
-                .chartXScale(domain: entry.date.addingTimeInterval(-3 * 3600)...entry.date)
-                .chartXAxis {
-                    AxisMarks(values: .stride(by: .hour)) { _ in
-                        AxisGridLine()
-                        AxisValueLabel(format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
-                    }
-                }
-            }
-        }
-    }
-}
-
 // MARK: - Live Activity / Dynamic Island
 
 struct GlucoseLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: GlucoseActivityAttributes.self) { context in
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text("\(context.state.mgdl)").font(.system(size: 40, weight: .bold, design: .rounded))
-                Text(TrendArrow.text(context.state.trendRate)).font(.title2)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(formatDelta(context.state.delta)).font(.subheadline.weight(.semibold))
-                    Text(context.state.date, style: .relative).font(.caption).foregroundStyle(.secondary)
-                }
-                Spacer()
-                Text("mg/dL").font(.caption).foregroundStyle(.secondary)
-            }
-            .padding()
-            .activityBackgroundTint(nil)
+            LiveActivityView(state: context.state)
+                .environment(\.locale, L10n.locale)
+                .padding(16)
+                .activityBackgroundTint(nil)
         } dynamicIsland: { context in
-            DynamicIsland {
+            let unit = Prefs.unit
+            let s = context.state
+            let color = RangeColor.color(s.mgdl, low: Prefs.low, high: Prefs.high, neutral: .primary)
+            return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text("\(context.state.mgdl)").font(.title.weight(.bold))
-                        Text(TrendArrow.text(context.state.trendRate))
+                        Text(verbatim: unit.format(s.mgdl)).font(.system(size: 34, weight: .bold, design: .rounded)).foregroundStyle(color)
+                        Text(verbatim: TrendArrow.text(s.trendRate)).font(.title3.weight(.semibold))
                     }
+                    .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    VStack(alignment: .trailing) {
-                        Text(formatDelta(context.state.delta)).font(.headline)
-                        Text("mg/dL").font(.caption2).foregroundStyle(.secondary)
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(verbatim: unit.formatDelta(s.delta)).font(.headline)
+                        Text(verbatim: unit.label).font(.caption2).foregroundStyle(.secondary)
                     }
+                    .padding(.trailing, 4)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    Text(context.state.date, style: .relative).font(.caption).foregroundStyle(.secondary)
+                    HStack {
+                        Text(s.date, style: .relative)
+                        Spacer()
+                        if let iob = s.iob { Text(verbatim: String(format: "IOB %.2f IE", iob)) }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 4)
                 }
             } compactLeading: {
-                Text("\(context.state.mgdl)\(TrendArrow.text(context.state.trendRate))").font(.caption.weight(.semibold))
+                Text(verbatim: "\(unit.format(s.mgdl))\(TrendArrow.text(s.trendRate))")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(color)
             } compactTrailing: {
-                Text(formatDelta(context.state.delta)).font(.caption)
+                Text(verbatim: unit.formatDelta(s.delta)).font(.caption)
             } minimal: {
-                Text("\(context.state.mgdl)").font(.caption2.weight(.semibold))
+                Text(verbatim: unit.format(s.mgdl)).font(.caption2.weight(.semibold)).foregroundStyle(color)
             }
         }
     }

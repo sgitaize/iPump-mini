@@ -15,6 +15,18 @@ struct ContentView: View {
     @State private var showOnboarding = Terms.needsOnboarding
 
     var body: some View {
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-widgetGallery") {
+            WidgetGallery()
+        } else {
+            main
+        }
+        #else
+        main
+        #endif
+    }
+
+    private var main: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
