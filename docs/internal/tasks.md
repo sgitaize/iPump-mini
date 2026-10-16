@@ -1,6 +1,7 @@
 # Aufgabenliste
 
 ## ▶ Aktueller Stand (15.10.2026, Nachmittag) – hier weitermachen
+- **16.10.2026 – Apple-Rückfrage 2.5.4** (Bluetooth-Hintergrundmodi, Prüfer ohne Pumpe): Modi bleiben, Antwort + Bildschirmaufnahme vom Koppeln/Protokoll, Text in `store-application.md` §7. **Build 4 (1.0.1)** vorbereitet: Trendpfeile in Live-Aktivität, Dynamic Island und Widgets schneiden nicht mehr ab (`TrendArrows`, `IslandValue`). Noch archivieren + hochladen, dann Build 4 in App Store Connect wählen und mit Antwort neu einreichen.
 - **App Store:** 1.0.0 (Build 2) zurückgezogen; **1.0.1 (Build 3)** hochgeladen (15.10. 14:14, Sensorstatus-Fix), Version in App Store Connect auf 1.0.1 – Simon wählt Build 3 und reicht ein. Plan für Watchfaces/Website/Apps: Obsidian „Plan Okt 2026“. Texte/Bilder DE+EN, Datenschutz („keine Daten“), Altersfreigabe, Inhaltsrechte, „kein reguliertes Medizinprodukt“, Verfügbarkeit ohne Frankreich (Verschlüsselungsantwort). Bei Rückfragen von Apple: Antworten in `store-application.md` §7.
 - **Pebble läuft** mit casiocgm 2.4.5 (Simon bestätigt): Weckplan `ompSync`, Uhr-Taktgeber, Nightscout-Fallback mit Wolke, letzter Wert bleibt. Code: VPS `casiocgm`, Branch `feature/openminipump-source`; noch nicht im Store/main.
 - **Repo öffentlich:** github.com/sgitaize/iPump-mini (Historie bereinigt). Website: simongutjahr.de/dev/ipump-mini/, Datenschutz /impressum/#ipump-mini.

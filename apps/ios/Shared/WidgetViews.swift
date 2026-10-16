@@ -80,8 +80,11 @@ struct GlucoseWidgetView: View {
                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                     .minimumScaleFactor(0.6)
                     .strikethrough(stale && latest != nil)
-                Text(verbatim: arrow.isEmpty ? unit.label : arrow)
-                    .font(.system(size: arrow.isEmpty ? 8 : 12))
+                if arrow.isEmpty {
+                    Text(verbatim: unit.label).font(.system(size: 8))
+                } else {
+                    TrendArrows(rate: snapshot?.trendRate, size: 12)
+                }
             }
             .widgetAccentable()
         }
@@ -95,8 +98,8 @@ struct GlucoseWidgetView: View {
                     .font(.system(size: 22, weight: .semibold, design: .rounded))
                     .strikethrough(stale && latest != nil)
                     .widgetAccentable()
-                Text(verbatim: arrow).font(.system(size: 15, weight: .semibold))
-                Text(verbatim: deltaText).font(.caption)
+                if !arrow.isEmpty { TrendArrows(rate: snapshot?.trendRate, size: 15) }
+                Text(verbatim: deltaText).font(.caption).lineLimit(1)
                 Spacer(minLength: 0)
                 if let l = latest {
                     Text(l.date, style: .time).font(.caption2).foregroundStyle(.secondary)
@@ -128,7 +131,9 @@ struct GlucoseWidgetView: View {
                     .strikethrough(stale && latest != nil)
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
-                Text(verbatim: arrow).font(.title2.weight(.semibold)).foregroundStyle(valueColor)
+                if !arrow.isEmpty {
+                    TrendArrows(rate: snapshot?.trendRate, size: 22).foregroundStyle(valueColor).layoutPriority(1)
+                }
             }
             HStack(spacing: 6) {
                 if !deltaText.isEmpty { Text(verbatim: deltaText).fontWeight(.semibold) }
@@ -324,6 +329,78 @@ struct GlucoseChartView: View {
     }
 }
 
+/// Trend arrows drawn tightly packed, so two or three arrows stay narrow and never get cut
+/// off or wrapped in small widget and Live Activity regions.
+struct TrendArrows: View {
+    let rate: Double?
+    let size: CGFloat
+    var weight: Font.Weight = .semibold
+
+    var body: some View {
+        let text = TrendArrow.text(rate)
+        HStack(spacing: -size * 0.2) {
+            ForEach(Array(text.enumerated()), id: \.offset) { _, glyph in
+                Text(verbatim: String(glyph))
+            }
+        }
+        .font(.system(size: size, weight: weight))
+        .lineLimit(1)
+        .fixedSize()
+    }
+}
+
+/// Value with trend arrows for the expanded Dynamic Island. The leading region is narrow,
+/// so it steps down in size until it fits instead of cutting off the arrows.
+struct IslandValue: View {
+    let state: GlucoseActivityAttributes.ContentState
+    let unit: GlucoseUnit
+    let color: Color
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            row(value: 34, arrows: 20)
+            row(value: 28, arrows: 17)
+            row(value: 24, arrows: 14)
+        }
+    }
+
+    private func row(value: CGFloat, arrows: CGFloat) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Text(verbatim: unit.format(state.mgdl))
+                .font(.system(size: value, weight: .bold, design: .rounded))
+                .foregroundStyle(color)
+                .lineLimit(1)
+                .fixedSize()
+            TrendArrows(rate: state.trendRate, size: arrows)
+        }
+    }
+}
+
+/// Compact leading view of the Dynamic Island: value and arrows, scaled down if needed.
+struct IslandCompactValue: View {
+    let state: GlucoseActivityAttributes.ContentState
+    let unit: GlucoseUnit
+    let color: Color
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            row(13)
+            row(11)
+        }
+        .foregroundStyle(color)
+    }
+
+    private func row(_ size: CGFloat) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 1) {
+            Text(verbatim: unit.format(state.mgdl))
+                .font(.system(size: size, weight: .semibold, design: .rounded))
+                .lineLimit(1)
+                .fixedSize()
+            TrendArrows(rate: state.trendRate, size: size - 1)
+        }
+    }
+}
+
 /// Lock screen banner of the Live Activity.
 struct LiveActivityView: View {
     let state: GlucoseActivityAttributes.ContentState
@@ -343,23 +420,32 @@ struct LiveActivityView: View {
     }
 
     private func header(unit: GlucoseUnit, color: Color) -> some View {
-        HStack(alignment: .center, spacing: 14) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
+        // The relative date claims as much width as it can; value and arrows get layout
+        // priority so they are never truncated, the middle column shrinks instead.
+        HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(verbatim: unit.format(state.mgdl))
                     .font(.system(size: 44, weight: .bold, design: .rounded))
                     .foregroundStyle(color)
-                Text(verbatim: TrendArrow.text(state.trendRate)).font(.title2.weight(.semibold))
+                    .lineLimit(1)
+                    .fixedSize()
+                TrendArrows(rate: state.trendRate, size: 24)
             }
+            .layoutPriority(2)
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: "\(unit.formatDelta(state.delta)) \(unit.label)").font(.subheadline.weight(.semibold))
                 Text(state.date, style: .relative).font(.caption).foregroundStyle(.secondary)
             }
-            Spacer()
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            Spacer(minLength: 0)
             if let iob = state.iob {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("IOB").font(.caption2).foregroundStyle(.secondary)
                     Text(verbatim: insulinUnits(iob, 2)).font(.subheadline.weight(.semibold))
                 }
+                .fixedSize()
+                .layoutPriority(1)
             }
         }
     }

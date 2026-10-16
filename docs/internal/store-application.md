@@ -139,6 +139,9 @@ No account, no analytics, no data collection. Data stays on the device. An optio
 HOW TO REVIEW WITHOUT A PUMP
 The app requires a MiniMed 780G pump. For review, a demo mode with simulated values is available: on the first screen tap "Try without a pump (demo)", accept the terms, and the app shows simulated values (a new one every 5 minutes). It can also be switched on under Settings › Info › Demo mode. Demo mode does not use Bluetooth, saves nothing, uploads nothing and gives no alarms; widgets and the Live Activity show the simulated values.
 
+BLUETOOTH (UIBackgroundModes bluetooth-central + bluetooth-peripheral)
+The pump connects to the phone: the app runs a GATT server via CBPeripheralManager (advertising for pairing/reconnect; the pump writes/subscribes) and, over the same link, reads the pump's GATT services (IDS, CGM, Battery) via CBCentralManager. New values arrive every 5 minutes, also in the background/lock screen (widgets, Live Activity). A screen recording on a physical iPhone with a pump is attached. Demo mode uses no Bluetooth, so this is not visible without a pump.
+
 INTEROPERABILITY
 The app is an independent, open-source implementation (GPL-3.0) for interoperability with the user's own device. It contains no code or assets of the manufacturer. Source: https://github.com/sgitaize/iPump-mini
 
@@ -206,6 +209,26 @@ Treatment always happens on the pump. iPump-mini cannot deliver or suggest a dos
 ```
 The app is an independent implementation for interoperability with the user's own device, based on public research (OpenMinimed, GPL-3.0) and the public Bluetooth SIG specifications (Insulin Delivery Service, CGM Service). It contains no code or assets of the manufacturer. Trademarks are used only descriptively to state compatibility, with a clear non-affiliation notice.
 ```
+**„Guideline 2.5.4 – bluetooth-central/-peripheral in UIBackgroundModes, no BLE functionality found“** (16.10.2026, Build 1.0.1 (3), Prüfgerät iPad Air ohne Pumpe → nur Demo-Modus gesehen). Beide Modi werden gebraucht, nicht entfernen. Antwort + Bildschirmaufnahme vom iPhone mit echter Pumpe:
+```
+Hello,
+
+Thank you for the review. iPump-mini does use Bluetooth LE with Core Bluetooth – it is the app's core function. You could not see it because the review device has no MiniMed 780G pump nearby, so only the demo mode (which intentionally uses no Bluetooth) was available.
+
+How the app uses both background modes (source: apps/ios/OpenMinipump/BLE/PumpLink.swift in https://github.com/sgitaize/iPump-mini):
+
+- bluetooth-peripheral: The MiniMed 780G pump connects to the phone, not the other way round. The app therefore runs a GATT server with CBPeripheralManager (pump service 0xFE82 plus Device Information) and advertises it, first for pairing and later for reconnection. The pump subscribes to and writes to these characteristics; this is the encrypted channel over which the read-only status reports arrive.
+- bluetooth-central: Over the same link the pump opened, the app also acts as a GATT client via CBCentralManager and reads the pump's own services (Bluetooth SIG Insulin Delivery, CGM and Battery services).
+- Background: The pump sends a new sensor glucose value every 5 minutes. The app must keep the link and receive these values while in the background or the screen is locked, so it can update widgets, the Live Activity and optional reminders. Both managers use state restoration (restore identifiers) for this.
+
+Attached is a screen recording on a physical iPhone with a MiniMed 780G showing: Bluetooth permission prompt, pairing with the pump (pump screen visible), live values arriving, the app moving to the background/lock screen and the Live Activity continuing to update.
+
+We have also added this explanation and the recording to the App Review Information notes for future submissions.
+
+Best regards,
+Simon Gutjahr
+```
+
 **„How can we test the app?“** → Demo-Modus (siehe Review-Notes in Abschnitt 2).
 
 ---

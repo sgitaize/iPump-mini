@@ -29,6 +29,27 @@ struct WidgetGallery: View {
                         .environment(\.colorScheme, .dark)
                         .environment(\.isLuminanceReduced, true)
                 }
+                // Worst case for width: three arrows (and mmol/L if selected).
+                ForEach([3.6, -2.4, 1.2], id: \.self) { rate in
+                    let s = GlucoseActivityAttributes.ContentState(mgdl: 288, trendRate: rate, delta: 18, date: Date(), iob: 1.85, curve: nil)
+                    let color = RangeColor.color(288, low: Prefs.low, high: Prefs.high, neutral: .primary)
+                    HStack(spacing: 12) {
+                        IslandCompactValue(state: s, unit: Prefs.unit, color: color)
+                            .frame(maxWidth: 52, alignment: .leading)
+                            .padding(8)
+                            .background(.black, in: Capsule())
+                        IslandValue(state: s, unit: Prefs.unit, color: color)
+                            .frame(width: 110, alignment: .leading)
+                            .padding(8)
+                            .background(.black, in: RoundedRectangle(cornerRadius: 16))
+                    }
+                    .environment(\.colorScheme, .dark)
+                    LiveActivityView(state: s)
+                        .padding(16)
+                        .frame(width: 364)
+                        .background(.black.opacity(0.75), in: RoundedRectangle(cornerRadius: 22))
+                        .environment(\.colorScheme, .dark)
+                }
                 HStack(spacing: 16) {
                     tile(.systemSmall, snapshot, width: 170, height: 170)
                     VStack(spacing: 12) {

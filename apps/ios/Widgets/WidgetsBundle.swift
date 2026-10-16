@@ -71,11 +71,8 @@ struct GlucoseLiveActivity: Widget {
             let color = RangeColor.color(s.mgdl, low: Prefs.low, high: Prefs.high, neutral: .primary)
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        Text(verbatim: unit.format(s.mgdl)).font(.system(size: 34, weight: .bold, design: .rounded)).foregroundStyle(color)
-                        Text(verbatim: TrendArrow.text(s.trendRate)).font(.title3.weight(.semibold))
-                    }
-                    .padding(.leading, 4)
+                    IslandValue(state: s, unit: unit, color: color)
+                        .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     VStack(alignment: .trailing, spacing: 2) {
@@ -100,9 +97,7 @@ struct GlucoseLiveActivity: Widget {
                     .padding(.horizontal, 4)
                 }
             } compactLeading: {
-                Text(verbatim: "\(unit.format(s.mgdl))\(TrendArrow.text(s.trendRate))")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(color)
+                IslandCompactValue(state: s, unit: unit, color: color)
             } compactTrailing: {
                 Text(verbatim: unit.formatDelta(s.delta)).font(.caption)
             } minimal: {
