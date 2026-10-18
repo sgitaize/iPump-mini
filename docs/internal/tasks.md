@@ -1,6 +1,7 @@
 # Aufgabenliste
 
 ## ▶ Aktueller Stand (15.10.2026, Nachmittag) – hier weitermachen
+- **18.10.2026 – Android-Version** (Branch `claude/clever-keller-cno24r`): `apps/android/` (Kotlin/Compose) + `core/MiniMedKitKotlin/` (Port von MiniMedKit, alle Tests grün inkl. 780G-Handshake). Baut, Screens laufen im Demo-Modus, **noch nicht an der Pumpe getestet**. ADR 0004 (vorgeschlagen), Anleitung `docs/de/android.md`. Nächster Schritt: Simon testet mit der Testpumpe (Debug-APK, Protokoll teilen).
 - **16.10.2026 – Apple-Rückfrage 2.5.4** (Bluetooth-Hintergrundmodi, Prüfer ohne Pumpe): Modi bleiben, Antwort + Bildschirmaufnahme vom Koppeln/Protokoll, Text in `store-application.md` §7. **Build 4 (1.0.1)** vorbereitet: Trendpfeile in Live-Aktivität, Dynamic Island und Widgets schneiden nicht mehr ab (`TrendArrows`, `IslandValue`). **Build 4 hochgeladen 16.10. 11:08** (Release, DEV_MODE=0, keine Schlüssel-DB). Simon: Build 4 wählen, Video (Koppeln + Protokoll) an Antwort und Review-Notes, neu einreichen. Simons iPhone läuft jetzt mit der öffentlichen Variante (Release-Build).
 - **App Store:** 1.0.0 (Build 2) zurückgezogen; **1.0.1 (Build 3)** hochgeladen (15.10. 14:14, Sensorstatus-Fix), Version in App Store Connect auf 1.0.1 – Simon wählt Build 3 und reicht ein. Plan für Watchfaces/Website/Apps: Obsidian „Plan Okt 2026“. Texte/Bilder DE+EN, Datenschutz („keine Daten“), Altersfreigabe, Inhaltsrechte, „kein reguliertes Medizinprodukt“, Verfügbarkeit ohne Frankreich (Verschlüsselungsantwort). Bei Rückfragen von Apple: Antworten in `store-application.md` §7.
 - **Pebble läuft** mit casiocgm 2.4.5 (Simon bestätigt): Weckplan `ompSync`, Uhr-Taktgeber, Nightscout-Fallback mit Wolke, letzter Wert bleibt. Code: VPS `casiocgm`, Branch `feature/openminipump-source`; noch nicht im Store/main.
@@ -91,6 +92,19 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
   - vorher: rechtliche Prüfung (Interoperabilität §69e UrhG, Markenhinweise, Haftungsausschluss), Umgang mit der Kompatibilitäts-Kennung `compatSoftwareRevision`
   - Schlüsseldatenbank bleibt draußen; Anleitung, wie man sie sich selbst beschafft (OpenMinimed-Doku)
 - [ ] AltStore-Veröffentlichung vorbereiten: Source-JSON (apps.json), signierte IPA als GitHub-Release-Asset, GitHub-Actions-Pipeline (Build → IPA → Release → Source aktualisieren)
+
+
+## Phase 7 – Android (18.10.2026, wartet auf Hardwaretest)
+- [x] `core/MiniMedKitKotlin`: Kotlin-Port (SAKE, SeqCrypt, Key-DB, Parser, History, Allowlist, DevModeGuard, Nightscout, Alarmtabelle), gleiche Testvektoren wie Swift
+- [x] `apps/android`: GATT-Server (SAKE FE82, DIS 0x0900), Advertising (Herstellerdaten 0x01F9 mit „Mobile …“), GATT-Client auf der Pumpenverbindung, Abfragezyklus, History
+- [x] Vordergrunddienst mit Wert in der Mitteilung, Boot-Start, Alarme, Nightscout, lokale API + Statusseite, Demo-Modus, Onboarding, DE/EN
+- [x] Screens per Robolectric gerendert (`./gradlew :app:testDebugUnitTest -Pscreenshots=…`), CI-Workflow `android.yml`
+- [ ] Simon: ADR 0004 bestätigen
+- [ ] Simon: Debug-APK auf Android-Handy, Kopplung mit Testpumpe, Protokoll teilen (Ablauf in `docs/de/android.md`)
+- [ ] Prüfen: Name in den Herstellerdaten sichtbar? DIS-Werte akzeptiert? GATT-Client hängt sich an die bestehende Verbindung?
+- [ ] Hintergrund über Stunden (Doze, Hersteller-Akkusparen)
+- [ ] Simon: Release-Keystore lokal erzeugen und sichern (nie ins Repo/Chat)
+- [ ] Später: Widgets (Glance), Release-Pipeline (signierte APK), F-Droid/GitHub Releases
 
 ## Nachtarbeit 15.10.2026 (01:08–01:30, Simon schläft, Freigabe „selbstständig nach Plan“)
 - 01:08 Neukopplung durch Simon nach dem Verbindungsfehler: läuft, Werte alle 5 min im Hintergrund, Nightscout-Upload ok (main-Build auf dem iPhone).

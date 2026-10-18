@@ -27,6 +27,7 @@
 - **Nightscout upload** (optional) and a **local Nightscout-compatible API** on port 17580 (incl. `/pebble`).
 - **German and English**, light/dark, mg/dL or mmol/L, your own target range.
 - **First-run setup** with terms of use, a checklist and an in-app guide.
+- **Android version** (preview, not yet tested with a pump): [docs/en/android.md](docs/en/android.md).
 
 ## Read-only by design
 The app never sends commands that change therapy, settings or the state of the pump. Every write to the pump goes through one function and an allowlist of report requests ([`ReadOnlyPolicy.swift`](core/MiniMedKit/Sources/MiniMedKit/Safety/ReadOnlyPolicy.swift)); everything else is blocked and logged. It cannot deliver insulin or clear alarms.

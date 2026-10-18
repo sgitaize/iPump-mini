@@ -129,3 +129,13 @@ Folge: Unsere Allowlist ist eine echte Teilmenge dessen, was die offizielle App 
 - Mit korrekt gesetzten Berechtigungen meldet `xcodebuild` „No Accounts“ und „Profile doesn't include the App Groups capability“. Ein neues Profil gibt es nur über Xcode mit angemeldetem Account. Offen: Kann das persönliche Team App Groups überhaupt?
 - **Lösung bis dahin:** Die Berechtigungen sind über die xcconfig schaltbar. Widgets lesen ohne App Group vom lokalen Server der App. Die Live Activity braucht keine App Group, die App aktualisiert sie direkt per ActivityKit.
 - Simulator: Live Activity startet („Live-Aktivität gestartet“); die Dynamic Island wird breiter, ihr Inhalt erscheint im Simulator-Screenshot aber nicht.
+
+## 2026-10-18 – Android-Version (ohne Pumpe)
+
+- **Kein Hardwaretest.** Gebaut und getestet im Cloud-Container (kein Android-Gerät, kein Emulator).
+- `core/MiniMedKitKotlin`: alle Swift-Testvektoren portiert. Der Server reproduziert den echten 780G-Handshake byte-genau (Schlüssel-DB aus `_vendor/keys`, von der OpenMinimed-Seite).
+- **Android-spezifische Annahmen**, die beim ersten Test geprüft werden müssen:
+  - **Advertising:** Android setzt den Local Name nur über den Adapternamen. „Mobile <6 Ziffern>“ steht deshalb in Herstellerdaten der Firma 0x01F9 (`00 'Mobile …' 00`), so wie es JavaPumpConnector und GlycemicGPT tun. Dazu kommt FE82 im Kopplungsmodus bzw. FE81 zum Wiederverbinden, beides mit LOW_LATENCY.
+  - **DIS 0x0900:** gleiche Merkmale wie auf iOS. Werte: `Build.MANUFACTURER`, `Build.MODEL`, `Mobile <Name>`, `Android`, `Android <Version>`, App-Version `3.3.0(80)`, System-ID 8 × 00, PnP 7 × 00, 2A2A leer. JavaPumpConnector kam mit Fantasiewerten durch den Handshake, die fehlende 2A2A war also vermutlich die iOS-Ursache.
+  - **GATT-Client:** `connectGatt(autoConnect=false)` nur, solange die Pumpe am GATT-Server verbunden ist (Android nutzt dann den bestehenden Link). Die App baut nie selbst eine Verbindung auf.
+  - **Ohne Sitzung nach einem Prozess-Neustart:** Ist die Pumpe nach 20 s ohne SAKE-Abo noch verbunden, trennt die App ihre Seite (`cancelConnection`), damit die Pumpe neu verbindet und einen neuen Handshake startet.

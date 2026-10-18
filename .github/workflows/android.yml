@@ -1,0 +1,28 @@
+# Android: tests of the Kotlin protocol library, screen rendering and a debug build.
+# Public build settings only: no .env, no key database (the handshake test is skipped).
+name: Android
+
+on:
+  push:
+    paths: ["apps/android/**", "core/MiniMedKitKotlin/**", ".github/workflows/android.yml"]
+  pull_request:
+    paths: ["apps/android/**", "core/MiniMedKitKotlin/**", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+      - name: Test and build
+        working-directory: apps/android
+        run: ./gradlew --no-daemon :minimedkit:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug -PompPublicBuild=1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: apps/android/app/build/outputs/apk/debug/app-debug.apk
