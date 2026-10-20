@@ -27,6 +27,7 @@
 - **Nightscout-Upload** (optional) und **lokale Nightscout-kompatible API** auf Port 17580 (inkl. `/pebble`).
 - **Deutsch und Englisch**, hell/dunkel, mg/dL oder mmol/L, eigener Zielbereich.
 - **Ersteinrichtung** mit Nutzungsbedingungen, Checkliste und Anleitung in der App.
+- **Android-Version** (Vorschau, noch ohne Hardwaretest): [docs/de/android.md](docs/de/android.md).
 
 ## Nur lesend – technisch erzwungen
 Die App sendet keine Befehle, die Therapie, Einstellungen oder Zustand der Pumpe verändern. Jeder Schreibzugriff läuft über eine einzige Funktion und eine Allowlist von Abfragen ([`ReadOnlyPolicy.swift`](core/MiniMedKit/Sources/MiniMedKit/Safety/ReadOnlyPolicy.swift)); alles andere wird blockiert und protokolliert. Insulin abgeben oder Alarme quittieren kann sie nicht.

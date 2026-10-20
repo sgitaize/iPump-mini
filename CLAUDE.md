@@ -3,7 +3,7 @@
 Der vollständige Projekt-Brief steht in `docs/internal/project-brief.md`. Er ist verbindlich, lies ihn zu Beginn jeder Session.
 
 ## Ziel
-Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per BLE aus und stellt die Daten lokal per REST-API bereit, ohne CareLink-Cloud. Später sollen die Daten auch in Simons Nightscout bzw. supercgm fließen. **Der Fokus liegt aktuell auf iOS.**
+Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per BLE aus und stellt die Daten lokal per REST-API bereit, ohne CareLink-Cloud. Später sollen die Daten auch in Simons Nightscout bzw. supercgm fließen. iOS ist fertig, Android (`apps/android`) ist gebaut und wartet auf den Hardwaretest.
 
 ## Harte Regeln (nicht verhandelbar)
 1. **Nur lesen.** Der Protokoll-Client nutzt eine Opcode-Allowlist. Alles andere wird hart blockiert und geloggt. Im Zweifel gilt eine Nachricht als verboten, dann Simon fragen.
@@ -20,7 +20,7 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 - Physische Schritte an der Pumpe macht Simon. Sag ihm jeweils genau, was er wann tun soll.
 
 ## Repo-Struktur
-`docs/` Wissen · `research/` eigene Skripte · `captures/` (ignored) Mitschnitte · `_vendor/` (ignored) Vendor-Material · `proto/` Referenz/Prototypen (bleak entfällt, siehe ADR 0003) · `core/` gemeinsame Protokoll-Lib · `apps/ios/` SwiftUI · `apps/android/` Kotlin
+`docs/` Wissen · `research/` eigene Skripte · `captures/` (ignored) Mitschnitte · `_vendor/` (ignored) Vendor-Material · `proto/` Referenz/Prototypen (bleak entfällt, siehe ADR 0003) · `core/MiniMedKit` Protokoll-Lib (Swift) · `core/MiniMedKitKotlin` Kotlin-Port (gleiche Tests) · `apps/ios/` SwiftUI · `apps/android/` Kotlin/Compose
 
 ## Umgebung
 - Repo: `~/Dev/openMinipump` (bewusst nicht in iCloud, siehe ADR 0001), GitHub: `sgitaize/iPump-mini` (**öffentlich** seit 15.10.2026; Historie bereinigt, neu angelegt)
@@ -37,3 +37,4 @@ Eine quelloffene iOS- und Android-App liest eine MiniMed 780G **nur lesend** per
 - Signing: kostenloses Team kann App Groups, keine zeitkritischen Mitteilungen. Neue Berechtigungen brauchen einmal ⌘R in Xcode (Profil), danach geht die Kommandozeile.
 - Installieren aufs iPhone ohne Xcode-GUI: `xcodebuild -project apps/ios/OpenMinipump.xcodeproj -scheme OpenMinipump -destination 'id=<UDID>' -allowProvisioningUpdates build`, dann `xcrun devicectl device install app --device <UDID> <…/Debug-iphoneos/OpenMinipump.app>`. Simon lässt die App laufen; die Sitzung zur Pumpe wird über Updates hinweg fortgesetzt.
 - casiocgm-Testversion mit Datenquelle openMinipump: VPS-Projekt `casiocgm`, Branch `feature/openminipump-source`; auf der echten Uhr noch nicht funktionsfähig.
+- **Android (18.10.2026):** `apps/android` (Gradle, `./gradlew :minimedkit:test :app:testDebugUnitTest :app:assembleDebug`), Anleitung `docs/de/android.md`, ADR 0004 (vorgeschlagen). Allowlist-Änderungen immer in `ReadOnlyPolicy.swift` **und** `ReadOnlyPolicy.kt` samt Tests. Noch nicht mit der Pumpe getestet; offene Punkte in `docs/internal/tasks.md` (Phase 7). Release-Keystore erzeugt Simon lokal, er gehört nie ins Repo.

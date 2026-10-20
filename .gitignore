@@ -42,8 +42,11 @@ xcuserdata/
 
 # --- Android ---
 .gradle/
+.kotlin/
 local.properties
 apps/android/**/build/
+# Release signing (keystore path + passwords), see docs/de/android.md
+apps/android/keystore.properties
 
 # --- macOS ---
 .DS_Store
