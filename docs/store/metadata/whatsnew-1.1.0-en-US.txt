@@ -1,0 +1,3 @@
+• The Live Activity keeps running: iOS ends it after 8 hours – the app now replaces it when opened and renews it ahead of time
+• New notification when the Live Activity expires, with adjustable quiet hours (Sleep and Do Not Disturb hold it back)
+• Dynamic Island: the value is no longer clipped, centred trend arrow, consistent font
