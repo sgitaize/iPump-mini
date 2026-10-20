@@ -34,7 +34,7 @@ import java.net.URL
 /**
  * The APK from GitHub does not update itself. At most every 12 hours the app asks GitHub for the newest
  * release that contains `ipump-mini.apk` (one request, no tracking) and shows a hint when it is newer.
- * Dismissing applies to exactly that version. Only in public builds, never talks to the pump.
+ * Dismissing applies to exactly that version. Only in the public APK from GitHub (not in Play builds), never talks to the pump.
  */
 object Updates {
     const val DOWNLOAD = "https://github.com/sgitaize/iPump-mini/releases/latest/download/ipump-mini.apk"
@@ -48,7 +48,7 @@ object Updates {
     private fun prefs(ctx: Context) = ctx.getSharedPreferences("updates", Context.MODE_PRIVATE)
 
     fun check(ctx: Context, scope: CoroutineScope) {
-        if (!BuildConfig.PUBLIC_BUILD) return
+        if (!BuildConfig.PUBLIC_BUILD || !BuildConfig.GITHUB_APK) return
         val p = prefs(ctx)
         if (System.currentTimeMillis() - p.getLong("checkedAt", 0) < EVERY_MS) { show(ctx, p.getString("latest", null)); return }
         scope.launch {

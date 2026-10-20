@@ -32,6 +32,9 @@ fun devMode(release: Boolean): Boolean =
 
 fun testPumpSerial(release: Boolean): String = if (isPublic(release)) "" else dotEnv["TEST_PUMP_SERIAL"].orEmpty()
 
+/** Only the APK on GitHub looks for newer releases there (-PompGithubApk=1); Play builds never do. */
+val githubApk: Boolean = (findProperty("ompGithubApk") as String?) == "1"
+
 /** Optional release signing from a gitignored keystore.properties (see docs/de/android.md). */
 val signingProps = Properties().apply {
     val f = rootDir.resolve("keystore.properties")
@@ -46,7 +49,7 @@ android {
         applicationId = "de.sgitaize.ipumpmini"   // Play-Store-App; namespace/Kotlin-Pakete bleiben openminipump
         minSdk = 29
         targetSdk = 36
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0.0-beta"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -68,12 +71,14 @@ android {
             buildConfigField("boolean", "DEV_MODE", devMode(false).toString())
             buildConfigField("String", "TEST_PUMP_SERIAL", "\"${testPumpSerial(false)}\"")
             buildConfigField("boolean", "PUBLIC_BUILD", isPublic(false).toString())
+            buildConfigField("boolean", "GITHUB_APK", githubApk.toString())
         }
         release {
             isMinifyEnabled = false
             buildConfigField("boolean", "DEV_MODE", devMode(true).toString())
             buildConfigField("String", "TEST_PUMP_SERIAL", "\"${testPumpSerial(true)}\"")
             buildConfigField("boolean", "PUBLIC_BUILD", isPublic(true).toString())
+            buildConfigField("boolean", "GITHUB_APK", githubApk.toString())
             signingConfig = signingConfigs.findByName("release")
         }
     }

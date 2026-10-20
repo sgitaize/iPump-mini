@@ -21,7 +21,7 @@ Create the release keystore once on your own machine and keep it safe (password 
 ```sh
 keytool -genkeypair -v -keystore ~/.android-keys/ipump-mini-release.jks -alias ipump-mini -keyalg RSA -keysize 4096 -validity 10000
 ```
-Reference it from the gitignored `apps/android/keystore.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`) and run `./gradlew :app:assembleRelease`.
+Reference it from the gitignored `apps/android/keystore.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`) and run `./gradlew :app:assembleRelease`. Add `-PompGithubApk=1` for the APK on GitHub: only that variant points to newer GitHub releases. The Google Play bundle (`./gradlew :app:bundleRelease`) is built without it.
 
 ## Differences from iOS
 - A foreground service with a permanent notification keeps the app reachable for the pump; the notification shows the current value. The local API therefore answers at any time.

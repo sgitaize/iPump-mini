@@ -57,7 +57,7 @@ storePassword=…
 keyAlias=ipump-mini
 keyPassword=…
 ```
-und bauen: `./gradlew :app:assembleRelease`. Ohne `keystore.properties` entsteht eine unsignierte APK.
+und bauen: `./gradlew :app:assembleRelease`. Ohne `keystore.properties` entsteht eine unsignierte APK. Für die APK auf GitHub `-PompGithubApk=1` anhängen: Nur diese Variante weist auf neuere GitHub-Releases hin. Das AAB für Google Play (`./gradlew :app:bundleRelease`) baut man ohne diesen Schalter.
 
 ## Erster Test an der Pumpe (Simon)
 Ablauf wie bei iOS, mit der **Testpumpe** und einem Debug-Build (`DEV_MODE=1`):
