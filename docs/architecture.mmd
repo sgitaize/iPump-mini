@@ -1,0 +1,27 @@
+flowchart LR
+  P("<b>MiniMed 780G</b><br/><small>Bluetooth LE · central</small>")
+  subgraph Phone["iPhone app  ·  Android app (beta)"]
+    K("<b>MiniMedKit</b><br/><small>SAKE session · parsers</small><br/><small><code>ReadOnlyPolicy</code> allowlist</small>")
+    A("<b>App</b><br/><small>values · history · graph · alarms</small>")
+    K --> A
+  end
+  subgraph Out["On the phone"]
+    W("<b>Widgets · Live Activity</b><br/><small>Dynamic Island · lock screen</small>")
+    API("<b>Local API</b><br/><small>Nightscout-compatible · <code>:17580</code></small>")
+  end
+  NS("<b>Nightscout</b><br/><small>optional upload</small>")
+  PB("<b>Pebble watchfaces</b><br/><small>via <code>pebble-cgm</code></small>")
+  P <-->|"encrypted session · read-only"| K
+  A --> W
+  A --> API
+  A -->|"entries · treatments"| NS
+  API -->|"/pebble"| PB
+
+  classDef client stroke:#58a6ff,stroke-width:1.5px
+  classDef core stroke:#f0883e,stroke-width:1.5px
+  classDef server stroke:#3fb950,stroke-width:1.5px
+  classDef ext stroke:#a371f7,stroke-width:1.5px
+  class P ext
+  class K,A core
+  class W,API client
+  class NS,PB ext
