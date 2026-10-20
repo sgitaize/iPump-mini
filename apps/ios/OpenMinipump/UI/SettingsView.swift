@@ -29,6 +29,9 @@ struct SettingsView: View {
     @AppStorage(Prefs.widgetShowIOBKey, store: Prefs.defaults) private var widgetShowIOB = true
     @AppStorage(Prefs.widgetHoursKey, store: Prefs.defaults) private var widgetHours = 3
     @State private var liveActivity = WidgetBridge.liveActivityEnabled
+    @State private var expiryReminder = WidgetBridge.expiryReminderEnabled
+    @State private var quietFrom = WidgetBridge.quietFrom
+    @State private var quietTo = WidgetBridge.quietTo
     @State private var pebbleMonitor = PebbleMonitor.enabled
     @State private var demoChanged = false
     @State private var pebbleMinutes = PebbleMonitor.minutes
@@ -174,7 +177,21 @@ struct SettingsView: View {
                         .onChange(of: widgetShowIOB) { _, _ in reloadWidgets() }
                     Toggle("Live-Aktivität (Dynamic Island)", isOn: $liveActivity)
                         .onChange(of: liveActivity) { _, on in WidgetBridge.liveActivityEnabled = on }
-                    Text("Wert, Trend und Änderung auf dem Sperrbildschirm und in der Dynamic Island. iOS beendet Live-Aktivitäten nach spätestens 8 Stunden; beim nächsten Öffnen der App startet sie neu. Widgets fügst du wie gewohnt über den Home-Bildschirm hinzu.")
+                    if liveActivity {
+                        Toggle("Hinweis, wenn sie abläuft", isOn: $expiryReminder)
+                            .onChange(of: expiryReminder) { _, on in WidgetBridge.expiryReminderEnabled = on }
+                        if expiryReminder {
+                            Picker("Ruhezeit ab", selection: $quietFrom) {
+                                ForEach(0..<24, id: \.self) { Text(verbatim: String(format: "%02d:00", $0)).tag($0) }
+                            }
+                            .onChange(of: quietFrom) { _, h in WidgetBridge.quietFrom = h }
+                            Picker("Ruhezeit bis", selection: $quietTo) {
+                                ForEach(0..<24, id: \.self) { Text(verbatim: String(format: "%02d:00", $0)).tag($0) }
+                            }
+                            .onChange(of: quietTo) { _, h in WidgetBridge.quietTo = h }
+                        }
+                    }
+                    Text("Wert, Trend und Änderung auf dem Sperrbildschirm und in der Dynamic Island. iOS beendet Live-Aktivitäten nach 8 Stunden und erlaubt den Neustart nur, wenn die App geöffnet wird. Beim Öffnen startet sie neu (nach 4 Stunden vorsorglich frisch). Der Hinweis erinnert dich daran; in der Ruhezeit wartet er bis zu ihrem Ende, bei Schlafen und Nicht stören hält iOS ihn zurück. Gleiche Uhrzeiten = keine Ruhezeit. Widgets fügst du wie gewohnt über den Home-Bildschirm hinzu.")
                         .font(.caption).foregroundStyle(.secondary)
                 }
 

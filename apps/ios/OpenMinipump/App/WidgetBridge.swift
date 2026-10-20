@@ -4,6 +4,7 @@ import ActivityKit
 import Foundation
 import MiniMedKit
 import UIKit
+import UserNotifications
 import WidgetKit
 
 @MainActor
@@ -14,7 +15,7 @@ enum WidgetBridge {
         get { UserDefaults.standard.object(forKey: "liveActivity") as? Bool ?? true }
         set {
             UserDefaults.standard.set(newValue, forKey: "liveActivity")
-            if !newValue { endLiveActivities() }
+            if !newValue { endLiveActivities(); cancelExpiryReminder() }
         }
     }
 
@@ -113,10 +114,73 @@ enum WidgetBridge {
             _ = try Activity.request(attributes: GlucoseActivityAttributes(),
                                      content: ActivityContent(state: state, staleDate: state.date.addingTimeInterval(15 * 60)))
             activityStartedAt = Date()
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [expiryReminderID])
+            scheduleExpiryReminder()
             log?.add("Live-Aktivität \(reason)")
         } catch {
             log?.add("Live-Aktivität nicht gestartet: \(error.localizedDescription)", .warning)
         }
+    }
+
+    // MARK: Reminder when iOS ends the Live Activity
+
+    /// iOS only lets the app start a Live Activity in the foreground (push-to-start would need an
+    /// APNs server). So a local notification is scheduled for the moment iOS ends it (start + 8 h);
+    /// tapping it opens the app, which starts a new one. Within the quiet hours it waits until they
+    /// end. Normal interruption level: Focus modes such as Sleep or Do Not Disturb hold it back.
+    static let expiryReminderID = "liveActivityExpired"
+    private static let systemLimit: TimeInterval = 8 * 3600
+
+    static var expiryReminderEnabled: Bool {
+        get { UserDefaults.standard.object(forKey: "liveActivityReminder") as? Bool ?? true }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "liveActivityReminder")
+            if newValue { scheduleExpiryReminder() } else { cancelExpiryReminder() }
+        }
+    }
+
+    /// Quiet hours as hour of day (0–23); equal values mean no quiet hours.
+    static var quietFrom: Int {
+        get { UserDefaults.standard.object(forKey: "liveActivityQuietFrom") as? Int ?? 22 }
+        set { UserDefaults.standard.set(newValue, forKey: "liveActivityQuietFrom"); scheduleExpiryReminder() }
+    }
+    static var quietTo: Int {
+        get { UserDefaults.standard.object(forKey: "liveActivityQuietTo") as? Int ?? 7 }
+        set { UserDefaults.standard.set(newValue, forKey: "liveActivityQuietTo"); scheduleExpiryReminder() }
+    }
+
+    /// Moves `date` out of the quiet hours (to their end), if it falls into them.
+    static func outsideQuietHours(_ date: Date, calendar: Calendar = .current) -> Date {
+        let from = quietFrom, to = quietTo
+        guard from != to else { return date }
+        let hour = calendar.component(.hour, from: date)
+        let quiet = from < to ? (hour >= from && hour < to) : (hour >= from || hour < to)
+        guard quiet else { return date }
+        var end = calendar.date(bySettingHour: to, minute: 0, second: 0, of: date) ?? date
+        if end <= date { end = calendar.date(byAdding: .day, value: 1, to: end) ?? date }
+        return end
+    }
+
+    private static func scheduleExpiryReminder() {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [expiryReminderID])
+        guard liveActivityEnabled, expiryReminderEnabled, let start = activityStartedAt else { return }
+        let fire = outsideQuietHours(start.addingTimeInterval(systemLimit))
+        let interval = fire.timeIntervalSinceNow
+        guard interval > 1 else { return }
+        let content = UNMutableNotificationContent()
+        content.title = L10n.tr("Live-Aktivität abgelaufen")
+        content.body = L10n.tr("iOS beendet Live-Aktivitäten nach 8 Stunden. Tippe hier, um sie neu zu starten.")
+        content.interruptionLevel = .active
+        content.threadIdentifier = expiryReminderID
+        let request = UNNotificationRequest(identifier: expiryReminderID, content: content,
+                                            trigger: UNTimeIntervalNotificationTrigger(timeInterval: interval, repeats: false))
+        center.add(request)
+    }
+
+    private static func cancelExpiryReminder() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [expiryReminderID])
+        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [expiryReminderID])
     }
 
     private static func state(for store: DataStore) -> GlucoseActivityAttributes.ContentState? {
