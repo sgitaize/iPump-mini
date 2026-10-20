@@ -1747,6 +1747,16 @@
         }
       }
     },
+    "Hinweis, wenn sie abläuft" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notify me when it expires"
+          }
+        }
+      }
+    },
     "Hoch" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1938,6 +1948,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "IOB"
+          }
+        }
+      }
+    },
+    "iOS beendet Live-Aktivitäten nach 8 Stunden. Tippe hier, um sie neu zu starten." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS ends Live Activities after 8 hours. Tap here to start it again."
           }
         }
       }
@@ -2367,6 +2388,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Live Activity (Dynamic Island)"
+          }
+        }
+      }
+    },
+    "Live-Aktivität abgelaufen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Live Activity expired"
           }
         }
       }
@@ -3181,6 +3213,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Low reservoir"
+          }
+        }
+      }
+    },
+    "Ruhezeit ab" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiet hours from"
+          }
+        }
+      }
+    },
+    "Ruhezeit bis" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quiet hours until"
           }
         }
       }
@@ -4086,7 +4138,18 @@
         }
       }
     },
+    "Wert, Trend und Änderung auf dem Sperrbildschirm und in der Dynamic Island. iOS beendet Live-Aktivitäten nach 8 Stunden und erlaubt den Neustart nur, wenn die App geöffnet wird. Beim Öffnen startet sie neu (nach 4 Stunden vorsorglich frisch). Der Hinweis erinnert dich daran; in der Ruhezeit wartet er bis zu ihrem Ende, bei Schlafen und Nicht stören hält iOS ihn zurück. Gleiche Uhrzeiten = keine Ruhezeit. Widgets fügst du wie gewohnt über den Home-Bildschirm hinzu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Value, trend and change on the lock screen and in the Dynamic Island. iOS ends Live Activities after 8 hours and only allows a restart when the app is opened. Opening the app starts it again (renewed after 4 hours as a precaution). The notification reminds you; during quiet hours it waits until they end, and Sleep and Do Not Disturb hold it back. Same times = no quiet hours. Add widgets from the Home Screen as usual."
+          }
+        }
+      }
+    },
     "Wert, Trend und Änderung auf dem Sperrbildschirm und in der Dynamic Island. iOS beendet Live-Aktivitäten nach spätestens 8 Stunden; beim nächsten Öffnen der App startet sie neu. Widgets fügst du wie gewohnt über den Home-Bildschirm hinzu." : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
