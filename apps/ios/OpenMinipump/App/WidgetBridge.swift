@@ -74,22 +74,48 @@ enum WidgetBridge {
         return snapshot
     }
 
+    /// iOS ends a Live Activity after 8 hours. The ended activity stays in `activities` (and up to
+    /// 4 more hours on the lock screen), so "list is empty" never became true again and no new one
+    /// was started (issue #4). Each foreground start therefore replaces ended activities and renews
+    /// one that is older than `renewAfter`, so every app visit buys a fresh 8-hour window.
+    private static let renewAfter: TimeInterval = 4 * 3600
+
+    private static var activityStartedAt: Date? {
+        get { UserDefaults.standard.object(forKey: "liveActivityStartedAt") as? Date }
+        set { UserDefaults.standard.set(newValue, forKey: "liveActivityStartedAt") }
+    }
+
+    private static var runningActivities: [Activity<GlucoseActivityAttributes>] {
+        Activity<GlucoseActivityAttributes>.activities.filter { $0.activityState == .active || $0.activityState == .stale }
+    }
+
     /// Live Activities can only be started while the app is in the foreground.
     static func appBecameActive(store: DataStore) {
         SharedStore.write(makeSnapshot(store: store))
         WidgetCenter.shared.reloadTimelines(ofKind: "glucose")   // free while in the foreground
         guard liveActivityEnabled, ActivityAuthorizationInfo().areActivitiesEnabled,
               let state = state(for: store) else { return }
-        if Activity<GlucoseActivityAttributes>.activities.isEmpty {
-            do {
-                _ = try Activity.request(attributes: GlucoseActivityAttributes(),
-                                         content: ActivityContent(state: state, staleDate: state.date.addingTimeInterval(15 * 60)))
-                log?.add("Live-Aktivität gestartet")
-            } catch {
-                log?.add("Live-Aktivität nicht gestartet: \(error.localizedDescription)", .warning)
+        let all = Activity<GlucoseActivityAttributes>.activities
+        let running = runningActivities
+        let expiring = activityStartedAt.map { Date().timeIntervalSince($0) > renewAfter } ?? true
+        if running.isEmpty || expiring {
+            for activity in all {
+                Task { await activity.end(nil, dismissalPolicy: .immediate) }
             }
+            startActivity(state, reason: running.isEmpty ? (all.isEmpty ? "gestartet" : "neu gestartet (abgelaufen)") : "erneuert")
         } else {
             update(store: store)
+        }
+    }
+
+    private static func startActivity(_ state: GlucoseActivityAttributes.ContentState, reason: String) {
+        do {
+            _ = try Activity.request(attributes: GlucoseActivityAttributes(),
+                                     content: ActivityContent(state: state, staleDate: state.date.addingTimeInterval(15 * 60)))
+            activityStartedAt = Date()
+            log?.add("Live-Aktivität \(reason)")
+        } catch {
+            log?.add("Live-Aktivität nicht gestartet: \(error.localizedDescription)", .warning)
         }
     }
 
@@ -109,10 +135,23 @@ enum WidgetBridge {
         guard liveActivityEnabled, let latest = s.latest else { return }
         let state = GlucoseActivityAttributes.ContentState(mgdl: latest.mgdl, trendRate: s.trendRate, delta: s.delta, date: latest.date, iob: s.iob,
                                                                 curve: GlucoseActivityAttributes.curve(from: s.points, latest: latest.date))
-        for activity in Activity<GlucoseActivityAttributes>.activities {
+        let running = runningActivities
+        for activity in running {
             Task { await activity.update(ActivityContent(state: state, staleDate: latest.date.addingTimeInterval(15 * 60))) }
         }
+        // Ended by iOS while the app runs in the background: try to start a new one. iOS normally
+        // refuses this outside the foreground; we try once per ended activity and log the result.
+        if running.isEmpty, !Activity<GlucoseActivityAttributes>.activities.isEmpty,
+           ActivityAuthorizationInfo().areActivitiesEnabled, backgroundRestartTried != activityStartedAt {
+            backgroundRestartTried = activityStartedAt
+            for activity in Activity<GlucoseActivityAttributes>.activities {
+                Task { await activity.end(nil, dismissalPolicy: .immediate) }
+            }
+            startActivity(state, reason: "im Hintergrund neu gestartet")
+        }
     }
+
+    private static var backgroundRestartTried: Date?
 
     private static func endLiveActivities() {
         for activity in Activity<GlucoseActivityAttributes>.activities {
