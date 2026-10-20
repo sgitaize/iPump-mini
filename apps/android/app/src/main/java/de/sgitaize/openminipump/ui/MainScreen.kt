@@ -99,6 +99,7 @@ fun MainScreen(model: AppModel, permissionTick: Int, requestPermissions: () -> U
     val context = LocalContext.current
     val hasPermissions = remember(permissionTick) { AppModel.hasBluetoothPermissions(context) }
     val prefs = model.prefs
+    LaunchedEffect(Unit) { Updates.check(context, this) }
     @Suppress("UNUSED_VARIABLE") val v = version // re-read prefs on change
 
     ScreenScaffold(stringResource(R.string.app_name), onBack = null, actions = {
@@ -108,6 +109,7 @@ fun MainScreen(model: AppModel, permissionTick: Int, requestPermissions: () -> U
             modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            UpdateBanner()
             if (model.demo) {
                 CardBox(tint = AppColors.warn.copy(alpha = 0.12f)) {
                     Text(stringResource(R.string.demo_mode), style = MaterialTheme.typography.titleMedium)

@@ -313,4 +313,8 @@
     <string name="open_guide">Anleitung öffnen</string>
     <string name="important">Wichtig</string>
     <string name="full_guide">Ganze Anleitung</string>
+    <string name="update_available">Version %1$s ist da</string>
+    <string name="update_play_pending">Download über GitHub – Play-Store-Version folgt</string>
+    <string name="update_download">Laden</string>
+    <string name="update_dismiss">Ausblenden</string>
 </resources>

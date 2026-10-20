@@ -311,4 +311,8 @@
     <string name="open_guide">Open instructions</string>
     <string name="important">Important</string>
     <string name="full_guide">Full guide</string>
+    <string name="update_available">Version %1$s is available</string>
+    <string name="update_play_pending">Download from GitHub – Play Store version coming soon</string>
+    <string name="update_download">Download</string>
+    <string name="update_dismiss">Dismiss</string>
 </resources>
