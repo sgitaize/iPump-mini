@@ -18,7 +18,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: android-actions/setup-android@v3
       - name: Test and build
         working-directory: apps/android
         run: ./gradlew --no-daemon :minimedkit:test :app:testDebugUnitTest :app:lintDebug :app:assembleDebug -PompPublicBuild=1
