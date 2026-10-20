@@ -30,11 +30,11 @@ cd apps/android
 ./gradlew :app:assembleDebug        # app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
-Der Debug-Build hat die Paket-ID `de.sgitaize.openminipump.debug` und kann neben einer späteren Release-Version installiert sein. Er nutzt `DEV_MODE` und die Testpumpe aus `.env`.
+Der Debug-Build hat die Paket-ID `de.sgitaize.ipumpmini.debug` und kann neben einer späteren Release-Version installiert sein. Release-Builds heißen seit Build 2 `de.sgitaize.ipumpmini` (wie im Play Store); die erste Beta-APK (`de.sgitaize.openminipump`) bitte deinstallieren. Er nutzt `DEV_MODE` und die Testpumpe aus `.env`.
 
 Protokoll vom Handy holen (Debug-Build):
 ```sh
-adb shell run-as de.sgitaize.openminipump.debug cat files/openminipump.log > openminipump.log
+adb shell run-as de.sgitaize.ipumpmini.debug cat files/openminipump.log > openminipump.log
 ```
 Oder in der App: Einstellungen › Info › Protokoll › Teilen.
 

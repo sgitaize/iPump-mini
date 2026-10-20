@@ -43,10 +43,10 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "de.sgitaize.openminipump"
+        applicationId = "de.sgitaize.ipumpmini"   // Play-Store-App; namespace/Kotlin-Pakete bleiben openminipump
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0.0-beta"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
