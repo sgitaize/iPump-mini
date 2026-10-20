@@ -384,20 +384,56 @@ struct IslandCompactValue: View {
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
+            row(15)
             row(13)
             row(11)
         }
         .foregroundStyle(color)
+        // The leading region hugs the rounded corner; without inset the first digit was clipped ("I43").
+        .padding(.leading, 4)
     }
 
     private func row(_ size: CGFloat) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 1) {
+        HStack(alignment: .center, spacing: 2) {
             Text(verbatim: unit.format(state.mgdl))
                 .font(.system(size: size, weight: .semibold, design: .rounded))
+                .monospacedDigit()
                 .lineLimit(1)
                 .fixedSize()
-            TrendArrows(rate: state.trendRate, size: size - 1)
+            TrendArrows(rate: state.trendRate, size: size)
         }
+    }
+}
+
+/// Change since the previous value, right side of the compact Dynamic Island.
+struct IslandCompactDelta: View {
+    let state: GlucoseActivityAttributes.ContentState
+    let unit: GlucoseUnit
+
+    var body: some View {
+        Text(verbatim: unit.formatDelta(state.delta))
+            .font(.system(size: 13, weight: .semibold, design: .rounded))
+            .monospacedDigit()
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .foregroundStyle(.secondary)
+            .padding(.trailing, 4)
+    }
+}
+
+/// Minimal Dynamic Island (another Live Activity is active): value only, scaled to fit the circle.
+struct IslandMinimalValue: View {
+    let state: GlucoseActivityAttributes.ContentState
+    let unit: GlucoseUnit
+    let color: Color
+
+    var body: some View {
+        Text(verbatim: unit.format(state.mgdl))
+            .font(.system(size: 14, weight: .semibold, design: .rounded))
+            .monospacedDigit()
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
+            .foregroundStyle(color)
     }
 }
 

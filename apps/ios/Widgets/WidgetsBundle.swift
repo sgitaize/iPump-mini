@@ -99,9 +99,9 @@ struct GlucoseLiveActivity: Widget {
             } compactLeading: {
                 IslandCompactValue(state: s, unit: unit, color: color)
             } compactTrailing: {
-                Text(verbatim: unit.formatDelta(s.delta)).font(.caption)
+                IslandCompactDelta(state: s, unit: unit)
             } minimal: {
-                Text(verbatim: unit.format(s.mgdl)).font(.caption2.weight(.semibold)).foregroundStyle(color)
+                IslandMinimalValue(state: s, unit: unit, color: color)
             }
         }
     }
