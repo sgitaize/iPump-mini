@@ -44,6 +44,7 @@ targets:
         CFBundleDevelopmentRegion: de
         CFBundleLocalizations: [de, en]
         CFBundleShortVersionString: $(MARKETING_VERSION)
+        ITSAppUsesNonExemptEncryption: false
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
         UIApplicationSupportsIndirectInputEvents: true
