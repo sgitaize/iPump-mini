@@ -2,7 +2,7 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <!-- German is the source language (like the iOS app). New texts: also add them to values-en/. -->
 <resources>
-    <string name="app_name" translatable="false">iPump-mini</string>
+    <string name="app_name" translatable="false">iPump-mini Beta</string>
     <string name="back">Zurück</string>
     <string name="settings">Einstellungen</string>
     <string name="unit_ie">IE</string>
