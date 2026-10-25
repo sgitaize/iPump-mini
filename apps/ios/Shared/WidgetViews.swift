@@ -377,6 +377,9 @@ struct IslandValue: View {
 }
 
 /// Compact leading view of the Dynamic Island: value and arrows, scaled down if needed.
+/// With a second Live Activity (Lieferando, BeReal …) iOS narrows the leading region so much
+/// that even the smallest row did not fit; ViewThatFits then used it anyway and clipped the
+/// arrow to a tick ("154ʼ"). The last fallback is the value alone, which always fits.
 struct IslandCompactValue: View {
     let state: GlucoseActivityAttributes.ContentState
     let unit: GlucoseUnit
@@ -387,6 +390,8 @@ struct IslandCompactValue: View {
             row(15)
             row(13)
             row(11)
+            value(15)
+            value(13)
         }
         .foregroundStyle(color)
         // The leading region hugs the rounded corner; without inset the first digit was clipped ("I43").
@@ -395,13 +400,17 @@ struct IslandCompactValue: View {
 
     private func row(_ size: CGFloat) -> some View {
         HStack(alignment: .center, spacing: 2) {
-            Text(verbatim: unit.format(state.mgdl))
-                .font(.system(size: size, weight: .semibold, design: .rounded))
-                .monospacedDigit()
-                .lineLimit(1)
-                .fixedSize()
+            value(size)
             TrendArrows(rate: state.trendRate, size: size)
         }
+    }
+
+    private func value(_ size: CGFloat) -> some View {
+        Text(verbatim: unit.format(state.mgdl))
+            .font(.system(size: size, weight: .semibold, design: .rounded))
+            .monospacedDigit()
+            .lineLimit(1)
+            .fixedSize()
     }
 }
 
