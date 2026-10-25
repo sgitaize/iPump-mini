@@ -74,6 +74,21 @@ final class PumpLink: NSObject, ObservableObject {
     private var pendingDiscovery = 0
     private var serialVerified = false
     private var sessionStart: Date?
+    /// Correction of the reported session start (clock shift, see `SensorClock`), kept across
+    /// reconnects for the same reported start.
+    private var sessionStartShift: (reported: Date, shift: TimeInterval)? {
+        get {
+            let d = UserDefaults.standard
+            guard let reported = d.object(forKey: "sessionStartReported") as? Date else { return nil }
+            return (reported, d.double(forKey: "sessionStartShift"))
+        }
+        set {
+            UserDefaults.standard.set(newValue?.reported, forKey: "sessionStartReported")
+            UserDefaults.standard.set(newValue?.shift, forKey: "sessionStartShift")
+        }
+    }
+    /// Session offset of the last live value; a different one was just measured.
+    private var lastLiveOffset: Int?
     private var operations: [Operation] = []
     private var current: Operation?
     private var operationTimer: Timer?
@@ -760,6 +775,19 @@ final class PumpLink: NSObject, ObservableObject {
                 let m = try CGMMeasurement(plain)
                 let now = Date()
                 var date = now
+                // A new sensor record was just measured: if start + offset is off by whole
+                // quarter hours, the pump clock was changed (e.g. daylight saving time).
+                let isNewRecord = lastLiveOffset.map { $0 != m.timeOffsetMinutes } ?? false
+                lastLiveOffset = m.timeOffsetMinutes
+                if isNewRecord, let start = sessionStart,
+                   let shift = SensorClock.shift(sessionStart: start, offsetMinutes: m.timeOffsetMinutes, now: now) {
+                    sessionStart = start.addingTimeInterval(shift)
+                    let previous = sessionStartShift ?? (reported: start, shift: 0)
+                    sessionStartShift = (previous.reported, previous.shift + shift)
+                    store.update { $0.sensorStart = start.addingTimeInterval(shift) }
+                    updateSensorExpiry()
+                    log.add("Sensorstart um \(Int(shift / 60)) min korrigiert (Pumpenuhr verstellt, z. B. Zeitumstellung)", .warning)
+                }
                 if let start = sessionStart {
                     let candidate = start.addingTimeInterval(Double(m.timeOffsetMinutes) * 60)
                     if candidate <= now.addingTimeInterval(300), candidate > now.addingTimeInterval(-11 * 24 * 3600) { date = candidate }
@@ -851,7 +879,9 @@ final class PumpLink: NSObject, ObservableObject {
             finish { if case .read = $0 { true } else { false } }
 
         case PumpUUID.cgmSessionStartTime:
-            if let t = try? CGMSessionStartTime(plain), let date = t.date() {
+            if let t = try? CGMSessionStartTime(plain), let reported = t.date() {
+                if let s = sessionStartShift, s.reported != reported { sessionStartShift = nil }
+                let date = reported.addingTimeInterval(sessionStartShift?.shift ?? 0)
                 sessionStart = date
                 store.update { $0.sensorStart = date }
                 updateSensorExpiry()

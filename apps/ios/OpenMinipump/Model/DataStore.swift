@@ -19,6 +19,9 @@ final class DataStore: ObservableObject {
 
     /// Called once per genuinely new sensor value (not for updates of a known one).
     var onNewReading: (() -> Void)?
+    /// Called when the newest value changed without a new live value: filled in from the pump
+    /// history or replaced by a later copy. Widgets, Live Activity and API must follow it.
+    var onLatestChanged: (() -> Void)?
 
     private let retention: TimeInterval = 7 * 24 * 3600
     private let fileURL: URL = {
@@ -118,17 +121,19 @@ final class DataStore: ObservableObject {
                 && abs($0.date.timeIntervalSince(reading.date)) < 3600)
                 || abs($0.date.timeIntervalSince(reading.date)) < 120
         }) {
+            let wasLatest = i == readings.count - 1
             readings[i] = reading
-        } else {
-            readings.append(reading)
             readings.sort { $0.date < $1.date }
-            let cutoff = Date().addingTimeInterval(-retention)
-            readings.removeAll { $0.date < cutoff }
             touched()
-            onNewReading?()
+            if wasLatest || latest?.date == reading.date { onLatestChanged?() }
             return
         }
+        readings.append(reading)
+        readings.sort { $0.date < $1.date }
+        let cutoff = Date().addingTimeInterval(-retention)
+        readings.removeAll { $0.date < cutoff }
         touched()
+        onNewReading?()
     }
 
     /// Merges values from the pump history or from Nightscout. Does not trigger the
@@ -143,8 +148,10 @@ final class DataStore: ObservableObject {
             added.append(r)
         }
         guard !added.isEmpty else { return [] }
+        let latestBefore = latest?.date
         readings.sort { $0.date < $1.date }
         touched()
+        if latest?.date != latestBefore { onLatestChanged?() }
         return added
     }
 

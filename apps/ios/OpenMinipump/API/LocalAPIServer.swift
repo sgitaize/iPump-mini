@@ -65,7 +65,7 @@ final class LocalAPIServer: @unchecked Sendable {
     /// silently: the listener stays "ready" but no longer accepts connections (seen on the
     /// device: connection refused, no failure state), so `isReady` cannot be trusted then.
     func revive() {
-        queue.async { [self] in restart() }
+        queue.async { [self] in retryDelay = 1; restart() }
     }
 
     func stop() {
@@ -109,13 +109,18 @@ final class LocalAPIServer: @unchecked Sendable {
                     self.isReady = true
                     self.retryDelay = 1
                     self.onStateChange?(lan ? L10n.tr("läuft (WLAN, Port %d)", Int(Self.port)) : L10n.tr("läuft (nur dieses iPhone, Port %d)", Int(Self.port)))
-                case .waiting(let e):
-                    self.onStateChange?(L10n.tr("wartet: %@", "\(e)"))
-                case .failed(let e):
+                case .waiting(let e), .failed(let e):
+                    // `.waiting` was left alone before and the server stayed down until the next
+                    // revive. "Address already in use" right after a restart means the old
+                    // listener is still releasing the port: retry every second without backoff,
+                    // the background window after a pump update is only 25 s.
                     self.isReady = false
+                    l?.stateUpdateHandler = nil
                     l?.cancel()
-                    let delay = self.retryDelay
-                    self.retryDelay = min(self.retryDelay * 2, 30)
+                    var addressInUse = false
+                    if case .posix(.EADDRINUSE) = e { addressInUse = true }
+                    let delay = addressInUse ? 1 : self.retryDelay
+                    if !addressInUse { self.retryDelay = min(self.retryDelay * 2, 30) }
                     self.onLog?("API-Server Fehler: \(e), Neustart in \(Int(delay)) s")
                     self.onStateChange?(L10n.tr("Neustart nach Fehler …"))
                     self.queue.asyncAfter(deadline: .now() + delay) { [weak self] in

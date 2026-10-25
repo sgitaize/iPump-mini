@@ -107,6 +107,13 @@ final class AppModel: ObservableObject {
             if let latest = store.latest { AlarmEngine.shared.evaluate(latest) }
             WidgetBridge.update(store: store)
         }
+        // Newest value from the pump history (or a replaced copy): same path minus upload
+        // (the history upload covers it) and alarms (they follow live values).
+        store.onLatestChanged = { [weak self] in
+            store.shared.recordWake()
+            self?.keepAPIAwake()
+            WidgetBridge.update(store: store)
+        }
         AlarmEngine.shared.log = log
         WidgetBridge.log = log
         AlarmEngine.shared.registerCategories()
