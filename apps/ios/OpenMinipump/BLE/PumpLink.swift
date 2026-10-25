@@ -88,7 +88,7 @@ final class PumpLink: NSObject, ObservableObject {
         }
     }
     /// Session offset of the last live value; a different one was just measured.
-    private var lastLiveOffset: Int?
+    private var lastLiveOffset: UInt16?
     private var operations: [Operation] = []
     private var current: Operation?
     private var operationTimer: Timer?
@@ -780,7 +780,7 @@ final class PumpLink: NSObject, ObservableObject {
                 let isNewRecord = lastLiveOffset.map { $0 != m.timeOffsetMinutes } ?? false
                 lastLiveOffset = m.timeOffsetMinutes
                 if isNewRecord, let start = sessionStart,
-                   let shift = SensorClock.shift(sessionStart: start, offsetMinutes: m.timeOffsetMinutes, now: now) {
+                   let shift = SensorClock.shift(sessionStart: start, offsetMinutes: Int(m.timeOffsetMinutes), now: now) {
                     sessionStart = start.addingTimeInterval(shift)
                     let previous = sessionStartShift ?? (reported: start, shift: 0)
                     sessionStartShift = (previous.reported, previous.shift + shift)
