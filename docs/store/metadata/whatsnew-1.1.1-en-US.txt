@@ -1,0 +1,3 @@
+• Daylight saving time: live values get the right time again after the pump clock was changed – Live Activity and widgets stay up to date
+• Watch faces (local API) get new values more reliably, the local server restarts faster after an interruption
+• Dynamic Island: the trend arrow is no longer clipped next to a second Live Activity

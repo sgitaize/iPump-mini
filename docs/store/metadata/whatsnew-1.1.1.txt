@@ -1,0 +1,3 @@
+• Zeitumstellung: Live-Werte landen wieder zur richtigen Uhrzeit, wenn die Pumpenuhr umgestellt wurde – Live-Aktivität und Widgets bleiben aktuell
+• Watchfaces (lokale API) bekommen neue Werte zuverlässiger, der lokale Server startet nach einer Unterbrechung schneller neu
+• Dynamic Island: Trendpfeil wird neben einer zweiten Live-Aktivität nicht mehr abgeschnitten
