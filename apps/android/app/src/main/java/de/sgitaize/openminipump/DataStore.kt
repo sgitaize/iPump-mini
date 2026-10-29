@@ -78,6 +78,7 @@ class DataStore(private val context: Context) {
         }
         if (i >= 0) {
             list[i] = reading
+            list.sortBy { it.date }
             _readings.value = list
             touched()
             return

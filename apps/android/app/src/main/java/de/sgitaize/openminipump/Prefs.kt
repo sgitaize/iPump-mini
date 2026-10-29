@@ -46,6 +46,10 @@ class Prefs(context: Context) {
         set(v) { sp.edit().putLong("historyRefSeq", v ?: -1).apply() }
     var historyRefDate: Instant? get() = sp.getLong("historyRefDate", Long.MIN_VALUE).takeIf { it != Long.MIN_VALUE }?.let(Instant::ofEpochMilli)
         set(v) { sp.edit().putLong("historyRefDate", v?.toEpochMilli() ?: Long.MIN_VALUE).apply() }
+    /** Session start as reported by the pump and the correction applied to it (clock shift, see SensorClock). */
+    var sessionStartReported: Instant? get() = sp.getLong("sessionStartReported", Long.MIN_VALUE).takeIf { it != Long.MIN_VALUE }?.let(Instant::ofEpochMilli)
+        set(v) { sp.edit().putLong("sessionStartReported", v?.toEpochMilli() ?: Long.MIN_VALUE).apply() }
+    var sessionStartShiftSeconds: Long get() = sp.getLong("sessionStartShift", 0); set(v) { sp.edit().putLong("sessionStartShift", v).apply() }
     var historyVersion: Int get() = int("historyVersion", 0); set(v) = setInt("historyVersion", v)
 
     // Display

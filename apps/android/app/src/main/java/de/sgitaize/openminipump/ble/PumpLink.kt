@@ -44,6 +44,7 @@ import android.os.ParcelUuid
 import de.sgitaize.minimedkit.ActiveBasalRate
 import de.sgitaize.minimedkit.CgmMeasurement
 import de.sgitaize.minimedkit.CgmSessionStartTime
+import de.sgitaize.minimedkit.SensorClock
 import de.sgitaize.minimedkit.Checksums
 import de.sgitaize.minimedkit.GlucoseReading
 import de.sgitaize.minimedkit.HistoryEvent
@@ -166,6 +167,8 @@ class PumpLink(
     private val characteristics = mutableMapOf<String, BluetoothGattCharacteristic>()
     private var serialVerified = false
     private var sessionStart: Instant? = null
+    /** Session offset of the last live value; a different one was just measured. */
+    private var lastLiveOffset: Int? = null
     private var sensorRunHours: Int? = null
     private var retrieveAttempts = 0
 
@@ -985,6 +988,25 @@ class PumpLink(
                 val m = CgmMeasurement.parse(plain)
                 val now = Instant.now()
                 var date = now
+                // A new sensor record was just measured: if start + offset is off by whole
+                // quarter hours, the pump clock was changed (e.g. daylight saving time).
+                val isNewRecord = lastLiveOffset?.let { it != m.timeOffsetMinutes } ?: false
+                lastLiveOffset = m.timeOffsetMinutes
+                val start0 = sessionStart
+                if (isNewRecord && start0 != null) {
+                    SensorClock.shift(start0, m.timeOffsetMinutes, now)?.let { shift ->
+                        val corrected = start0.plus(shift)
+                        sessionStart = corrected
+                        if (prefs.sessionStartReported == null) {
+                            prefs.sessionStartReported = start0
+                            prefs.sessionStartShiftSeconds = 0
+                        }
+                        prefs.sessionStartShiftSeconds += shift.seconds
+                        store.update { it.copy(sensorStart = corrected) }
+                        updateSensorExpiry()
+                        log.warn("Sensorstart um ${shift.toMinutes()} min korrigiert (Pumpenuhr verstellt, z. B. Zeitumstellung)")
+                    }
+                }
                 sessionStart?.let { start ->
                     val candidate = start.plusSeconds(m.timeOffsetMinutes * 60L)
                     if (candidate <= now.plusSeconds(300) && candidate > now.minus(Duration.ofDays(11))) date = candidate
@@ -1078,8 +1100,14 @@ class PumpLink(
             }
 
             PumpUuid.CGM_SESSION_START_TIME -> {
-                val start = runCatching { CgmSessionStartTime.parse(plain).instant() }.getOrNull()
-                if (start != null) {
+                val reported = runCatching { CgmSessionStartTime.parse(plain).instant() }.getOrNull()
+                if (reported != null) {
+                    // A different reported start is a new sensor: drop the old correction.
+                    if (prefs.sessionStartReported.let { it != null && it != reported }) {
+                        prefs.sessionStartReported = null
+                        prefs.sessionStartShiftSeconds = 0
+                    }
+                    val start = reported.plusSeconds(if (prefs.sessionStartReported != null) prefs.sessionStartShiftSeconds else 0)
                     sessionStart = start
                     store.update { it.copy(sensorStart = start) }
                     updateSensorExpiry()

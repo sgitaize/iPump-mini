@@ -24,6 +24,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.BluetoothDisabled
+import androidx.compose.material.icons.filled.LinkOff
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Link
@@ -118,6 +121,7 @@ fun PairingScreen(model: AppModel, back: () -> Unit) {
             SectionHeader(stringResource(R.string.pairing_how))
             val steps = listOf(
                 stringResource(R.string.pairing_step1),
+                stringResource(R.string.pairing_step1b),
                 stringResource(R.string.pairing_step2),
                 stringResource(R.string.pairing_step3),
                 stringResource(R.string.pairing_step4, name),
@@ -462,9 +466,12 @@ fun GuideScreen(back: () -> Unit) {
     ScreenScaffold(stringResource(R.string.guide), back) { modifier ->
         Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
             SectionHeader(stringResource(R.string.guide_setup))
-            GuideItem(Icons.Filled.Key, stringResource(R.string.key_database), stringResource(R.string.guide_keydb))
-            GuideItem(Icons.Filled.Link, stringResource(R.string.pair_pump), stringResource(R.string.guide_pair))
+            GuideItem(Icons.Filled.LinkOff, stringResource(R.string.guide_unpair_title), stringResource(R.string.guide_unpair))
+            GuideItem(Icons.Filled.BluetoothDisabled, stringResource(R.string.guide_forget_title), stringResource(R.string.guide_forget))
+            GuideItem(Icons.Filled.Key, stringResource(R.string.guide_keydb_title), stringResource(R.string.guide_keydb))
+            GuideItem(Icons.Filled.Security, stringResource(R.string.guide_permissions_title), stringResource(R.string.guide_permissions))
             GuideItem(Icons.Filled.Sensors, stringResource(R.string.guide_sensor_title), stringResource(R.string.guide_sensor))
+            GuideItem(Icons.Filled.Link, stringResource(R.string.guide_pair_title), stringResource(R.string.guide_pair))
             SectionHeader(stringResource(R.string.guide_background))
             GuideItem(Icons.Filled.PhoneAndroid, stringResource(R.string.guide_service_title), stringResource(R.string.guide_service))
             GuideItem(Icons.Filled.Bluetooth, stringResource(R.string.guide_bt_title), stringResource(R.string.guide_bt))
