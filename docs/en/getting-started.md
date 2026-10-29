@@ -80,7 +80,9 @@ The current value and the pump status appear shortly. The history of the last ho
 - **Keep Bluetooth on.** After turning it back on, the pump reconnects by itself.
 - **No connection?** Bring the pump in range and open the app. If that does not help after a few minutes, turn Bluetooth off and on. Only if that fails too, pair again (from step 2).
 - **Daylight saving time:** The app detects when the pump clock was changed (e.g. summer/winter time) and corrects the value times by itself.
-- **Widgets (iPhone):** long-press the home or lock screen › Edit › Add widget › iPump-mini. Appearance under Settings › Widgets.
+- **Widgets:**
+  - **iPhone:** long-press the home or lock screen › Edit › Add widget › iPump-mini. Appearance under Settings › Widgets.
+  - **Android:** long-press the home screen › Widgets › iPump-mini › drag “Glucose” onto the home screen. It shows value, trend and age. Values older than 15 minutes are greyed out and struck through.
 - **Live Activity / Dynamic Island (iPhone):** starts when you open the app. iOS ends it after 8 hours.
 - **Appearance:** light/dark/system, unit (mg/dL or mmol/L) and target range under Settings › Appearance. Language: iPhone in the app, Android in the app's Android settings.
 - **Nightscout (optional):** URL and API secret under Settings › Nightscout. New values are uploaded right away, along with pump status and treatments.

@@ -72,6 +72,7 @@ class PumpService : LifecycleService() {
             text = getString(model.link.phase.value.labelRes)
         }
         getSystemService(NotificationManager::class.java).notify(ID, build(title, text))
+        GlucoseWidget.update(this)
     }
 
     private fun build(title: String, text: String) = NotificationCompat.Builder(this, CHANNEL)

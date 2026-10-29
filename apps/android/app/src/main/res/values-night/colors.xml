@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+    <color name="widget_background">#E6202124</color>
+    <color name="widget_text">#FFFFFFFF</color>
+    <color name="widget_secondary">#B3FFFFFF</color>
+</resources>

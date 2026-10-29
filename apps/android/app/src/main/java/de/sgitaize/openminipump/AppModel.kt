@@ -67,6 +67,7 @@ class AppModel(private val app: Application) {
             uploader.newReading()
             store.latest?.let(alarms::evaluate)
             checkPebble()
+            GlucoseWidget.update(app)
         }
         link.migrateHistoryIfNeeded()
         if (demo) {

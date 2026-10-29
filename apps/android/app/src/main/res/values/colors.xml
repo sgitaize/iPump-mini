@@ -2,4 +2,7 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <resources>
     <color name="ic_launcher_background">#1E6FD9</color>
+    <color name="widget_background">#F2FFFFFF</color>
+    <color name="widget_text">#DE000000</color>
+    <color name="widget_secondary">#8A000000</color>
 </resources>

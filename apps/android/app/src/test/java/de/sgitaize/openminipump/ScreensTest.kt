@@ -8,6 +8,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.github.takahirom.roborazzi.captureRoboImage
 import de.sgitaize.openminipump.ui.AlarmSettingsScreen
 import de.sgitaize.openminipump.ui.AppTheme
+import de.sgitaize.openminipump.ui.GuideScreen
 import de.sgitaize.openminipump.ui.MainScreen
 import de.sgitaize.openminipump.ui.PairingScreen
 import de.sgitaize.openminipump.ui.SettingsScreen
@@ -61,6 +62,24 @@ class ScreensTest {
         compose.setContent { AppTheme("light") { SettingsScreen(model, {}, {}) } }
         compose.waitForIdle()
         capture("android-settings")
+    }
+
+    @Test
+    fun guide() {
+        compose.setContent { AppTheme("light") { GuideScreen {} } }
+        compose.waitForIdle()
+        capture("android-guide")
+    }
+
+    @Test
+    fun widget() {
+        val app = ApplicationProvider.getApplicationContext<OpenMinipumpApp>()
+        val latest = model.store.latest!!
+        val view = GlucoseWidget.views(app).apply(app, android.widget.FrameLayout(app))
+        val value = view.findViewById<android.widget.TextView>(R.id.widget_value).text.toString()
+        val detail = view.findViewById<android.widget.TextView>(R.id.widget_detail).text.toString()
+        kotlin.test.assertEquals(latest.mgdl.toString(), value)
+        assertTrue(detail.startsWith("mg/dL"), detail)
     }
 
     @Test

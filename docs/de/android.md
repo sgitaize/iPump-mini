@@ -14,7 +14,7 @@ Die Android-Version liegt in `apps/android/` (Kotlin, Jetpack Compose). Das Prot
 
 **Unterschiede zu iOS:**
 - Ein **Vordergrunddienst** mit dauerhafter Mitteilung hält die App im Hintergrund am Leben. Die Mitteilung zeigt den aktuellen Wert, ähnlich der Live-Aktivität. Die lokale API antwortet deshalb jederzeit, nicht nur kurz nach jedem Pumpen-Update. Nach einem Neustart des Handys startet der Dienst von selbst.
-- Noch **keine Home-Bildschirm-Widgets**.
+- **Home-Bildschirm-Widget** „Glukose“ (Wert, Trend, Alter), aber keine Sperrbildschirm-Widgets und keine Live-Aktivität. Deren Rolle übernimmt die dauerhafte Mitteilung.
 - Die Sprache stellst du in den Android-Einstellungen der App ein (Android 13+).
 
 ## Voraussetzungen

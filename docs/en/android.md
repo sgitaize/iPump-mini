@@ -25,5 +25,5 @@ Reference it from the gitignored `apps/android/keystore.properties` (`storeFile`
 
 ## Differences from iOS
 - A foreground service with a permanent notification keeps the app reachable for the pump; the notification shows the current value. The local API therefore answers at any time.
-- No home screen widgets yet.
+- **Home screen widget** “Glucose” (value, trend, age), but no lock screen widgets and no Live Activity. The permanent notification takes over that role.
 - Language is chosen in the app's Android settings (Android 13+).

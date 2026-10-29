@@ -218,6 +218,8 @@
     <string name="threshold_above">from %1$d mg/dL (%2$s mmol/L)</string>
     <string name="threshold_below">below %1$d mg/dL (%2$s mmol/L)</string>
     <string name="repeat_alarm">Repeat every … min:</string>
+    <string name="widget_name">Glucose</string>
+    <string name="widget_description">Current value with trend and age</string>
     <string name="no_data">No data</string>
     <string name="after_minutes">after %1$d min</string>
     <string name="no_data_footer">Notifies you when no pump data arrived for this long.</string>

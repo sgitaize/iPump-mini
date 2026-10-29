@@ -220,6 +220,8 @@
     <string name="threshold_above">ab %1$d mg/dL (%2$s mmol/L)</string>
     <string name="threshold_below">unter %1$d mg/dL (%2$s mmol/L)</string>
     <string name="repeat_alarm">Erneut alle … min:</string>
+    <string name="widget_name">Glukose</string>
+    <string name="widget_description">Aktueller Wert mit Trend und Alter</string>
     <string name="no_data">Keine Daten</string>
     <string name="after_minutes">nach %1$d min</string>
     <string name="no_data_footer">Meldet sich, wenn so lange keine Pumpendaten kamen.</string>
