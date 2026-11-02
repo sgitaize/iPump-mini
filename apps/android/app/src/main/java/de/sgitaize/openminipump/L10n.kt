@@ -4,10 +4,69 @@ package de.sgitaize.openminipump
 /**
  * Texts that come from the protocol library as German source strings (sensor states, modes,
  * pump alert titles). Static UI texts are Android string resources (values/ = German source,
- * values-en/); these dynamic ones are translated here, with the same English wording as the
+ * values-en/ and values-ru/); these dynamic ones are translated here, with the same English wording as the
  * iOS string catalog (apps/ios/Shared/Localizable.xcstrings).
  */
 object L10n {
+    private val ru = mapOf(
+        "Sensor ok" to "Сенсор работает",
+        "Warten auf Kalibrierung" to "Ожидание калибровки",
+        "Sensor wird aktualisiert" to "Сенсор обновляется",
+        "Kalibrierung erforderlich" to "Требуется калибровка",
+        "Kalibriert" to "Откалиброван",
+        "Sensorsignal wird gesucht" to "Поиск сигнала сенсора",
+        "Kein Sensorsignal" to "Нет сигнала сенсора",
+        "Sensor wechseln" to "Замените сенсор",
+        "Aufwärmphase" to "Прогрев",
+        "SG unter Messbereich" to "Значение сенсора ниже диапазона измерений",
+        "SG über Messbereich" to "Значение сенсора выше диапазона измерений",
+        "Transmitter-Batterie leer" to "Батарея трансмиттера разряжена",
+        "Sensor verbunden" to "Сенсор подключён",
+        "Warten auf Aufwärmphase" to "Ожидание прогрева",
+        "Kein Sensor gekoppelt" to "Сенсор не сопряжён",
+        "Kein Sensor aktiv" to "Нет активного сенсора",
+        "Sensorsignal verloren" to "Сигнал сенсора потерян",
+        "SmartGuard" to "SmartGuard",
+        "Sicherheitsbasal" to "Безопасная базальная подача",
+        "Manueller Modus" to "Ручной режим",
+        "Keine Insulinabgabe" to "Подача инсулина прекращена",
+        "Pumpenfehler" to "Ошибка помпы",
+        "Bolus gestoppt" to "Болюс остановлен",
+        "Maximale Füllmenge erreicht" to "Достигнут максимальный объём заполнения",
+        "Batterie einsetzen" to "Установите батарею",
+        "BZ nach Bolus prüfen" to "Проверьте глюкозу крови после болюса",
+        "Pumpenbatterie schwach" to "Батарея помпы разряжается",
+        "Reservoir fast leer" to "В резервуаре мало инсулина",
+        "Persönliche Erinnerung" to "Личное напоминание",
+        "Katheterwechsel-Erinnerung" to "Напоминание о замене инфузионного набора",
+        "Aktives Insulin gelöscht" to "Данные об активном инсулине сброшены",
+        "Jetzt kalibrieren" to "Выполните калибровку",
+        "Kalibrierung nicht akzeptiert" to "Калибровка отклонена",
+        "Keine Kalibrierung erfolgt" to "Калибровка не выполнена",
+        "Sensorfehler" to "Ошибка сенсора",
+        "Niedriger SG-Wert" to "Низкое значение сенсора",
+        "Abschaltung bei Tief" to "Остановка при низкой глюкозе",
+        "Alarm vor Tief" to "Оповещение перед снижением глюкозы",
+        "Basalabgabe fortgesetzt" to "Базальная подача возобновлена",
+        "Abschaltung bei Grenzwert" to "Остановка на нижней границе",
+        "Abschaltung vor Tief" to "Остановка перед снижением глюкозы",
+        "Abschaltung bei Tief: Zeit abgelaufen" to "Остановка при низкой глюкозе: время истекло",
+        "Manuelle Fortsetzung" to "Подача возобновлена вручную",
+        "Hoher SG-Wert" to "Высокое значение сенсора",
+        "SmartGuard beendet: hoher SG" to "SmartGuard выключен: высокая глюкоза",
+        "SmartGuard beendet" to "SmartGuard выключен",
+        "SmartGuard: minimale Abgabe" to "SmartGuard: минимальная подача",
+        "SmartGuard: maximale Abgabe" to "SmartGuard: максимальная подача",
+        "SmartGuard aus" to "SmartGuard выключен",
+        "Sehr niedriger SG-Wert" to "Очень низкое значение сенсора",
+        "SmartGuard: Bolus empfohlen" to "SmartGuard: рекомендуется болюс",
+        "Seit 3 Stunden hoch" to "Высокая глюкоза три часа",
+        "Kalibrierung empfohlen" to "Рекомендуется калибровка",
+        "Erste Kalibrierung erfolgreich" to "Первая калибровка выполнена",
+        "Frühe Kalibrierung" to "Ранняя калибровка",
+        "Kalibrier-Erinnerung" to "Напоминание о калибровке",
+    )
+
     private val en = mapOf(
         "Sensor ok" to "Sensor ok",
         "Warten auf Kalibrierung" to "Waiting for calibration",
@@ -67,13 +126,26 @@ object L10n {
         "Kalibrier-Erinnerung" to "Calibration reminder",
     )
 
-    /** English if the app runs in English, otherwise the German source text (like values/). */
+    /** Translate known protocol texts according to the app locale; preserve unknown source texts. */
     fun tr(german: String): String {
         val lang = OpenMinipumpApp.instance.resources.configuration.locales[0].language
-        if (lang != "en") return german
-        en[german]?.let { return it }
-        if (german.startsWith("Pumpenmeldung ")) return "Pump alert " + german.removePrefix("Pumpenmeldung ")
-        if (german.startsWith("Unbekannt ")) return "Unknown " + german.removePrefix("Unbekannt ")
+        val translations = when (lang) {
+            "en" -> en
+            "ru" -> ru
+            else -> return german
+        }
+        translations[german]?.let { return it }
+        val alertPrefix = when (lang) {
+            "ru" -> "Оповещение помпы "
+            else -> "Pump alert "
+        }
+        val unknownPrefix = when (lang) {
+            "ru" -> "Неизвестно: "
+            else -> "Unknown "
+        }
+        if (german.startsWith("Pumpenmeldung ")) return alertPrefix + german.removePrefix("Pumpenmeldung ")
+        if (german.startsWith("Unbekannt ")) return unknownPrefix + german.removePrefix("Unbekannt ")
         return german
     }
 }
+
