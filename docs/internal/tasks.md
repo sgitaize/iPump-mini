@@ -83,6 +83,12 @@ Angefangener Code liegt auf Branch **`wip/alarms-widgets`** (main bleibt baubar)
 
 ## Ideen (Simon 15.10.)
 - [x] Im CGM-Graph auf einen 5-Minuten-Wert tippen: Uhrzeit, SG-Wert (mg/dL + mmol/L), Trend, IOB zu diesem Zeitpunkt, Insulin und KH im 5-Minuten-Fenster (Branch `feature/alarms-widgets`; der IOB-Verlauf wird ab dieser Version gespeichert)
+- [ ] **KI-Glukose-Prognose in der App** (Simon 16.11.2026): Prognosemodelle mit unseren Daten (SG, Insulin, KH, IOB) füttern und den Forecast in der App zeigen, z. B. als gestrichelte Verlängerung im CGM-Graph. Vorlage: [0xdeadf1sh/T1DMAI](https://github.com/0xdeadf1sh/T1DMAI) (MIT, Python). Das ist ein Model-Zoo von BZ-Forecastern, 2 h Vorhersage. Das eigene Modell dort ist ein kleiner Transformer („D16“, DILATE/MSE, erst synthetisch trainiert, dann per LoRA auf eigene Daten feinjustiert). XGBoost/LightGBM schneiden ähnlich gut ab. Die Android-Variante läuft schon auf dem Handy: [T1DMDROID](https://github.com/0xdeadf1sh/T1DMDROID). Zu klären:
+  - Läuft es on-device (Core ML / TFLite bzw. ONNX), oder rechnet es die lokale API bzw. ein eigener Server?
+  - Gewichte: Lizenz prüfen, und ob sie auf eigene Daten feinjustiert werden müssen
+  - Die Darstellung braucht einen klaren Hinweis „Forschung, kein Medizinprodukt, keine Therapieentscheidung“. Prognosen keinesfalls in Alarme einbauen.
+  - Für den App Store: eine Prognose kann das Produkt Richtung Medizinprodukt schieben, deshalb vorher die Review-Richtlinien und MDR prüfen
+  - Bleibt nur lesend: Die Prognose nutzt nur vorhandene Daten, an der Pumpe ändert sich nichts.
 
 ## Phase 6 – Veröffentlichung (nächste Schritte, Simon 15.10.)
 - [ ] **Umbenennen in „iPump-mini“** (Anzeigename, Bundle-ID/Repo-Name prüfen), App-Icon und Designsprache passend dazu entwickeln
