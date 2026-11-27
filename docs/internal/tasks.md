@@ -1,6 +1,13 @@
 # Aufgabenliste
 
 ## ▶ Aktueller Stand (15.10.2026, Nachmittag) – hier weitermachen
+- **28.11.2026 – Beta 1.2.0 (iOS) / 1.0.0-beta.5 (Android), Branch `beta`:**
+  - Neu: Fix „hängt nach Wiederverbindung“ (iOS + Android, Laborbuch 27.11.), Dynamic Island schneidet nicht mehr ab, CarPlay/Watch-Ansicht (`.small`), Siri-Intent „Wie ist mein Zucker“, Apple-Health-Schreib-Sync (optional), Vorrat-Vorhersage (Beta), Muster, Startseite in zwei Seiten (Jetzt/Ausblick) mit Vorschau, `DataStore.isPlausible`, Datenhaltung 14 Tage.
+  - Tests: `apps/ios/Scripts/test.sh` (Core, iOS-Unit, UI-Tests).
+  - Offen:
+    - Am Gerät prüfen: Fix bei echter Trennung („Sitzung verworfen“ im Log), Island mit BeReal, CarPlay, Health-Sync, Wischen.
+    - Android-APK mit Release-Schlüssel signieren (`android-sign.sh`) und als Pre-Release `android-v1.0.0-beta.5` veröffentlichen.
+    - Android ohne Vorrat/Muster/Health Connect/zwei Seiten.
 - **18.10.2026 – Android-Version** (Branch `claude/clever-keller-cno24r`): `apps/android/` (Kotlin/Compose) + `core/MiniMedKitKotlin/` (Port von MiniMedKit, alle Tests grün inkl. 780G-Handshake). Baut, Screens laufen im Demo-Modus, **noch nicht an der Pumpe getestet**. ADR 0004 (vorgeschlagen), Anleitung `docs/de/android.md`. Nächster Schritt: Simon testet mit der Testpumpe (Debug-APK, Protokoll teilen).
 - **16.10.2026 – Apple-Rückfrage 2.5.4** (Bluetooth-Hintergrundmodi, Prüfer ohne Pumpe): Modi bleiben, Antwort + Bildschirmaufnahme vom Koppeln/Protokoll, Text in `store-application.md` §7. **Build 4 (1.0.1)** vorbereitet: Trendpfeile in Live-Aktivität, Dynamic Island und Widgets schneiden nicht mehr ab (`TrendArrows`, `IslandValue`). **Build 4 hochgeladen 16.10. 11:08** (Release, DEV_MODE=0, keine Schlüssel-DB). Simon: Build 4 wählen, Video (Koppeln + Protokoll) an Antwort und Review-Notes, neu einreichen. Simons iPhone läuft jetzt mit der öffentlichen Variante (Release-Build).
 - **App Store:** 1.0.0 (Build 2) zurückgezogen; **1.0.1 (Build 3)** hochgeladen (15.10. 14:14, Sensorstatus-Fix), Version in App Store Connect auf 1.0.1 – Simon wählt Build 3 und reicht ein. Plan für Watchfaces/Website/Apps: Obsidian „Plan Okt 2026“. Texte/Bilder DE+EN, Datenschutz („keine Daten“), Altersfreigabe, Inhaltsrechte, „kein reguliertes Medizinprodukt“, Verfügbarkeit ohne Frankreich (Verschlüsselungsantwort). Bei Rückfragen von Apple: Antworten in `store-application.md` §7.
