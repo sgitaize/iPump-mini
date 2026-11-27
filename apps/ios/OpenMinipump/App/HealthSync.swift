@@ -114,13 +114,15 @@ final class HealthSync: ObservableObject {
     private var running = false
     private var scheduled: Task<Void, Never>?
 
+    // Marks are stored as Date: a Double round trip via 1970 could put the mark a hair before
+    // the last written value, which was then written again.
     private var glucoseMark: Date {
-        get { Date(timeIntervalSince1970: defaults.double(forKey: "healthGlucoseMark")) }
-        set { defaults.set(newValue.timeIntervalSince1970, forKey: "healthGlucoseMark") }
+        get { (defaults.object(forKey: "healthGlucoseMark") as? Date) ?? .distantPast }
+        set { defaults.set(newValue, forKey: "healthGlucoseMark") }
     }
     private var treatmentMark: Date {
-        get { Date(timeIntervalSince1970: defaults.double(forKey: "healthTreatmentMark")) }
-        set { defaults.set(newValue.timeIntervalSince1970, forKey: "healthTreatmentMark") }
+        get { (defaults.object(forKey: "healthTreatmentMark") as? Date) ?? .distantPast }
+        set { defaults.set(newValue, forKey: "healthTreatmentMark") }
     }
 
     init(store: DataStore, log: EventLog, writer: HealthWriting = HealthStoreWriter(),
