@@ -15,6 +15,7 @@ struct SettingsView: View {
     @AppStorage("settings.pump") private var openPump = true
     @AppStorage("settings.sensor") private var openSensor = false
     @AppStorage("settings.ns") private var openNS = false
+    @AppStorage("settings.health") private var openHealth = false
     @AppStorage("settings.api") private var openAPI = false
     @AppStorage("settings.notify") private var openNotify = false
     @AppStorage("settings.info") private var openInfo = false
@@ -88,6 +89,10 @@ struct SettingsView: View {
                     }
                     Text("Lädt neue Sensorwerte sofort hoch, dazu Pumpenstatus und Behandlungen aus der Pumpenhistorie. Funktioniert auch im Hintergrund, weil die Pumpe die App alle 5 Minuten weckt. Fehlende Werte liest die App aus der Pumpenhistorie nach und lädt sie gesammelt hoch. Das Secret liegt im Schlüsselbund.")
                         .font(.caption).foregroundStyle(.secondary)
+                }
+
+                Section("Apple Health", isExpanded: $openHealth) {
+                    HealthRows(health: model.health)
                 }
 
                 Section("Lokale API", isExpanded: $openAPI) {
@@ -265,5 +270,25 @@ private struct URLRow: View {
                     .accessibilityLabel("URL kopieren")
             }
         }
+    }
+}
+
+/// Rows of the "Apple Health" section (own view: it observes `HealthSync`, which `AppModel` only holds).
+private struct HealthRows: View {
+    @ObservedObject var health: HealthSync
+
+    var body: some View {
+        Toggle("Werte in Health schreiben", isOn: Binding(
+            get: { health.enabled },
+            set: { on in Task { await health.setEnabled(on) } }
+        ))
+        if health.enabled {
+            LabeledContent("Zuletzt geschrieben", value: health.lastWrite.map {
+                L10n.tr("%@ (%d Proben)", $0.formatted(date: .abbreviated, time: .shortened), health.lastCount)
+            } ?? "–")
+        }
+        if let error = health.lastError { Text(error).font(.caption).foregroundStyle(.red) }
+        Text("Schreibt Glukose, Bolus (auch Autokorrekturen) und Kohlenhydrate nach Apple Health, nur schreibend. Es wird nichts aus Health gelesen. Beim Einschalten werden die letzten 14 Tage nachgetragen, danach höchstens alle 5 Minuten. Im Demo-Modus wird nie geschrieben.")
+            .font(.caption).foregroundStyle(.secondary)
     }
 }

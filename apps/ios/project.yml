@@ -54,6 +54,7 @@ targets:
           NSAllowsLocalNetworking: true
         NSBluetoothAlwaysUsageDescription: "iPump-mini verbindet sich per Bluetooth mit deiner MiniMed-Pumpe und liest Werte aus (nur lesend)."
         NSLocalNetworkUsageDescription: "Optional: Die lokale API kann im WLAN freigegeben werden."
+        NSHealthUpdateUsageDescription: "Optional: iPump-mini schreibt Glukosewerte, Insulin (Bolus) und Kohlenhydrate in Apple Health. Es wird nichts aus Health gelesen."
         NSSupportsLiveActivities: true
         OMPAppGroup: group.$(OMP_BUNDLE_ID)
     postCompileScripts:
