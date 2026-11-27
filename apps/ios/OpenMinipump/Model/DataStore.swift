@@ -13,6 +13,8 @@ final class DataStore: ObservableObject {
     @Published private(set) var treatments: [Treatment] = []
     /// Insulin on board over time (one sample per pump refresh), for the chart details.
     @Published private(set) var iobHistory: [IOBSample] = []
+    /// Reservoir and pump battery over time (about every 15 min, 30 days) for the supply forecast.
+    @Published private(set) var supplyHistory: [SupplySample] = []
 
     /// Thread-safe view for the API server (runs on its own queue).
     let shared = SharedData()
@@ -23,7 +25,7 @@ final class DataStore: ObservableObject {
     /// history or replaced by a later copy. Widgets, Live Activity and API must follow it.
     var onLatestChanged: (() -> Void)?
 
-    private let retention: TimeInterval = 7 * 24 * 3600
+    private let retention: TimeInterval = 14 * 24 * 3600
     private let fileURL: URL
     private static var defaultFileURL: URL {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -37,6 +39,7 @@ final class DataStore: ObservableObject {
         var lastDataAt: Date?
         var treatments: [Treatment]?
         var iobHistory: [IOBSample]?
+        var supplyHistory: [SupplySample]?
     }
 
     /// `fileURL` is only overridden by tests (own file instead of the real store).
@@ -50,6 +53,7 @@ final class DataStore: ObservableObject {
             lastDataAt = p.lastDataAt
             treatments = p.treatments ?? []
             iobHistory = p.iobHistory ?? []
+            supplyHistory = p.supplyHistory ?? []
         }
         publish()
     }
@@ -71,11 +75,28 @@ final class DataStore: ObservableObject {
     func loadDemoData() {
         persistenceEnabled = false
         let now = Date()
-        readings = (0..<72).map { i in
-            let t = Double(71 - i)
-            let mgdl = Int(130 + 50 * sin(t / 9))
-            return GlucoseReading(date: now.addingTimeInterval(-t * 300), mgdl: mgdl,
-                                  trendMgdlPerMin: -50.0 / 45.0 * cos(t / 9), sessionOffsetMinutes: UInt16(5000 - Int(t) * 5))
+        // 14 days of values (patterns need them); the last 6 hours are the plain wave, older ones
+        // add a breakfast peak on most days and a few night lows on top of it.
+        let cal = Calendar.current
+        func demoValue(_ t: Double) -> Double {
+            let base = 130 + 50 * sin(t / 9)
+            guard t >= 72 else { return base }
+            let date = now.addingTimeInterval(-t * 300)
+            let hour = Double(cal.component(.hour, from: date)) + Double(cal.component(.minute, from: date)) / 60
+            let day = Int((cal.startOfDay(for: date).timeIntervalSince1970 / 86400).rounded())
+            func bump(_ from: Double, _ to: Double) -> Double {
+                hour > from && hour < to ? pow(sin((hour - from) / (to - from) * .pi), 2) : 0
+            }
+            var v = base
+            if day % 7 < 4 { v += 95 * bump(8.2, 11.2) }                      // after breakfast on 4 of 7 days
+            if day % 5 == 0 { v -= bump(1.5, 4.5) * (base - 58) }             // night low on some days
+            return v
+        }
+        readings = (0..<(14 * 288)).map { i in
+            let t = Double(14 * 288 - 1 - i)
+            return GlucoseReading(date: now.addingTimeInterval(-t * 300), mgdl: Int(demoValue(t)),
+                                  trendMgdlPerMin: (demoValue(t - 1) - demoValue(t)) / 5,
+                                  sessionOffsetMinutes: UInt16(60000 - Int(t) * 5))
         }
         var s = PumpSnapshot(updatedAt: now)
         s.pumpBatteryPercent = 75
@@ -92,7 +113,15 @@ final class DataStore: ObservableObject {
             Treatment(id: UInt32(10 + i), date: now.addingTimeInterval(-Double(i) * 300), kind: .autoBasal,
                       value: [0.05, 0.1, 0.0, 0.15, 0.05][i % 5])
         }.filter { ($0.value ?? 0) > 0 }
+        // Breakfast on the last 14 days (for the pattern card), id range separate from the above.
+        treatments += (1...14).compactMap { d -> [Treatment]? in
+            guard let day = cal.date(byAdding: .day, value: -d, to: cal.startOfDay(for: now)) else { return nil }
+            let at = day.addingTimeInterval(7.5 * 3600)
+            return [Treatment(id: UInt32(1000 + d * 2), date: at, kind: .carbs, value: 40),
+                    Treatment(id: UInt32(1001 + d * 2), date: at.addingTimeInterval(120), kind: .bolus, value: 3.5)]
+        }.flatMap { $0 }
         treatments.sort { $0.date < $1.date }   // like addTreatments
+        supplyHistory = Self.demoSupplyHistory(now: now)
         // Ends at the current IOB of the status below (1.85 U) and decays towards it.
         iobHistory = (0..<72).map { i in IOBSample(date: now.addingTimeInterval(-Double(71 - i) * 300), units: 1.85 + Double(71 - i) * 0.03) }
         // Pump status from JSON (the types are Codable and otherwise only parsed from bytes).
@@ -110,6 +139,29 @@ final class DataStore: ObservableObject {
         demoTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.addDemoReading() }
         }
+    }
+
+    /// Ten days of supply samples that end at the demo status (142 U, 75 %): reservoir changed
+    /// about 4 days ago, battery drops about 4 % a day, consumption with meal peaks.
+    static func demoSupplyHistory(now: Date) -> [SupplySample] {
+        let cal = Calendar.current
+        var reservoir = 142.0, battery = 75.0
+        var out: [SupplySample] = []
+        for i in 0..<(10 * 96) {
+            let date = now.addingTimeInterval(-Double(i) * 900)
+            out.append(SupplySample(date: date, reservoir: reservoir.rounded(), battery: battery.rounded()))
+            let hour = cal.component(.hour, from: date)
+            let wd = cal.component(.weekday, from: date)
+            let day = Int((cal.startOfDay(for: date).timeIntervalSince1970 / 86400).rounded())
+            var rate = 0.9 + ([7, 12, 18].contains(hour) ? 3.2 : 0)           // U per hour
+            if wd == 1 || wd == 7 { rate *= 0.85 }
+            rate *= 1 + 0.08 * sin(Double(day) * 1.7)
+            reservoir += rate / 4
+            if reservoir > 300 { reservoir = 12 }                             // earlier reservoir
+            battery += 4.0 / 96
+            if battery > 100 { battery = 8 }                                  // earlier battery
+        }
+        return out.reversed()
     }
 
     private func addDemoReading() {
@@ -205,7 +257,16 @@ final class DataStore: ObservableObject {
             iobHistory.removeAll { $0.date < cutoff }
         }
         snapshot.updatedAt = Date()
+        recordSupply()
         touched()
+    }
+
+    /// Stores reservoir and battery as a supply sample (at most every 15 min).
+    private func recordSupply() {
+        guard persistenceEnabled else { return }
+        let reservoir = snapshot.status.flatMap { $0.reservoirAttached ? $0.reservoirUnits : nil }
+        let sample = SupplySample(date: Date(), reservoir: reservoir, battery: snapshot.pumpBatteryPercent.map(Double.init))
+        SupplyHistory.record(sample, into: &supplyHistory)
     }
 
     private func touched() {
@@ -223,7 +284,7 @@ final class DataStore: ObservableObject {
     private func save() {
         guard persistenceEnabled else { return }
         let p = Persisted(readings: readings, snapshot: snapshot, lastDataAt: lastDataAt, treatments: treatments,
-                          iobHistory: iobHistory)
+                          iobHistory: iobHistory, supplyHistory: supplyHistory)
         if let data = try? JSONEncoder().encode(p) {
             try? data.write(to: fileURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
         }
