@@ -86,6 +86,7 @@ Nach kurzer Zeit erscheinen der aktuelle Wert und der Pumpenstatus. Die Historie
 - **Live-Aktivität / Dynamic Island (iPhone):** startet beim Öffnen der App. iOS beendet sie nach 8 Stunden.
 - **Aussehen:** Hell/Dunkel/System, Einheit (mg/dL oder mmol/L) und Zielbereich unter Einstellungen › Aussehen. Sprache: iPhone in der App, Android in den Android-Einstellungen der App.
 - **Nightscout (optional):** URL und API-Secret unter Einstellungen › Nightscout. Neue Werte werden sofort hochgeladen, dazu Pumpenstatus und Behandlungen.
+- **Apple Health (optional, standardmäßig aus):** Einstellungen › Apple Health › „Werte in Health schreiben“. Die App fragt die Berechtigung an und trägt die letzten 14 Tage nach, danach werden neue Werte gebündelt, höchstens alle 5 Minuten, geschrieben. Geschrieben werden Glukose (mg/dL), Bolus samt SmartGuard-Autokorrekturen (als Bolus) und Kohlenhydrate. Basal (Auto-Basal-Mikroboli) wird nicht geschrieben, weil die Pumpenhistorie dafür keine sauberen Zeiträume liefert. Die App liest nichts aus Health, jede Probe trägt eine feste Kennung, wiederholtes Schreiben erzeugt keine Dubletten. Im Demo-Modus wird nie geschrieben. Wird die Berechtigung abgelehnt, bleibt der Schalter aus; änderbar unter iOS-Einstellungen › Health › Datenzugriff.
 - **Lokale API (optional):** Nightscout-kompatibel auf Port 17580, z. B. für Pebble-Watchfaces, siehe [api.md](api.md).
 
 ## Alarme

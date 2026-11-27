@@ -4898,6 +4898,61 @@
           }
         }
       }
+    },
+    "Apple Health" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Health"
+          }
+        }
+      }
+    },
+    "Werte in Health schreiben" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write values to Health"
+          }
+        }
+      }
+    },
+    "Zuletzt geschrieben" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last written"
+          }
+        }
+      }
+    },
+    "%@ (%d Proben)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (%d samples)"
+          }
+        }
+      }
+    },
+    "Schreibt Glukose, Bolus (auch Autokorrekturen) und Kohlenhydrate nach Apple Health, nur schreibend. Es wird nichts aus Health gelesen. Beim Einschalten werden die letzten 14 Tage nachgetragen, danach höchstens alle 5 Minuten. Im Demo-Modus wird nie geschrieben." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Writes glucose, bolus (including auto corrections) and carbohydrates to Apple Health, write only. Nothing is read from Health. When switched on, the last 14 days are filled in, afterwards at most every 5 minutes. Nothing is ever written in demo mode."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

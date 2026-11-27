@@ -48,6 +48,7 @@ final class AppModel: ObservableObject {
     let api: LocalAPIServer
     private(set) var link: PumpLink!
     let uploader: NightscoutUploader
+    let health: HealthSync
 
     @Published var apiState = L10n.tr("gestartet")
     @Published var apiAllowLAN = UserDefaults.standard.bool(forKey: "apiAllowLAN") {
@@ -91,12 +92,15 @@ final class AppModel: ObservableObject {
     init() {
         api = LocalAPIServer(shared: store.shared)
         uploader = NightscoutUploader(store: store, log: log)
+        health = HealthSync(store: store, log: log)
         let uploader = uploader
+        let health = health
         let demo = DemoMode.isOn
         link = PumpLink(config: config, store: store, log: log, bluetooth: !demo, onData: {
             Watchdog.arm()
         }, onHistory: { oldest in
             uploader.historyAdded(oldestReading: oldest)
+            health.historyAdded(oldestReading: oldest)
         })
         let store = store
         store.onNewReading = { [weak self] in
@@ -104,6 +108,7 @@ final class AppModel: ObservableObject {
             self?.keepAPIAwake()
             PebbleMonitor.check()
             uploader.newReading()
+            health.dataChanged()
             if let latest = store.latest { AlarmEngine.shared.evaluate(latest) }
             WidgetBridge.update(store: store)
         }

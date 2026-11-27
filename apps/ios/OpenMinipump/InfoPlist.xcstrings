@@ -52,6 +52,23 @@
           }
         }
       }
+    },
+    "NSHealthUpdateUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional: iPump-mini schreibt Glukosewerte, Insulin (Bolus) und Kohlenhydrate in Apple Health. Es wird nichts aus Health gelesen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional: iPump-mini writes glucose values, insulin (bolus) and carbohydrates to Apple Health. Nothing is read from Health."
+          }
+        }
+      }
     }
   }
 }
