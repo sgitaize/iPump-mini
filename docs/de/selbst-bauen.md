@@ -23,4 +23,14 @@ open OpenMinipump.xcodeproj
 ```
 Dann in Xcode das iPhone als Ziel wählen und starten. Auf dem iPhone muss der Entwicklermodus aktiv sein (Einstellungen › Datenschutz & Sicherheit › Entwicklermodus).
 
-Tests der Protokoll-Bibliothek: `cd core/MiniMedKit && swift test`.
+## Tests
+Alles auf einmal (Protokoll-Bibliothek, dann iOS-Unit-Tests im Simulator):
+```sh
+apps/ios/Scripts/test.sh
+```
+Dauert etwa 20 s (beim ersten Mal länger wegen des Builds). Einzeln:
+- `cd core/MiniMedKit && swift test` – Protokoll, Parser, Nightscout-Mapping, History, `ReadOnlyPolicy` und Plausibilitätschecks (Trendgrenzen, Zeitachse, Behandlungen).
+- iOS: Target `OpenMinipumpTests` (läuft in der App als Host, Simulator „iPhone 17“, andere über `SIM_UDID=<udid>`). Abgedeckt sind `DataStore` (Dedupe, Aufbewahrung, Speichern), `AlarmEngine`, die lokale API (echter Server auf Port 17591, per URLSession abgefragt, inkl. `find[date][$gte]`), Einheiten und Deltas, Trendpfeile, Widget-Daten, Live-Activity-Kurve und die Demodaten. Plausibilitätschecks prüfen u. a. Werte 40–400 mg/dL, Lücken und Zukunftswerte, negative IOB, Sensorlaufzeit und die Feldnamen der Nightscout-Antworten.
+- Bekannte Fehler stehen als `XCTExpectFailure` im Test, sie schlagen erst an, wenn der Fehler behoben ist.
+
+Nicht abgedeckt: CoreBluetooth (`PumpLink`), SwiftUI-Ansichten, Widgets, Benachrichtigungen (es wird nur geprüft, ob ein Alarm ausgelöst würde) und die API-Anmeldung aus dem WLAN (Loopback braucht kein Secret). Beim Ändern der Allowlist (`ReadOnlyPolicy`) gelten weiter die Regeln aus `CLAUDE.md`.
