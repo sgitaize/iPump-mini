@@ -119,7 +119,23 @@ final class DataStore: ObservableObject {
         add(GlucoseReading(date: now, mgdl: mgdl, trendMgdlPerMin: 50.0 / 45.0 * cos(t / 9), sessionOffsetMinutes: nil))
     }
 
-    func add(_ reading: GlucoseReading) {
+    /// Maximum clock skew accepted for a value from the future (pump and iPhone clocks).
+    static let futureTolerance: TimeInterval = 300
+    /// The sensor reports 40–400 mg/dL; anything else is a decoding or transfer error.
+    static let plausibleRange = 40...400
+
+    /// One rule for every way a value comes in (live, pump history, Nightscout): inside the
+    /// retention window, at most 5 min in the future, within the sensor range.
+    func isPlausible(_ r: GlucoseReading, now: Date = Date()) -> Bool {
+        r.date >= now.addingTimeInterval(-retention)
+            && r.date <= now.addingTimeInterval(Self.futureTolerance)
+            && Self.plausibleRange.contains(r.mgdl)
+    }
+
+    /// Adds a live value. Returns false if it was rejected as implausible.
+    @discardableResult
+    func add(_ reading: GlucoseReading) -> Bool {
+        guard isPlausible(reading) else { return false }
         // Same sensor record (offset) or a value within 2 minutes counts as duplicate.
         if let i = readings.lastIndex(where: {
             ($0.sessionOffsetMinutes != nil && $0.sessionOffsetMinutes == reading.sessionOffsetMinutes
@@ -131,7 +147,7 @@ final class DataStore: ObservableObject {
             readings.sort { $0.date < $1.date }
             touched()
             if wasLatest || latest?.date == reading.date { onLatestChanged?() }
-            return
+            return true
         }
         readings.append(reading)
         readings.sort { $0.date < $1.date }
@@ -139,6 +155,7 @@ final class DataStore: ObservableObject {
         readings.removeAll { $0.date < cutoff }
         touched()
         onNewReading?()
+        return true
     }
 
     /// Merges values from the pump history or from Nightscout. Does not trigger the
@@ -147,8 +164,8 @@ final class DataStore: ObservableObject {
     func merge(_ incoming: [GlucoseReading]) -> [GlucoseReading] {
         var added: [GlucoseReading] = []
         let latestBefore = latest?.date
-        let cutoff = Date().addingTimeInterval(-retention)
-        for r in incoming where r.date >= cutoff && r.date <= Date().addingTimeInterval(300) {
+        let now = Date()
+        for r in incoming where isPlausible(r, now: now) {
             if readings.contains(where: { abs($0.date.timeIntervalSince(r.date)) < 120 }) { continue }
             readings.append(r)
             added.append(r)

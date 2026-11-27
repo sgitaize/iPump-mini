@@ -4375,6 +4375,171 @@
           }
         }
       }
+    },
+    "%@, %@, %@." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@, %3$@."
+          }
+        }
+      }
+    },
+    "%@, %@." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@, %2$@."
+          }
+        }
+      }
+    },
+    "Achtung, kein aktueller Wert. Der letzte war %@ vor %d Minuten." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attention, no current value. The last one was %1$@, %2$d minutes ago."
+          }
+        }
+      }
+    },
+    "Aktives Insulin %@ Einheiten." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active insulin %@ units."
+          }
+        }
+      }
+    },
+    "Aktueller Zuckerwert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Current glucose"
+          }
+        }
+      }
+    },
+    "Keine Werte vorhanden. Ist iPump-mini mit der Pumpe verbunden?" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No values available. Is iPump-mini connected to the pump?"
+          }
+        }
+      }
+    },
+    "Sagt den aktuellen Glukosewert mit Trend, Alter und aktivem Insulin." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tells the current glucose value with trend, age and active insulin."
+          }
+        }
+      }
+    },
+    "Zuckerwert" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glucose"
+          }
+        }
+      }
+    },
+    "fallend" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "falling"
+          }
+        }
+      }
+    },
+    "stabil" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "steady"
+          }
+        }
+      }
+    },
+    "stark fallend" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "falling fast"
+          }
+        }
+      }
+    },
+    "stark steigend" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rising fast"
+          }
+        }
+      }
+    },
+    "steigend" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "rising"
+          }
+        }
+      }
+    },
+    "vor %d Minuten" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d minutes ago"
+          }
+        }
+      }
+    },
+    "vor einer Minute" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "one minute ago"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

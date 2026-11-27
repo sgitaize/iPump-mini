@@ -139,3 +139,16 @@ Folge: Unsere Allowlist ist eine echte Teilmenge dessen, was die offizielle App 
   - **DIS 0x0900:** gleiche Merkmale wie auf iOS. Werte: `Build.MANUFACTURER`, `Build.MODEL`, `Mobile <Name>`, `Android`, `Android <Version>`, App-Version `3.3.0(80)`, System-ID 8 × 00, PnP 7 × 00, 2A2A leer. JavaPumpConnector kam mit Fantasiewerten durch den Handshake, die fehlende 2A2A war also vermutlich die iOS-Ursache.
   - **GATT-Client:** `connectGatt(autoConnect=false)` nur, solange die Pumpe am GATT-Server verbunden ist (Android nutzt dann den bestehenden Link). Die App baut nie selbst eine Verbindung auf.
   - **Ohne Sitzung nach einem Prozess-Neustart:** Ist die Pumpe nach 20 s ohne SAKE-Abo noch verbunden, trennt die App ihre Seite (`cancelConnection`), damit die Pumpe neu verbindet und einen neuen Handshake startet.
+
+## 2026-11-27 – App hängt nach Wiederverbindung („NoApp“ auf der Pebble)
+
+- **Symptom:** Nach einiger Zeit kommen keine Werte mehr, die Pebble zeigt „NoApp“. Im Log steht nichts mehr. Erst ein komplettes Beenden der App hilft, in den Vordergrund holen reicht nicht.
+- **Log (per `devicectl` vom iPhone):** seit 19.11. sechsmal das gleiche Muster.
+  1. Die Pumpe trennt sich („SAKE-Abo beendet“ bzw. „Pumpe getrennt: The connection has timed out unexpectedly“).
+  2. Später startet iOS die App im Hintergrund neu, mit „Setze gespeicherte Sitzung fort (Pumpe verbunden)“.
+  3. Danach: `iddStatus` und `cgmSessionStartTime` lassen sich noch lesen und entschlüsseln. **Alle** Control-Point-Anfragen (SRCP, CGM-RACP, IDD-RACP) laufen in Zeitüberschreitungen. Es kommt keine Benachrichtigung mehr, also auch kein 5-Minuten-Auslöser, und die App wartet für immer.
+- **Gegenprobe:** Ohne vorherige Trennung klappt das Fortsetzen (18.11. 07:05, 26.11. 09:33).
+- **Schluss:** Eine SAKE-Sitzung überlebt einen Verbindungsabbruch nicht. Nach dem Wiederverbinden erwartet die Pumpe einen neuen Handshake. Einfache Lesezugriffe täuschen eine funktionierende Sitzung vor.
+- **Fix:**
+  - Beim Ende des SAKE-Abos oder bei einer Trennung wird die gespeicherte Sitzung verworfen.
+  - Als Absicherung (falls die Trennung unbemerkt im suspendierten Zustand passiert ist): Nach 3 unbeantworteten Control-Point-Anfragen in Folge wird die Sitzung ebenfalls verworfen. Die App registriert dann ihre GATT-Dienste neu, wie bei einem frischen Start, und die Pumpe startet einen neuen Handshake. Das passiert höchstens alle 10 Minuten.

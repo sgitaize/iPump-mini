@@ -86,9 +86,27 @@ final class DataStoreTests: XCTestCase {
     /// Known issue: `merge` rejects values more than 5 min in the future, `add` does not.
     /// The live path (PumpLink) filters at the source, so this is only a missing second line of defence.
     func testAddRejectsReadingsFromTheFuture() {
-        XCTExpectFailure("DataStore.add has no future-timestamp guard (merge has)")
-        store.add(Fixtures.reading(140, minutesAgo: -60))
+        XCTAssertFalse(store.add(Fixtures.reading(140, minutesAgo: -60)))
         XCTAssertTrue(store.readings.isEmpty, "a value one hour in the future must not be stored")
+        // Small clock skew between pump and iPhone is fine.
+        XCTAssertTrue(store.add(Fixtures.reading(140, minutesAgo: -4)))
+    }
+
+    func testAddRejectsImplausibleValues() {
+        XCTAssertFalse(store.add(Fixtures.reading(39, minutesAgo: 0)))
+        XCTAssertFalse(store.add(Fixtures.reading(401, minutesAgo: 0)))
+        XCTAssertFalse(store.add(Fixtures.reading(0, minutesAgo: 0)))
+        XCTAssertFalse(store.add(Fixtures.reading(140, minutesAgo: 60 * 24 * 60)), "older than the retention window")
+        XCTAssertTrue(store.readings.isEmpty)
+        XCTAssertTrue(store.add(Fixtures.reading(40, minutesAgo: 10)))
+        XCTAssertTrue(store.add(Fixtures.reading(400, minutesAgo: 0)))
+        XCTAssertEqual(store.readings.count, 2)
+    }
+
+    func testMergeUsesTheSameRules() {
+        let added = store.merge([Fixtures.reading(20, minutesAgo: 30), Fixtures.reading(150, minutesAgo: -30),
+                                 Fixtures.reading(150, minutesAgo: 30)])
+        XCTAssertEqual(added.map(\.mgdl), [150])
     }
 
     func testTreatmentsAreDeduplicatedBySequenceAndSorted() {

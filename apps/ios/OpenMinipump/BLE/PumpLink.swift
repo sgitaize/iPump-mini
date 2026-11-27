@@ -98,6 +98,15 @@ final class PumpLink: NSObject, ObservableObject {
     /// Session cipher after the handshake; persisted so it survives an app relaunch.
     private var crypt: SeqCrypt?
     private var decryptFailures = 0
+    /// Control-point requests in a row that got no answer (see `noAnswerFromPump`).
+    private var unansweredRequests = 0
+    private var lastSessionRecovery: Date?
+    /// Values that only arrive while the pump really talks to us in the current SAKE session
+    /// (answers to control points and notifications). Plain reads still work on a dead session.
+    private static let liveSignals: Set<String> = Set([
+        PumpUUID.iddStatusReaderCP, PumpUUID.recordAccessCP, PumpUUID.iddHistoryData,
+        PumpUUID.cgmMeasurement, PumpUUID.iddStatusChanged, PumpUUID.gstBatteryLevel,
+    ].map { $0.uppercased() })
     private var currentStartedAt: Date?
     private var refreshPending = false
     /// Pump history (IDD RACP): records collected during one sync run.
@@ -419,6 +428,36 @@ final class PumpLink: NSObject, ObservableObject {
         if peripheralManager?.state == .poweredOn { setUpServices() }
     }
 
+    /// A SAKE session never survives a dropped link: after reconnecting, the pump waits for a
+    /// new handshake. Resuming the old cipher then looked fine (plain reads still answered)
+    /// but every control point request timed out and no notification came any more, until
+    /// the app was force-quit (log 19.–27.11.2026). So the saved session goes with the link.
+    private func dropSession(_ reason: String) {
+        guard crypt != nil || SessionStore.load() != nil else { return }
+        crypt = nil
+        sake = nil
+        SessionStore.clear()
+        didRequestHandshake = false
+        log.add("Sitzung verworfen (\(reason)), nächste Verbindung braucht neuen Handshake")
+    }
+
+    /// Safety net for a dead session we did not see ending (e.g. the link dropped while iOS had
+    /// the app suspended): several control point requests in a row without any answer. Drop
+    /// the session and ask the pump for a new handshake by re-registering our GATT services,
+    /// the same path a fresh app start takes. At most every 10 minutes.
+    private func recoverDeadSession() -> Bool {
+        if let last = lastSessionRecovery, Date().timeIntervalSince(last) < 10 * 60 { return false }
+        lastSessionRecovery = Date()
+        unansweredRequests = 0
+        log.add("Pumpe antwortet nicht auf Anfragen (Sitzung tot?), fordere neuen Handshake an", .warning)
+        resetClientState()
+        dropSession("keine Antworten")
+        crypt = nil
+        phase = .waitingForPump
+        requestNewHandshakeIfLinked()
+        return true
+    }
+
     private func resetClientState() {
         characteristics = [:]
         serialVerified = false
@@ -690,6 +729,8 @@ final class PumpLink: NSObject, ObservableObject {
                     Task { @MainActor in
                         guard let self, let op = self.current else { return }
                         self.log.add("Zeitüberschreitung: \(op)", .warning)
+                        if case .read = op {} else { self.unansweredRequests += 1 }
+                        if self.unansweredRequests >= 3, self.recoverDeadSession() { return }
                         self.nextOperation()
                     }
                 }
@@ -762,6 +803,7 @@ final class PumpLink: NSObject, ObservableObject {
                 return
             }
         }
+        if Self.liveSignals.contains(uuid) { unansweredRequests = 0 }
         defer { if isTrigger { scheduleRefresh() } }
 
         switch uuid {
@@ -794,9 +836,12 @@ final class PumpLink: NSObject, ObservableObject {
                 }
                 // SG values outside 40…400 are sensor states, not glucose values.
                 if m.glucoseMgdl >= 40, m.glucoseMgdl <= 400 {
-                    store.add(GlucoseReading(date: date, mgdl: Int(m.glucoseMgdl.rounded()),
-                                             trendMgdlPerMin: m.trendMgdlPerMin, sessionOffsetMinutes: m.timeOffsetMinutes))
-                    onData()
+                    if store.add(GlucoseReading(date: date, mgdl: Int(m.glucoseMgdl.rounded()),
+                                                trendMgdlPerMin: m.trendMgdlPerMin, sessionOffsetMinutes: m.timeOffsetMinutes)) {
+                        onData()
+                    } else {
+                        log.add("SG-Wert verworfen (Zeit \(date) unplausibel)", .warning)
+                    }
                 }
                 log.add("SG \(Int(m.glucoseMgdl)) mg/dL, Trend \(m.trendMgdlPerMin.map { String($0) } ?? "–")")
             } catch {
@@ -982,6 +1027,7 @@ extension PumpLink: CBPeripheralManagerDelegate {
             guard characteristic.uuid == CBUUID(string: PumpUUID.sakePort) else { return }
             log.add("Pumpe hat SAKE-Abo beendet (Verbindung getrennt?)", .warning)
             pumpCentral = nil
+            dropSession("Abo beendet")
             if case .blocked = phase { return }
             phase = .waitingForPump
             updateAdvertising()
@@ -1086,6 +1132,7 @@ extension PumpLink: CBCentralManagerDelegate {
             if case .blocked = phase { pump = nil; return }
             // No reconnect from our side: the pump reconnects to us (see linkFixVersion).
             pump = nil
+            dropSession("Verbindung getrennt")
             phase = .waitingForPump
             updateAdvertising()
         }
