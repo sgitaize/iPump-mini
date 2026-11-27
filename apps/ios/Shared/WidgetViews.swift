@@ -335,9 +335,11 @@ struct TrendArrows: View {
     let rate: Double?
     let size: CGFloat
     var weight: Font.Weight = .semibold
+    /// Narrow places (Dynamic Island next to another Live Activity) show a single arrow only.
+    var maxCount = 3
 
     var body: some View {
-        let text = TrendArrow.text(rate)
+        let text = String(TrendArrow.text(rate).prefix(maxCount))
         HStack(spacing: -size * 0.2) {
             ForEach(Array(text.enumerated()), id: \.offset) { _, glyph in
                 Text(verbatim: String(glyph))
@@ -377,9 +379,10 @@ struct IslandValue: View {
 }
 
 /// Compact leading view of the Dynamic Island: value and arrows, scaled down if needed.
-/// With a second Live Activity (Lieferando, BeReal …) iOS narrows the leading region so much
-/// that even the smallest row did not fit; ViewThatFits then used it anyway and clipped the
-/// arrow to a tick ("154ʼ"). The last fallback is the value alone, which always fits.
+/// With a second Live Activity (Lieferando, BeReal …) iOS narrows the leading region a lot.
+/// Every candidate carries its own leading inset: ViewThatFits measures the candidates only,
+/// so an inset added outside made a "fitting" row 4 pt too wide and cut off the arrows or the
+/// last digit. Order: all arrows, one arrow, value alone; the last one may shrink to fit.
 struct IslandCompactValue: View {
     let state: GlucoseActivityAttributes.ContentState
     let unit: GlucoseUnit
@@ -387,30 +390,32 @@ struct IslandCompactValue: View {
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
-            row(15)
-            row(13)
-            row(11)
-            value(15)
-            value(13)
+            row(15, arrows: 3)
+            row(13, arrows: 3)
+            row(13, arrows: 1)
+            row(11, arrows: 1)
+            value(15).padding(.leading, 4)
+            value(12, shrinkable: true).padding(.leading, 3)
         }
         .foregroundStyle(color)
+    }
+
+    private func row(_ size: CGFloat, arrows: Int) -> some View {
+        HStack(alignment: .center, spacing: 2) {
+            value(size)
+            TrendArrows(rate: state.trendRate, size: size, maxCount: arrows)
+        }
         // The leading region hugs the rounded corner; without inset the first digit was clipped ("I43").
         .padding(.leading, 4)
     }
 
-    private func row(_ size: CGFloat) -> some View {
-        HStack(alignment: .center, spacing: 2) {
-            value(size)
-            TrendArrows(rate: state.trendRate, size: size)
-        }
-    }
-
-    private func value(_ size: CGFloat) -> some View {
-        Text(verbatim: unit.format(state.mgdl))
+    @ViewBuilder
+    private func value(_ size: CGFloat, shrinkable: Bool = false) -> some View {
+        let text = Text(verbatim: unit.format(state.mgdl))
             .font(.system(size: size, weight: .semibold, design: .rounded))
             .monospacedDigit()
             .lineLimit(1)
-            .fixedSize()
+        if shrinkable { text.minimumScaleFactor(0.6) } else { text.fixedSize() }
     }
 }
 
@@ -430,19 +435,30 @@ struct IslandCompactDelta: View {
     }
 }
 
-/// Minimal Dynamic Island (another Live Activity is active): value only, scaled to fit the circle.
+/// Minimal Dynamic Island (another Live Activity is active): a small circle. Value with one
+/// arrow when it fits, otherwise the value alone, scaled to fit the circle.
 struct IslandMinimalValue: View {
     let state: GlucoseActivityAttributes.ContentState
     let unit: GlucoseUnit
     let color: Color
 
     var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 0) {
+                value.fixedSize()
+                TrendArrows(rate: state.trendRate, size: 9, weight: .bold, maxCount: 1)
+            }
+            // A little inset, so wide values ("388", "22,2") shrink instead of touching the circle.
+            value.minimumScaleFactor(0.5).padding(.horizontal, 2)
+        }
+        .foregroundStyle(color)
+    }
+
+    private var value: some View {
         Text(verbatim: unit.format(state.mgdl))
-            .font(.system(size: 14, weight: .semibold, design: .rounded))
+            .font(.system(size: 13, weight: .semibold, design: .rounded))
             .monospacedDigit()
             .lineLimit(1)
-            .minimumScaleFactor(0.5)
-            .foregroundStyle(color)
     }
 }
 
@@ -493,6 +509,106 @@ struct LiveActivityView: View {
                 .layoutPriority(1)
             }
         }
+    }
+}
+
+/// Picks the Live Activity layout: the small family (CarPlay from iOS 26, Apple Watch Smart
+/// Stack) or the lock screen banner.
+struct LiveActivityRoot: View {
+    let state: GlucoseActivityAttributes.ContentState
+
+    var body: some View {
+        if #available(iOS 18.0, *) {
+            FamilySwitch(state: state)
+        } else {
+            LiveActivityView(state: state).padding(16)
+        }
+    }
+
+    @available(iOS 18.0, *)
+    private struct FamilySwitch: View {
+        let state: GlucoseActivityAttributes.ContentState
+        @Environment(\.activityFamily) private var family
+
+        var body: some View {
+            switch family {
+            case .small: LiveActivitySmallView(state: state)
+            default: LiveActivityView(state: state).padding(16)
+            }
+        }
+    }
+}
+
+/// Small Live Activity for CarPlay (and the Apple Watch Smart Stack). In the car only
+/// the value has to be readable at a glance: big value and arrows, change and age below,
+/// the curve only if there is room. Older than 15 min: value greyed out and struck through,
+/// so an outdated value is never mistaken for a current one.
+struct LiveActivitySmallView: View {
+    let state: GlucoseActivityAttributes.ContentState
+
+    var body: some View {
+        // Re-evaluated every minute, so "outdated" also shows without an update from the app.
+        TimelineView(.periodic(from: state.date, by: 60)) { context in
+            content(stale: context.date.timeIntervalSince(state.date) > 15 * 60)
+        }
+    }
+
+    private func content(stale: Bool) -> some View {
+        let unit = Prefs.unit
+        let color = stale ? Color.secondary : RangeColor.color(state.mgdl, low: Prefs.low, high: Prefs.high, neutral: .primary)
+        return VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(verbatim: unit.format(state.mgdl))
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .strikethrough(stale)
+                    .lineLimit(1)
+                    .fixedSize()
+                if !stale { TrendArrows(rate: state.trendRate, size: 20, weight: .bold) }
+                Spacer(minLength: 4)
+                if !stale {
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text(verbatim: unit.formatDelta(state.delta))
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(.primary)
+                    Text(verbatim: unit.label).font(.caption2).foregroundStyle(.secondary)
+                }
+                .lineLimit(1)
+                .fixedSize()
+                }
+            }
+            .foregroundStyle(color)
+            ViewThatFits(in: .vertical) {
+                VStack(alignment: .leading, spacing: 3) {
+                    curve
+                    footer
+                }
+                footer
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+    }
+
+    @ViewBuilder
+    private var curve: some View {
+        if let points = state.curve, points.count > 1 {
+            LiveCurve(points: points, low: Prefs.low, high: Prefs.high, dimmed: false)
+                .frame(minHeight: 14, maxHeight: 30)
+        }
+    }
+
+    private var footer: some View {
+        // "vor 3 Min." instead of a ticking "3 Min., 12 Sek.": calmer to read while driving.
+        HStack(spacing: 6) {
+            Text(state.date, format: .relative(presentation: .named, unitsStyle: .abbreviated))
+            Spacer(minLength: 4)
+            if let iob = state.iob { Text(verbatim: "IOB " + insulinUnits(iob, 1)) }
+        }
+        .font(.caption2.weight(.medium))
+        .foregroundStyle(.secondary)
+        .lineLimit(1)
     }
 }
 

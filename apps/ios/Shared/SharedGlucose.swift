@@ -110,3 +110,24 @@ struct GlucoseActivityAttributes: ActivityAttributes {
             .map { CurvePoint(m: Int((latest.timeIntervalSince($0.date) / 60).rounded()), v: $0.mgdl) }
     }
 }
+
+#if DEBUG
+/// Debug builds only: a second, unrelated Live Activity (like BeReal or a delivery app), to see how
+/// iOS lays out the Dynamic Island when two activities run. Started with the launch argument -dummyActivity.
+struct DummyActivityAttributes: ActivityAttributes {
+    struct ContentState: Codable, Hashable { var text: String }
+}
+
+extension GlucoseActivityAttributes.ContentState {
+    /// Debug builds only: launch arguments -laTestMgdl 388 -laTestRate 3.5 -laTestDelta 12 replace
+    /// the shown values, to check the Dynamic Island with wide values and double arrows.
+    func debugOverridden() -> Self {
+        let d = UserDefaults.standard
+        var s = self
+        if d.object(forKey: "laTestMgdl") != nil { s.mgdl = d.integer(forKey: "laTestMgdl") }
+        if d.object(forKey: "laTestRate") != nil { s.trendRate = d.double(forKey: "laTestRate") }
+        if d.object(forKey: "laTestDelta") != nil { s.delta = d.integer(forKey: "laTestDelta") }
+        return s
+    }
+}
+#endif

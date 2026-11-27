@@ -4,11 +4,37 @@ import Charts
 import SwiftUI
 import WidgetKit
 
+/// iOS 18 and later get the Live Activity with the small family (CarPlay, Apple Watch).
+/// WidgetBundleBuilder has no `if #available`, so the entry point picks one of two bundles.
 @main
+enum WidgetsEntry {
+    static func main() {
+        if #available(iOS 18.0, *) {
+            OpenMinipumpWidgets18.main()
+        } else {
+            OpenMinipumpWidgets.main()
+        }
+    }
+}
+
 struct OpenMinipumpWidgets: WidgetBundle {
     var body: some Widget {
         GlucoseWidget()
         GlucoseLiveActivity()
+        #if DEBUG
+        DummyLiveActivity()
+        #endif
+    }
+}
+
+@available(iOS 18.0, *)
+struct OpenMinipumpWidgets18: WidgetBundle {
+    var body: some Widget {
+        GlucoseWidget()
+        GlucoseLiveActivityWithSmall()
+        #if DEBUG
+        DummyLiveActivity()
+        #endif
     }
 }
 
@@ -58,12 +84,22 @@ struct GlucoseWidget: Widget {
 
 // MARK: - Live Activity / Dynamic Island
 
-struct GlucoseLiveActivity: Widget {
+/// From iOS 18 the Live Activity also offers the small family: CarPlay (iOS 26) and the
+/// Apple Watch Smart Stack then show LiveActivitySmallView instead of the compact island.
+@available(iOS 18.0, *)
+struct GlucoseLiveActivityWithSmall: Widget {
     var body: some WidgetConfiguration {
+        GlucoseLiveActivity.configuration().supplementalActivityFamilies([.small])
+    }
+}
+
+struct GlucoseLiveActivity: Widget {
+    var body: some WidgetConfiguration { Self.configuration() }
+
+    static func configuration() -> some WidgetConfiguration {
         ActivityConfiguration(for: GlucoseActivityAttributes.self) { context in
-            LiveActivityView(state: context.state)
+            LiveActivityRoot(state: context.state)
                 .environment(\.locale, L10n.locale)
-                .padding(16)
                 .activityBackgroundTint(nil)
         } dynamicIsland: { context in
             let unit = Prefs.unit
@@ -133,3 +169,24 @@ enum LocalAPI {
         return WidgetSnapshot(points: points, trendRate: rate, iob: iob, updatedAt: Date())
     }
 }
+
+#if DEBUG
+/// Debug builds only: stands in for another app's Live Activity (BeReal, delivery apps …).
+struct DummyLiveActivity: Widget {
+    var body: some WidgetConfiguration {
+        ActivityConfiguration(for: DummyActivityAttributes.self) { context in
+            Text(verbatim: "Test-Aktivität \(context.state.text)").padding()
+        } dynamicIsland: { context in
+            DynamicIsland {
+                DynamicIslandExpandedRegion(.center) { Text(verbatim: "Test-Aktivität") }
+            } compactLeading: {
+                Image(systemName: "camera.fill").foregroundStyle(.yellow)
+            } compactTrailing: {
+                Text(verbatim: context.state.text).monospacedDigit().foregroundStyle(.yellow)
+            } minimal: {
+                Image(systemName: "camera.fill").foregroundStyle(.yellow)
+            }
+        }
+    }
+}
+#endif

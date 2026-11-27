@@ -110,6 +110,10 @@ enum WidgetBridge {
     }
 
     private static func startActivity(_ state: GlucoseActivityAttributes.ContentState, reason: String) {
+        #if DEBUG
+        let state = state.debugOverridden()
+        startDummyActivityIfRequested()
+        #endif
         do {
             _ = try Activity.request(attributes: GlucoseActivityAttributes(),
                                      content: ActivityContent(state: state, staleDate: state.date.addingTimeInterval(15 * 60)))
@@ -121,6 +125,16 @@ enum WidgetBridge {
             log?.add("Live-Aktivität nicht gestartet: \(error.localizedDescription)", .warning)
         }
     }
+
+    #if DEBUG
+    /// Launch argument -dummyActivity: a second Live Activity next to ours (Dynamic Island tests).
+    private static func startDummyActivityIfRequested() {
+        guard ProcessInfo.processInfo.arguments.contains("-dummyActivity"),
+              Activity<DummyActivityAttributes>.activities.isEmpty else { return }
+        _ = try? Activity.request(attributes: DummyActivityAttributes(),
+                                  content: ActivityContent(state: .init(text: "1:59"), staleDate: nil))
+    }
+    #endif
 
     // MARK: Reminder when iOS ends the Live Activity
 
@@ -197,8 +211,11 @@ enum WidgetBridge {
 
     private static func updateLiveActivity(_ s: WidgetSnapshot) {
         guard liveActivityEnabled, let latest = s.latest else { return }
-        let state = GlucoseActivityAttributes.ContentState(mgdl: latest.mgdl, trendRate: s.trendRate, delta: s.delta, date: latest.date, iob: s.iob,
+        var state = GlucoseActivityAttributes.ContentState(mgdl: latest.mgdl, trendRate: s.trendRate, delta: s.delta, date: latest.date, iob: s.iob,
                                                                 curve: GlucoseActivityAttributes.curve(from: s.points, latest: latest.date))
+        #if DEBUG
+        state = state.debugOverridden()
+        #endif
         let running = runningActivities
         for activity in running {
             Task { await activity.update(ActivityContent(state: state, staleDate: latest.date.addingTimeInterval(15 * 60))) }
