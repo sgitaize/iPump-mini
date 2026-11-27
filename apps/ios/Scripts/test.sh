@@ -30,7 +30,8 @@ if [ "${SKIP_IOS:-0}" != "1" ]; then
   LOG="$(mktemp)"
   if xcodebuild test -project "$ROOT/apps/ios/OpenMinipump.xcodeproj" -scheme OpenMinipump \
       -destination "platform=iOS Simulator,id=$SIM_UDID" -derivedDataPath "$DD" >"$LOG" 2>&1; then
-    grep -E "Executed [0-9]+ tests" "$LOG" | tail -1
+    # One summary per test bundle (unit tests, UI tests): the line after "<Bundle>.xctest passed".
+    awk '/Test Suite .*\.xctest. (passed|failed)/ { b=$3; getline; print "  " b ": " $0 }' "$LOG"
   else
     grep -E "error:|failed|Executed [0-9]+ tests" "$LOG" | tail -30
     echo "FEHLER: iOS-Tests (Log: $LOG)"
