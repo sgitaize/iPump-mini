@@ -97,6 +97,8 @@ class ProtocolTest {
     fun nightscoutDirections() {
         assertEquals("Flat", Nightscout.direction(0.4).first)
         assertEquals("SingleUp", Nightscout.direction(1.16).first)
+        assertEquals("SingleDown", Nightscout.direction(-1.0).first)
+        assertEquals("DoubleDown", Nightscout.direction(-2.0).first)
         assertEquals("DoubleDown", Nightscout.direction(-2.5).first)
         assertEquals("NONE", Nightscout.direction(null).first)
     }

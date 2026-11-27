@@ -105,8 +105,8 @@ object Nightscout {
         rate == null -> "NONE" to 0
         rate >= 2 -> "DoubleUp" to 1
         rate >= 1 -> "SingleUp" to 2
-        rate >= -1 -> "Flat" to 4
-        rate >= -2 -> "SingleDown" to 6
+        rate > -1 -> "Flat" to 4
+        rate > -2 -> "SingleDown" to 6
         else -> "DoubleDown" to 7
     }
 
