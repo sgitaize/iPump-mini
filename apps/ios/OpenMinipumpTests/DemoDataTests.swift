@@ -19,7 +19,7 @@ final class DemoDataTests: XCTestCase {
 
     func testReadingsAreInSensorRangeAndFiveMinutesApart() {
         let r = store.readings
-        XCTAssertEqual(r.count, 72)
+        XCTAssertEqual(r.count, 14 * 288)
         XCTAssertTrue(r.allSatisfy { (40...400).contains($0.mgdl) })
         XCTAssertEqual(r.map(\.date), r.map(\.date).sorted())
         for (a, b) in zip(r, r.dropFirst()) {

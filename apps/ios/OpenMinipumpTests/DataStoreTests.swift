@@ -51,9 +51,9 @@ final class DataStoreTests: XCTestCase {
     }
 
     func testReadingsOlderThanRetentionAreDropped() {
-        store.add(Fixtures.reading(100, minutesAgo: 8 * 24 * 60))
+        store.add(Fixtures.reading(100, minutesAgo: 15 * 24 * 60))
         XCTAssertTrue(store.readings.isEmpty)
-        store.add(Fixtures.reading(100, minutesAgo: 6 * 24 * 60))
+        store.add(Fixtures.reading(100, minutesAgo: 13 * 24 * 60))
         XCTAssertEqual(store.readings.count, 1)
     }
 
@@ -64,7 +64,7 @@ final class DataStoreTests: XCTestCase {
             GlucoseReading(date: existing.date.addingTimeInterval(60), mgdl: 121, trendMgdlPerMin: nil, sessionOffsetMinutes: nil), // dup
             Fixtures.reading(130, minutesAgo: 20),
             Fixtures.reading(140, minutesAgo: -60),                 // 1 h in the future
-            Fixtures.reading(150, minutesAgo: 8 * 24 * 60),         // too old
+            Fixtures.reading(150, minutesAgo: 15 * 24 * 60),         // too old
             Fixtures.reading(135, minutesAgo: 15),
         ]
         let added = store.merge(incoming)
@@ -105,7 +105,7 @@ final class DataStoreTests: XCTestCase {
     }
 
     func testOldTreatmentsAreDropped() {
-        store.addTreatments([Treatment(id: 1, date: Date().addingTimeInterval(-9 * 86400), kind: .bolus, value: 1)])
+        store.addTreatments([Treatment(id: 1, date: Date().addingTimeInterval(-15 * 86400), kind: .bolus, value: 1)])
         XCTAssertTrue(store.treatments.isEmpty)
     }
 

@@ -66,6 +66,8 @@ struct ContentView: View {
                     GlucoseHeader()
                     GlucoseChart(insulinSelection: $insulinSelection, glucoseSelection: $glucoseSelection)
                     ValueGrid()
+                    SupplyCard()
+                    PatternCard()
                     Text("Nur zur Information. Keine Therapieentscheidungen auf Basis dieser App treffen – maßgeblich ist die Anzeige der Pumpe. Kein Medizinprodukt, nicht mit Medtronic verbunden.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)

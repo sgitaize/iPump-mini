@@ -4,6 +4,39 @@
     "" : {
       "shouldTranslate" : false
     },
+    "%@ an %d von %d Tagen unter %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ on %d of %d days below %@"
+          }
+        }
+      }
+    },
+    "%@ an %d von %d Tagen über %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ on %d of %d days above %@"
+          }
+        }
+      }
+    },
+    "%@: Zeit im Bereich %d %% (Vorwoche %d %%)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: time in range %d %% (previous week %d %%)"
+          }
+        }
+      }
+    },
     "%d h" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -37,6 +70,17 @@
         }
       }
     },
+    "%d min" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d min"
+          }
+        }
+      }
+    },
     "%d min ohne Abruf" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -44,6 +88,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%d min without a fetch"
+          }
+        }
+      }
+    },
+    "%d T" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d d"
           }
         }
       }
@@ -314,6 +369,17 @@
         }
       }
     },
+    "Abends" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the evening"
+          }
+        }
+      }
+    },
     "Abgabe angehalten" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -408,6 +474,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Battery"
+          }
+        }
+      }
+    },
+    "Akku ist leer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Battery is empty"
           }
         }
       }
@@ -842,12 +919,33 @@
         }
       }
     },
+    "Beta" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta"
+          }
+        }
+      }
+    },
     "Bis" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "To"
+          }
+        }
+      }
+    },
+    "bis %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "until %@"
           }
         }
       }
@@ -1809,6 +1907,17 @@
         }
       }
     },
+    "hält bis ca. %@ (± %@)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "lasts until about %@ (± %@)"
+          }
+        }
+      }
+    },
     "Ich habe die Nutzungsbedingungen gelesen und stimme ihnen zu." : {
       "localizations" : {
         "en" : {
@@ -2269,6 +2378,39 @@
         }
       }
     },
+    "Konfidenz hoch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confidence high"
+          }
+        }
+      }
+    },
+    "Konfidenz mittel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confidence medium"
+          }
+        }
+      }
+    },
+    "Konfidenz niedrig" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confidence low"
+          }
+        }
+      }
+    },
     "Kopplungsmodus" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2318,6 +2460,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Keep this app open in the foreground and the iPhone unlocked until pairing is complete."
+          }
+        }
+      }
+    },
+    "lernt noch (%@ von %d Tagen)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "still learning (%@ of %d days)"
           }
         }
       }
@@ -2611,6 +2764,17 @@
         }
       }
     },
+    "Mittags" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At noon"
+          }
+        }
+      }
+    },
     "Mitteilung nach" : {
       "localizations" : {
         "en" : {
@@ -2671,6 +2835,27 @@
         }
       }
     },
+    "Morgens" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the morning"
+          }
+        }
+      }
+    },
+    "Muster" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Patterns"
+          }
+        }
+      }
+    },
     "nach %d min" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2678,6 +2863,61 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "after %d min"
+          }
+        }
+      }
+    },
+    "Nach dem Abendessen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After dinner"
+          }
+        }
+      }
+    },
+    "Nach dem Frühstück" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After breakfast"
+          }
+        }
+      }
+    },
+    "Nach dem Mittagessen" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "After lunch"
+          }
+        }
+      }
+    },
+    "Nachmittags" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In the afternoon"
+          }
+        }
+      }
+    },
+    "Nachts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At night"
           }
         }
       }
@@ -2836,6 +3076,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No pump paired yet. The pump has to be paired with this app once."
+          }
+        }
+      }
+    },
+    "Noch keine Werte" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No values yet"
           }
         }
       }
@@ -3185,6 +3436,28 @@
         }
       }
     },
+    "reicht bis ca. %@ (± %@)" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "lasts until about %@ (± %@)"
+          }
+        }
+      }
+    },
+    "reicht mehr als 30 Tage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "lasts more than 30 days"
+          }
+        }
+      }
+    },
     "Reservoir" : {
       "localizations" : {
         "en" : {
@@ -3213,6 +3486,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Low reservoir"
+          }
+        }
+      }
+    },
+    "Reservoir ist leer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reservoir is empty"
           }
         }
       }
@@ -3297,6 +3581,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rising fast"
+          }
+        }
+      }
+    },
+    "Schätzung aus deinem bisherigen Verbrauch, keine Garantie. Die Pumpe zeigt den tatsächlichen Stand." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estimate based on your past consumption, no guarantee. The pump shows the actual level."
           }
         }
       }
@@ -3707,6 +4001,16 @@
         }
       }
     },
+    "Statistik der letzten 14 Tage, keine Therapieempfehlung." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Statistics of the last 14 days, not a treatment recommendation."
+          }
+        }
+      }
+    },
     "Status" : {
       "localizations" : {
         "en" : {
@@ -3849,6 +4153,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Invalid URL"
+          }
+        }
+      }
+    },
+    "Unter %@ ca. %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Below %@ at about %@"
+          }
+        }
+      }
+    },
+    "Unter %@ erreicht" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Below %@ reached"
           }
         }
       }
@@ -4060,6 +4386,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "available"
+          }
+        }
+      }
+    },
+    "Vorrat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supply"
           }
         }
       }
