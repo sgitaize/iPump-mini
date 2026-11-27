@@ -49,8 +49,8 @@ android {
         applicationId = "de.sgitaize.ipumpmini"   // Play-Store-App; namespace/Kotlin-Pakete bleiben openminipump
         minSdk = 29
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.0-beta.4"
+        versionCode = 6
+        versionName = "1.0.0-beta.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

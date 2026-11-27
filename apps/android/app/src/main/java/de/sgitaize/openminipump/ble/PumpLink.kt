@@ -182,8 +182,14 @@ class PumpLink(
     private var currentStartedAt: Instant? = null
     private var lastRefresh: Instant = Instant.EPOCH
     private var refreshPending = false
+    /** Control-point requests in a row without any answer (see [recoverDeadSession]). */
+    private var unansweredRequests = 0
+    private var lastSessionRecovery: Instant? = null
     private val operationTimeout = Runnable {
-        current?.let { log.warn("Zeitüberschreitung: $it") }
+        val op = current
+        op?.let { log.warn("Zeitüberschreitung: $it") }
+        if (op != null && op !is Operation.Read) unansweredRequests++
+        if (unansweredRequests >= 3 && recoverDeadSession()) return@Runnable
         nextOperation()
     }
 
@@ -972,6 +978,7 @@ class PumpLink(
                 return
             }
         }
+        if (uuid in LIVE_SIGNALS) unansweredRequests = 0
         try {
             dispatch(service, uuid, plain)
         } finally {
@@ -1257,6 +1264,41 @@ class PumpLink(
     private fun sakeUnsubscribed(device: BluetoothDevice) {
         if (device.address != pumpDevice?.address) return
         log.warn("Pumpe hat SAKE-Abo beendet")
+        dropSession("Abo beendet")
+    }
+
+    /**
+     * A SAKE session never survives a dropped link: after reconnecting, the pump waits for a new
+     * handshake. On iOS, resuming the old cipher looked fine (plain reads still answered) while
+     * every control point request timed out and no notification came any more (lab notebook
+     * 2026-11-27). So the saved session goes with the link.
+     */
+    private fun dropSession(reason: String) {
+        if (crypt == null && sessions.load() == null) return
+        crypt = null
+        sake = null
+        sessions.clear()
+        log.add("Sitzung verworfen ($reason), nächste Verbindung braucht neuen Handshake")
+    }
+
+    /**
+     * Safety net for a dead session we did not see ending: several control point requests in a
+     * row without any answer. Drop the session and drop our side of the link, so the pump
+     * reconnects with a new handshake. At most every 10 minutes.
+     */
+    private fun recoverDeadSession(): Boolean {
+        val now = Instant.now()
+        lastSessionRecovery?.let { if (now.isBefore(it.plusSeconds(600))) return false }
+        lastSessionRecovery = now
+        unansweredRequests = 0
+        log.warn("Pumpe antwortet nicht auf Anfragen (Sitzung tot?), fordere neuen Handshake an")
+        val device = pumpDevice
+        closeClient()
+        resetClientState()
+        dropSession("keine Antworten")
+        _phase.value = Phase.WaitingForPump
+        requestNewHandshakeIfLinked(device?.takeIf { isLinked(it) })
+        return true
     }
 
     private fun pumpDisconnected(status: Int) {
@@ -1271,6 +1313,7 @@ class PumpLink(
         }
         // No reconnect from our side: the pump reconnects to us. The saved session stays valid
         // only for this link, so a reconnect always starts with a new handshake.
+        dropSession("Verbindung getrennt")
         sake = null
         pumpDevice = null
         _phase.value = Phase.WaitingForPump
@@ -1400,6 +1443,12 @@ class PumpLink(
         private val GST_BATTERY = PumpUuid.normalize(PumpUuid.GST_BATTERY_LEVEL)
 
         /** Characteristics whose values are SAKE-encrypted (OpenMinimed pump-services.md). */
+        /** Values that only arrive while the pump really talks to us in the current session. */
+        private val LIVE_SIGNALS: Set<String> = listOf(
+            PumpUuid.IDD_STATUS_READER_CP, PumpUuid.RECORD_ACCESS_CP, PumpUuid.IDD_HISTORY_DATA,
+            PumpUuid.CGM_MEASUREMENT, PumpUuid.IDD_STATUS_CHANGED, PumpUuid.GST_BATTERY_LEVEL,
+        ).map(PumpUuid::normalize).toSet()
+
         private val ENCRYPTED: Set<String> = listOf(
             PumpUuid.IDD_STATUS_CHANGED, PumpUuid.IDD_STATUS, PumpUuid.IDD_ANNUNCIATION, PumpUuid.IDD_FEATURES,
             PumpUuid.IDD_STATUS_READER_CP, PumpUuid.IDD_COMMAND_CP, PumpUuid.IDD_COMMAND_DATA, PumpUuid.IDD_HISTORY_DATA,
