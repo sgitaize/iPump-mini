@@ -4876,6 +4876,28 @@
           }
         }
       }
+    },
+    "Jetzt" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now"
+          }
+        }
+      }
+    },
+    "Ausblick" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outlook"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

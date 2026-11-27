@@ -51,43 +51,78 @@ struct ContentView: View {
         #endif
     }
 
-    private var main: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    if DemoMode.isOn && !Self.screenshotMode {
-                        DemoBanner()
-                    } else if !Self.screenshotMode {
-                        StatusBanner(showPairing: $showPairing)
-                    }
-                    SensorAlertBanner()
-                    MuteBanner()
-                    SensorTypeCard()
-                    GlucoseHeader()
-                    GlucoseChart(insulinSelection: $insulinSelection, glucoseSelection: $glucoseSelection)
-                    ValueGrid()
-                    SupplyCard()
-                    PatternCard()
-                    Text("Nur zur Information. Keine Therapieentscheidungen auf Basis dieser App treffen – maßgeblich ist die Anzeige der Pumpe. Kein Medizinprodukt, nicht mit Medtronic verbunden.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 8)
-                    NavigationLink("Über & Impressum") { AboutView() }
-                        .font(.footnote)
-                }
+    private func pageScroll<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        ScrollView {
+            VStack(spacing: 16) { content() }
                 .padding()
                 .contentShape(Rectangle())
                 .onTapGesture {
                     insulinSelection = nil
                     glucoseSelection = nil
                 }
+        }
+        .refreshable { link.refreshNow() }
+    }
+
+    @ViewBuilder
+    private var nowPage: some View {
+        if DemoMode.isOn && !Self.screenshotMode {
+            DemoBanner()
+        } else if !Self.screenshotMode {
+            StatusBanner(showPairing: $showPairing)
+        }
+        SensorAlertBanner()
+        MuteBanner()
+        SensorTypeCard()
+        GlucoseHeader()
+        GlucoseChart(insulinSelection: $insulinSelection, glucoseSelection: $glucoseSelection)
+        ValueGrid()
+    }
+
+    @ViewBuilder
+    private var outlookPage: some View {
+        SupplyCard()
+        PatternCard()
+        Text("Nur zur Information. Keine Therapieentscheidungen auf Basis dieser App treffen – maßgeblich ist die Anzeige der Pumpe. Kein Medizinprodukt, nicht mit Medtronic verbunden.")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 8)
+        NavigationLink("Über & Impressum") { AboutView() }
+            .font(.footnote)
+    }
+
+    /// Two pages side by side: "Jetzt" (value, curve, tiles) and "Ausblick" (supplies, patterns,
+    /// notes). One long page was too much scrolling. While the finger scrubs the chart,
+    /// paging is off, so a sideways move in the curve never flips the page.
+    @State private var page: Int? = 0
+    @State private var chartScrubbing = false
+
+    private var main: some View {
+        NavigationStack {
+            ScrollView(.horizontal) {
+                LazyHStack(spacing: 0) {
+                    pageScroll { nowPage }
+                        .containerRelativeFrame(.horizontal)
+                        .id(0)
+                    pageScroll { outlookPage }
+                        .containerRelativeFrame(.horizontal)
+                        .id(1)
+                }
+                .scrollTargetLayout()
             }
-            .refreshable { link.refreshNow() }
+            .scrollTargetBehavior(.paging)
+            .scrollPosition(id: $page)
+            .scrollIndicators(.hidden)
+            .scrollDisabled(chartScrubbing)
+            .onPreferenceChange(ChartScrubbingKey.self) { chartScrubbing = $0 }
+            .safeAreaInset(edge: .bottom, spacing: 0) { PageSwitcher(page: $page) }
             #if DEBUG
             .onAppear {
                 if ProcessInfo.processInfo.arguments.contains("-selectPoint") {
                     glucoseSelection = store.readings.dropLast(30).last?.date
                 }
+                if ProcessInfo.processInfo.arguments.contains("-outlook") { page = 1 }
             }
             #endif
             .navigationTitle("iPump-mini")
@@ -316,6 +351,13 @@ struct GlucoseChart: View {
     }
 
     var body: some View {
+        VStack(spacing: 16) { chart }
+            // Tells the page view to hold still while the finger moves along the curve.
+            .preference(key: ChartScrubbingKey.self, value: scrub == .glucose || scrub == .insulin)
+    }
+
+    @ViewBuilder
+    private var chart: some View {
         let from = Date().addingTimeInterval(-Double(hours) * 3600)
         let points = store.readings.filter { $0.date >= from }
         let events = store.treatments.filter { $0.date >= from }
@@ -784,5 +826,42 @@ struct SensorAlertBanner: View {
             .padding()
             .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
         }
+    }
+}
+
+/// True while the chart is scrubbed sideways (see GlucoseChart).
+struct ChartScrubbingKey: PreferenceKey {
+    static let defaultValue = false
+    static func reduce(value: inout Bool, nextValue: () -> Bool) { value = value || nextValue() }
+}
+
+/// Page indicator below the two home pages; the labels can also be tapped.
+struct PageSwitcher: View {
+    @Binding var page: Int?
+
+    var body: some View {
+        HStack(spacing: 6) {
+            item(0, "Jetzt")
+            item(1, "Ausblick")
+        }
+        .padding(4)
+        .background(.regularMaterial, in: Capsule())
+        .padding(.bottom, 4)
+    }
+
+    private func item(_ index: Int, _ title: LocalizedStringKey) -> some View {
+        let active = (page ?? 0) == index
+        return Button {
+            withAnimation(.snappy) { page = index }
+        } label: {
+            Text(title)
+                .font(.footnote.weight(active ? .semibold : .regular))
+                .foregroundStyle(active ? .primary : .secondary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 5)
+                .background(active ? AnyShapeStyle(.background) : AnyShapeStyle(.clear), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(active ? .isSelected : [])
     }
 }
