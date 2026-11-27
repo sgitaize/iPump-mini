@@ -115,6 +115,24 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/OpenMinipump.app/OpenMinipump"
         BUNDLE_LOADER: "$(TEST_HOST)"
+  OpenMinipumpUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - OpenMinipumpUITests
+    dependencies:
+      - target: OpenMinipump
+    configFiles:
+      Debug: Config/Base.xcconfig
+      Release: Config/Base.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(OMP_BUNDLE_ID).uitests
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: OpenMinipump
 schemes:
   OpenMinipump:
     build:
@@ -126,6 +144,7 @@ schemes:
       config: Debug
       targets:
         - OpenMinipumpTests
+        - OpenMinipumpUITests
     profile:
       config: Release
     analyze:

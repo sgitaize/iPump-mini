@@ -126,6 +126,9 @@ struct ContentView: View {
             }
             #endif
             .navigationTitle("iPump-mini")
+            // Inline: a large title cannot follow the inner (vertical) scroll views of the
+            // pages and was drawn twice, blurred, while scrolling.
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: { Image(systemName: "gearshape") }
@@ -280,6 +283,10 @@ struct GlucoseChart: View {
     @Binding var glucoseSelection: Date?
     /// What a running drag scrubs through; decided by its first movement.
     @State private var scrub: Scrub?
+    /// True only while a finger is down on the chart. Unlike `scrub`, GestureState resets
+    /// itself when the system cancels the drag (e.g. the page scroll takes over); onEnded is
+    /// not called then, and a stuck `scrub` used to block paging for good.
+    @GestureState private var dragging = false
     private enum Scrub { case glucose, insulin, ignore }
 
     /// Height of the insulin band below the glucose values, in chart units (mg/dL scale).
@@ -352,8 +359,10 @@ struct GlucoseChart: View {
 
     var body: some View {
         VStack(spacing: 16) { chart }
+            .accessibilityIdentifier("glucoseChart")
             // Tells the page view to hold still while the finger moves along the curve.
-            .preference(key: ChartScrubbingKey.self, value: scrub == .glucose || scrub == .insulin)
+            .preference(key: ChartScrubbingKey.self, value: dragging && (scrub == .glucose || scrub == .insulin))
+            .onChange(of: dragging) { _, active in if !active { scrub = nil } }
     }
 
     @ViewBuilder
@@ -475,6 +484,7 @@ struct GlucoseChart: View {
                     // Vertical drags are left to the page scroll.
                     .simultaneousGesture(
                         DragGesture(minimumDistance: 8)
+                            .updating($dragging) { _, state, _ in state = true }
                             .onChanged { drag in
                                 if scrub == nil {
                                     let horizontal = abs(drag.translation.width) > abs(drag.translation.height)
