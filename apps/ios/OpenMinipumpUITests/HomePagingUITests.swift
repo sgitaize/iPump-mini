@@ -45,4 +45,13 @@ final class HomePagingUITests: XCTestCase {
         app.buttons["Jetzt"].tap()
         XCTAssertTrue(app.otherElements["glucoseChart"].waitForExistence(timeout: 3))
     }
+
+    func testPreviewOpensOutlook() {
+        let preview = app.buttons["outlookPreview"]
+        XCTAssertTrue(preview.waitForExistence(timeout: 10))
+        if !preview.isHittable { app.swipeUp() }
+        preview.tap()
+        XCTAssertTrue(app.staticTexts["Vorrat"].waitForExistence(timeout: 3))
+        XCTAssertTrue(outlookVisible, "tapping the preview must open the outlook page")
+    }
 }

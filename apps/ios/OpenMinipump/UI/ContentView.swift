@@ -76,6 +76,7 @@ struct ContentView: View {
         SensorTypeCard()
         GlucoseHeader()
         GlucoseChart(insulinSelection: $insulinSelection, glucoseSelection: $glucoseSelection)
+        OutlookPreview { withAnimation(.snappy) { page = 1 } }
         ValueGrid()
     }
 
@@ -116,7 +117,6 @@ struct ContentView: View {
             .scrollIndicators(.hidden)
             .scrollDisabled(chartScrubbing)
             .onPreferenceChange(ChartScrubbingKey.self) { chartScrubbing = $0 }
-            .safeAreaInset(edge: .bottom, spacing: 0) { PageSwitcher(page: $page) }
             #if DEBUG
             .onAppear {
                 if ProcessInfo.processInfo.arguments.contains("-selectPoint") {
@@ -130,6 +130,8 @@ struct ContentView: View {
             // pages and was drawn twice, blurred, while scrolling.
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // Page switcher in the title position: always in view, never covers content.
+                ToolbarItem(placement: .principal) { PageSwitcher(page: $page) }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showSettings = true } label: { Image(systemName: "gearshape") }
                         .accessibilityLabel("Einstellungen")
@@ -854,9 +856,8 @@ struct PageSwitcher: View {
             item(0, "Jetzt")
             item(1, "Ausblick")
         }
-        .padding(4)
-        .background(.regularMaterial, in: Capsule())
-        .padding(.bottom, 4)
+        .padding(3)
+        .background(Color(.tertiarySystemFill), in: Capsule())
     }
 
     private func item(_ index: Int, _ title: LocalizedStringKey) -> some View {
@@ -867,9 +868,10 @@ struct PageSwitcher: View {
             Text(title)
                 .font(.footnote.weight(active ? .semibold : .regular))
                 .foregroundStyle(active ? .primary : .secondary)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, 14)
                 .padding(.vertical, 5)
-                .background(active ? AnyShapeStyle(.background) : AnyShapeStyle(.clear), in: Capsule())
+                .background(active ? AnyShapeStyle(Color(.systemBackground)) : AnyShapeStyle(.clear), in: Capsule())
+                .contentShape(Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(active ? .isSelected : [])
