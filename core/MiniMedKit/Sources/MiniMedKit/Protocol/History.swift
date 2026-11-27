@@ -152,8 +152,14 @@ public enum HistoryTimeline {
         var ref = reference
         var out: [TimedHistoryEvent] = []
         for record in records.sorted(by: { $0.sequence < $1.sequence }) {
-            if case .referenceTime(let c) = record.event, let d = calendar.date(from: c) {
-                ref = (record.sequence, d)
+            if case .referenceTime(let c) = record.event {
+                // Calendar rolls invalid fields over (month 13 becomes January of the next year):
+                // a corrupt clock must not shift all following events, so keep the old reference.
+                if let d = calendar.date(from: c),
+                   calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: d)
+                    == DateComponents(year: c.year, month: c.month, day: c.day, hour: c.hour, minute: c.minute, second: c.second) {
+                    ref = (record.sequence, d)
+                }
                 continue
             }
             guard let ref, record.sequence > ref.sequence else { continue }

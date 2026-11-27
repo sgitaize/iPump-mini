@@ -17,6 +17,8 @@ final class LocalAPIServer: @unchecked Sendable {
     static let port: UInt16 = 17580
 
     private let shared: SharedData
+    /// Listening port; only tests use another one (the hosted app runs its own server on the default).
+    let listenPort: UInt16
     private let queue = DispatchQueue(label: "openminipump.api")
     private var listener: NWListener?
     private var allowLAN = false
@@ -38,8 +40,9 @@ final class LocalAPIServer: @unchecked Sendable {
     var onPebbleRequest: (() -> Void)?
     private var lastRequestLog: [String: Date] = [:]
 
-    init(shared: SharedData) {
+    init(shared: SharedData, port: UInt16 = LocalAPIServer.port) {
         self.shared = shared
+        listenPort = port
         version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
     }
 
@@ -93,7 +96,7 @@ final class LocalAPIServer: @unchecked Sendable {
         do {
             let params = NWParameters.tcp
             params.allowLocalEndpointReuse = true
-            let port = NWEndpoint.Port(rawValue: Self.port)!
+            let port = NWEndpoint.Port(rawValue: listenPort)!
             let l: NWListener
             if lan {
                 l = try NWListener(using: params, on: port)
@@ -108,7 +111,7 @@ final class LocalAPIServer: @unchecked Sendable {
                 case .ready:
                     self.isReady = true
                     self.retryDelay = 1
-                    self.onStateChange?(lan ? L10n.tr("läuft (WLAN, Port %d)", Int(Self.port)) : L10n.tr("läuft (nur dieses iPhone, Port %d)", Int(Self.port)))
+                    self.onStateChange?(lan ? L10n.tr("läuft (WLAN, Port %d)", Int(listenPort)) : L10n.tr("läuft (nur dieses iPhone, Port %d)", Int(listenPort)))
                 case .waiting(let e), .failed(let e):
                     // `.waiting` was left alone before and the server stayed down until the next
                     // revive. "Address already in use" right after a restart means the old

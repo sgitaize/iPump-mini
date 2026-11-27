@@ -47,13 +47,12 @@ public enum Nightscout {
     /// understands, so three arrows map to Double* as well.
     public static func direction(forRate rate: Double?) -> (name: String, trend: Int) {
         guard let rate else { return ("NONE", 0) }
-        switch rate {
-        case 2...: return ("DoubleUp", 1)
-        case 1..<2: return ("SingleUp", 2)
-        case -1 ..< 1: return ("Flat", 4)
-        case -2 ..< -1: return ("SingleDown", 6)
-        default: return ("DoubleDown", 7)
-        }
+        // Symmetric thresholds: exactly +1 and -1 mg/dL/min both count as one arrow (like the app's arrows).
+        if rate >= 2 { return ("DoubleUp", 1) }
+        if rate >= 1 { return ("SingleUp", 2) }
+        if rate > -1 { return ("Flat", 4) }
+        if rate > -2 { return ("SingleDown", 6) }
+        return ("DoubleDown", 7)
     }
 
     nonisolated(unsafe) static let iso: ISO8601DateFormatter = {

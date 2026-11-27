@@ -95,3 +95,40 @@ targets:
           NSAllowsLocalNetworking: true
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+  OpenMinipumpTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - OpenMinipumpTests
+    dependencies:
+      - target: OpenMinipump
+      - package: MiniMedKit
+    configFiles:
+      Debug: Config/Base.xcconfig
+      Release: Config/Base.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(OMP_BUNDLE_ID).tests
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/OpenMinipump.app/OpenMinipump"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+schemes:
+  OpenMinipump:
+    build:
+      targets:
+        OpenMinipump: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - OpenMinipumpTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

@@ -24,11 +24,12 @@ final class DataStore: ObservableObject {
     var onLatestChanged: (() -> Void)?
 
     private let retention: TimeInterval = 7 * 24 * 3600
-    private let fileURL: URL = {
+    private let fileURL: URL
+    private static var defaultFileURL: URL {
         let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("openminipump-store.json")
-    }()
+    }
 
     private struct Persisted: Codable {
         var readings: [GlucoseReading]
@@ -38,9 +39,11 @@ final class DataStore: ObservableObject {
         var iobHistory: [IOBSample]?
     }
 
-    init() {
+    /// `fileURL` is only overridden by tests (own file instead of the real store).
+    init(fileURL: URL? = nil) {
+        self.fileURL = fileURL ?? Self.defaultFileURL
         UIDevice.current.isBatteryMonitoringEnabled = true
-        if let data = try? Data(contentsOf: fileURL),
+        if let data = try? Data(contentsOf: self.fileURL),
            let p = try? JSONDecoder().decode(Persisted.self, from: data) {
             readings = p.readings
             snapshot = p.snapshot
@@ -89,7 +92,9 @@ final class DataStore: ObservableObject {
             Treatment(id: UInt32(10 + i), date: now.addingTimeInterval(-Double(i) * 300), kind: .autoBasal,
                       value: [0.05, 0.1, 0.0, 0.15, 0.05][i % 5])
         }.filter { ($0.value ?? 0) > 0 }
-        iobHistory = (0..<72).map { i in IOBSample(date: now.addingTimeInterval(-Double(71 - i) * 300), units: max(0, 3.2 - Double(i) * 0.03)) }
+        treatments.sort { $0.date < $1.date }   // like addTreatments
+        // Ends at the current IOB of the status below (1.85 U) and decays towards it.
+        iobHistory = (0..<72).map { i in IOBSample(date: now.addingTimeInterval(-Double(71 - i) * 300), units: 1.85 + Double(71 - i) * 0.03) }
         // Pump status from JSON (the types are Codable and otherwise only parsed from bytes).
         func decode<T: Decodable>(_ json: String) -> T? { try? JSONDecoder().decode(T.self, from: Data(json.utf8)) }
         var demo = snapshot
@@ -141,6 +146,7 @@ final class DataStore: ObservableObject {
     @discardableResult
     func merge(_ incoming: [GlucoseReading]) -> [GlucoseReading] {
         var added: [GlucoseReading] = []
+        let latestBefore = latest?.date
         let cutoff = Date().addingTimeInterval(-retention)
         for r in incoming where r.date >= cutoff && r.date <= Date().addingTimeInterval(300) {
             if readings.contains(where: { abs($0.date.timeIntervalSince(r.date)) < 120 }) { continue }
@@ -148,7 +154,6 @@ final class DataStore: ObservableObject {
             added.append(r)
         }
         guard !added.isEmpty else { return [] }
-        let latestBefore = latest?.date
         readings.sort { $0.date < $1.date }
         touched()
         if latest?.date != latestBefore { onLatestChanged?() }
