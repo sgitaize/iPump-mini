@@ -103,11 +103,12 @@ final class AlarmEngine: ObservableObject {
     /// Notifications allowed at all.
     @Published private(set) var notificationsAllowed = false
 
-    private var lastFired: [String: Date] = [:]
+    private(set) var lastFired: [String: Date] = [:]
     private var seenPumpAlarms: [UInt16] = []
     var log: EventLog?
 
-    private init() {
+    /// `shared` in the app; tests create their own instance.
+    init() {
         config = Self.load("alarmConfig") ?? AlarmConfig.preset(.standard)
         mutedUntil = Self.load("alarmMutedUntil")
         snoozedUntil = Self.load("alarmSnoozes") ?? [:]
